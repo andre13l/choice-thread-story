@@ -301,15 +301,18 @@ export function advanceTime(s: GameState, rng: Rng): GameState {
     stats.money += randInt(rng, 150, 600); // survival jobs
   }
   // Longevity builds legacy once the industry takes you seriously.
-  // A truly extraordinary career compounds: respect, fame and cultural
-  // weight each feed what history remembers.
-  if (stats.industryRespect > 45) stats.legacy = Math.min(100, stats.legacy + 1.2);
-  if (stats.industryRespect > 65) stats.legacy = Math.min(100, stats.legacy + 1.3);
-  if (stats.fame > 70) stats.legacy = Math.min(100, stats.legacy + 1.0);
-  if (stats.fame > 75) stats.culturalImpact = Math.min(100, stats.culturalImpact + 0.6);
-  if (stats.culturalImpact > 50) stats.legacy = Math.min(100, stats.legacy + 0.8);
-  if (stats.successfulMovies >= 5) stats.legacy = Math.min(100, stats.legacy + 0.5);
-  if (stats.oscars >= 1) stats.industryRespect = Math.min(100, stats.industryRespect + 1.2);
+  // A truly extraordinary career compounds: respect, fame, cultural
+  // weight and a body of work each feed what history remembers.
+  if (stats.industryRespect > 35) stats.legacy = Math.min(100, stats.legacy + 1.0);
+  if (stats.industryRespect > 55) stats.legacy = Math.min(100, stats.legacy + 1.5);
+  if (stats.industryRespect > 75) stats.legacy = Math.min(100, stats.legacy + 1.0);
+  if (stats.fame > 60) stats.legacy = Math.min(100, stats.legacy + 0.7);
+  if (stats.fame > 75) stats.culturalImpact = Math.min(100, stats.culturalImpact + 0.8);
+  if (stats.culturalImpact > 40) stats.legacy = Math.min(100, stats.legacy + 0.8);
+  if (stats.successfulMovies >= 4) stats.legacy = Math.min(100, stats.legacy + 0.6);
+  if (stats.successfulMovies >= 8) stats.legacy = Math.min(100, stats.legacy + 0.8);
+  if (stats.oscars >= 1) stats.industryRespect = Math.min(100, stats.industryRespect + 1.5);
+  if (stats.awards >= 3) stats.industryRespect = Math.min(100, stats.industryRespect + 0.7);
 
   return {
     ...s,
