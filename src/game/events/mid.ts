@@ -103,7 +103,7 @@ export const midEvents: GameEvent[] = [
           {
             text: "The film makes $900M worldwide. Children know your face. Your face is also on a lunchbox you will never escape.",
             money: 4_200_000,
-            effects: { fame: 22, money: 0, movies: 1, successfulMovies: 1, culturalImpact: 10, reputation: -3, burnout: 8 },
+            effects: { fame: 22, money: 0, movies: 1, successfulMovies: 1, culturalImpact: 14, reputation: -3, burnout: 8 },
           },
           {
             text: "The film underperforms. The trilogy becomes a duology, then a reboot without you. The lunchboxes are already printed.",
@@ -186,7 +186,7 @@ export const midEvents: GameEvent[] = [
           {
             text: "The show becomes the thing everyone talks about on Mondays. Your face is on a building in Koreatown.",
             money: 1_800_000,
-            effects: { fame: 18, reputation: 6, culturalImpact: 8, industryRespect: 5, burnout: 10 },
+            effects: { fame: 18, reputation: 6, culturalImpact: 10, industryRespect: 5, burnout: 10 },
           },
           {
             text: "The show is cancelled after one season. The algorithm has spoken. Its reasons are classified.",
@@ -706,7 +706,7 @@ export const midEvents: GameEvent[] = [
           {
             text: "You do the midnight screenings. The Q&As. The conventions. A generation adopts you as theirs.",
             money: 150_000,
-            effects: { fame: 6, publicPerception: 8, culturalImpact: 10, legacy: 5 },
+            effects: { fame: 6, publicPerception: 8, culturalImpact: 12, legacy: 5 },
             flags: { cultIcon: true },
           },
         ],

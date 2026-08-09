@@ -33,7 +33,7 @@ export const LEGEND_ELIGIBILITY = {
   fame: 82,
   money: 35_000_000,
   oscars: 2,
-  movies: 16,
+  movies: 12,
   minAge: 40,
 } as const;
 

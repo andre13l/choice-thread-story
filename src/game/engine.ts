@@ -303,9 +303,12 @@ export function advanceTime(s: GameState, rng: Rng): GameState {
   // Longevity builds legacy once the industry takes you seriously.
   // A truly extraordinary career compounds: respect, fame and cultural
   // weight each feed what history remembers.
-  if (stats.industryRespect > 55) stats.legacy = Math.min(100, stats.legacy + 1.8);
-  if (stats.fame > 70) stats.legacy = Math.min(100, stats.legacy + 0.7);
-  if (stats.culturalImpact > 50) stats.legacy = Math.min(100, stats.legacy + 0.6);
+  if (stats.industryRespect > 45) stats.legacy = Math.min(100, stats.legacy + 1.2);
+  if (stats.industryRespect > 65) stats.legacy = Math.min(100, stats.legacy + 1.3);
+  if (stats.fame > 70) stats.legacy = Math.min(100, stats.legacy + 1.0);
+  if (stats.fame > 75) stats.culturalImpact = Math.min(100, stats.culturalImpact + 0.6);
+  if (stats.culturalImpact > 50) stats.legacy = Math.min(100, stats.legacy + 0.8);
+  if (stats.oscars >= 1) stats.industryRespect = Math.min(100, stats.industryRespect + 1.2);
 
   return {
     ...s,

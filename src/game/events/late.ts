@@ -591,7 +591,7 @@ export const lateEvents: GameEvent[] = [
           {
             text: "The book is a sensation — funny, brutal, wise. It's on every nightstand in America. Three people never speak to you again. Worth it?",
             money: 3_000_000,
-            effects: { culturalImpact: 10, legacy: 8, publicPerception: 5, connections: -3 },
+            effects: { culturalImpact: 12, legacy: 8, publicPerception: 5, connections: -3 },
           },
           {
             text: "The names you named name lawyers. The legal bills eat the advance. The book, pulped, becomes a collector's item.",
@@ -796,7 +796,7 @@ export const lateEvents: GameEvent[] = [
         outcomes: [
           {
             text: "The film is honest and devastating and beautiful. Young filmmakers discover you. Your obituary just got rewritten, early, in your favor.",
-            effects: { legacy: 12, culturalImpact: 8, publicPerception: 8, fame: 4 },
+            effects: { legacy: 12, culturalImpact: 10, publicPerception: 8, fame: 4 },
           },
           {
             text: "The film lingers on the scandals and skips the triumphs. It's fair, technically. It premieres at every festival.",
