@@ -52,9 +52,9 @@ type Phase = "intro" | "character" | "event" | "reveal" | "ending" | "legend";
 
 interface OutcomeView {
   text: string;
-  note?: string;
+  note?: string | undefined;
   lines: { label: string; negative: boolean }[];
-  end?: "career" | "legend";
+  end?: "career" | "legend" | undefined;
 }
 
 interface UiState {
