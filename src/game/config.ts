@@ -27,13 +27,13 @@ export const LEGEND_CONFIG = {
 
 /** Hidden internal thresholds. Skill moves you toward these; nothing guarantees them. */
 export const LEGEND_ELIGIBILITY = {
-  legacy: 78,
-  culturalImpact: 68,
-  industryRespect: 68,
-  fame: 85,
-  money: 60_000_000,
+  legacy: 72,
+  culturalImpact: 62,
+  industryRespect: 65,
+  fame: 82,
+  money: 35_000_000,
   oscars: 2,
-  movies: 22,
+  movies: 16,
   minAge: 40,
 } as const;
 

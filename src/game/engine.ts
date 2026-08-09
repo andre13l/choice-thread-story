@@ -300,8 +300,12 @@ export function advanceTime(s: GameState, rng: Rng): GameState {
   } else if (stats.money < 2000 && stats.fame < 10) {
     stats.money += randInt(rng, 150, 600); // survival jobs
   }
-  // Longevity slowly builds legacy once respected.
-  if (stats.industryRespect > 55) stats.legacy = Math.min(100, stats.legacy + 0.8);
+  // Longevity builds legacy once the industry takes you seriously.
+  // A truly extraordinary career compounds: respect, fame and cultural
+  // weight each feed what history remembers.
+  if (stats.industryRespect > 55) stats.legacy = Math.min(100, stats.legacy + 1.8);
+  if (stats.fame > 70) stats.legacy = Math.min(100, stats.legacy + 0.7);
+  if (stats.culturalImpact > 50) stats.legacy = Math.min(100, stats.legacy + 0.6);
 
   return {
     ...s,
