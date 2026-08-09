@@ -143,11 +143,15 @@ export function pickEvent(s: GameState, events: GameEvent[], rng: Rng): GameEven
   // Hidden final chain: only ever considered when internally eligible.
   // This branch is invisible to the player — the events read as ordinary
   // (if unusual) career situations.
-  if (legendEligible(s) && !s.legendFailed && s.legendStage === 0) {
-    if (rng() < LEGEND_CONFIG.triggerPerTurn) {
-      const start = events.find((e) => e.id === "legend_signal");
-      if (start) return start;
-    }
+  if (
+    legendEligible(s) &&
+    !s.legendFailed &&
+    s.legendStage === 0 &&
+    !s.history.some((h) => h.eventId === "legend_signal") &&
+    rng() < LEGEND_CONFIG.triggerPerTurn
+  ) {
+    const start = events.find((e) => e.id === "legend_signal");
+    if (start) return start;
   }
 
   const eligible = events.filter((e) => isEligible(e, s) && e.id !== "legend_signal" && e.id !== "legend_gamble");
@@ -194,9 +198,17 @@ export function resolveOption(
   s: GameState,
   option: EventOption,
   rng: Rng,
+  eventId?: string,
 ): ResolvedChoice {
   if (option.chance !== undefined && option.outcomes.length >= 2) {
-    const p = realChance(option, s.stats);
+    // The hidden final chain draws its odds from config, not content data,
+    // so balancing never touches player-readable files.
+    const p =
+      eventId === "legend_signal"
+        ? LEGEND_CONFIG.stageOneChance
+        : eventId === "legend_gamble"
+          ? LEGEND_CONFIG.stageTwoChance
+          : realChance(option, s.stats);
     const success = rng() < p;
     return { option, outcome: success ? option.outcomes[0]! : option.outcomes[1]!, success };
   }
