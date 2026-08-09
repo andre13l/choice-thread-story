@@ -20,11 +20,11 @@ export function randInt(rng: Rng, min: number, max: number): number {
 export function pickWeighted<T>(rng: Rng, items: T[], weight: (item: T) => number): T {
   let total = 0;
   for (const item of items) total += Math.max(0, weight(item));
-  if (total <= 0) return items[Math.floor(rng() * items.length)];
+  if (total <= 0) return items[Math.floor(rng() * items.length)]!;
   let roll = rng() * total;
   for (const item of items) {
     roll -= Math.max(0, weight(item));
     if (roll <= 0) return item;
   }
-  return items[items.length - 1];
+  return items[items.length - 1]!;
 }
