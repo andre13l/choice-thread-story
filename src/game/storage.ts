@@ -25,12 +25,19 @@ function safeParse<T>(raw: string | null): T | null {
   }
 }
 
-export function loadCurrentCareer(): GameState | null {
-  return safeParse<GameState>(localStorage.getItem(KEYS.current));
+export interface SavedRun {
+  game: GameState;
+  eventId: string | null;
 }
 
-export function saveCurrentCareer(state: GameState | null): void {
-  if (state) localStorage.setItem(KEYS.current, JSON.stringify(state));
+export function loadCurrentCareer(): SavedRun | null {
+  const run = safeParse<SavedRun>(localStorage.getItem(KEYS.current));
+  if (!run || !run.game || run.game.history.length === 0) return null;
+  return run;
+}
+
+export function saveCurrentCareer(run: SavedRun | null): void {
+  if (run) localStorage.setItem(KEYS.current, JSON.stringify(run));
   else localStorage.removeItem(KEYS.current);
 }
 

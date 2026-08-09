@@ -171,3 +171,9 @@
 .anim-legend-text {
   animation: paths-legend-text 2.6s ease-in-out both;
 }
+
+/* The hidden sequence renders in near-black, off-theme by design. */
+.legend-screen {
+  background-color: oklch(0.1 0.004 60);
+  color: oklch(0.93 0.004 80);
+}
