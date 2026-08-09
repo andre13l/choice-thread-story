@@ -26,14 +26,15 @@ export const LEGEND_CONFIG = {
 } as const;
 
 /** Hidden internal thresholds. Skill moves you toward these; nothing guarantees them. */
+// Thresholds sit at the extreme tail of simulated optimal careers.
+// Wealth is deliberately not a gate: history does not remember bank balances.
 export const LEGEND_ELIGIBILITY = {
-  legacy: 55,
-  culturalImpact: 50,
-  industryRespect: 60,
-  fame: 78,
-  money: 28_000_000,
+  legacy: 42,
+  culturalImpact: 38,
+  industryRespect: 52,
+  fame: 70,
   oscars: 2,
-  movies: 10,
+  movies: 8,
   minAge: 40,
 } as const;
 

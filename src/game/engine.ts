@@ -352,7 +352,6 @@ export function legendEligible(s: GameState): boolean {
   if (st.culturalImpact < E.culturalImpact) return false;
   if (st.industryRespect < E.industryRespect) return false;
   if (st.fame < E.fame) return false;
-  if (st.money < E.money) return false;
   if (st.oscars < E.oscars) return false;
   if (st.movies < E.movies) return false;
   if (st.age < E.minAge) return false;
