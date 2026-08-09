@@ -192,6 +192,39 @@ export const lateEvents: GameEvent[] = [
     ],
   },
   {
+    id: "role_offer_veteran",
+    place: "Los Angeles",
+    text: "A respected director wants you for a supporting role — the kind of part that wins things for actors with your mileage. Three weeks of work.",
+    minStats: { fame: 45, age: 48 },
+    weight: 11,
+    tags: ["work", "movie"],
+    options: [
+      {
+        label: "Take it",
+        hint: "Prestige",
+        chance: 0.55,
+        modifiers: { talent: 0.25, reputation: 0.15, luck: 0.1 },
+        outcomes: [
+          {
+            text: "You walk off with the film. 'A master class in doing more with less,' one critic writes.",
+            money: 1_200_000,
+            effects: { movies: 1, successfulMovies: 1, reputation: 5, industryRespect: 4, legacy: 3, fame: 3 },
+          },
+          {
+            text: "The film is respectable and forgotten by spring. Your notices were good. They always are now.",
+            money: 1_200_000,
+            effects: { movies: 1, failedMovies: 1, reputation: 1, burnout: 3 },
+          },
+        ],
+      },
+      {
+        label: "Pass",
+        hint: "Rested",
+        outcomes: [{ text: "Three weeks in the garden instead. The roses are also critics.", effects: { burnout: -4 } }],
+      },
+    ],
+  },
+  {
     id: "directorial_debut",
     place: "Los Angeles",
     text: "You want to direct. Everyone wants to direct. But you have the money, the relationships, and a script you've carried for a decade.",

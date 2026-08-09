@@ -27,8 +27,8 @@ export const LEGEND_CONFIG = {
 
 /** Hidden internal thresholds. Skill moves you toward these; nothing guarantees them. */
 export const LEGEND_ELIGIBILITY = {
-  legacy: 72,
-  culturalImpact: 62,
+  legacy: 65,
+  culturalImpact: 58,
   industryRespect: 65,
   fame: 82,
   money: 35_000_000,

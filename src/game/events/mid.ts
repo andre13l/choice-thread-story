@@ -1138,6 +1138,73 @@ export const midEvents: GameEvent[] = [
     ],
   },
   {
+    id: "role_offer_working",
+    place: "Los Angeles",
+    text: "A role in a working production — nothing glamorous, but it's a real part in a real movie. The town runs on people who say yes to these.",
+    minStats: { fame: 5 },
+    maxStats: { fame: 45 },
+    weight: 12,
+    tags: ["work", "movie"],
+    options: [
+      {
+        label: "Take the part",
+        hint: "Steady",
+        chance: 0.5,
+        modifiers: { talent: 0.25, luck: 0.15 },
+        outcomes: [
+          {
+            text: "Solid work. The film does well enough, and you're the kind of actor directors call back.",
+            money: 120_000,
+            effects: { movies: 1, successfulMovies: 1, fame: 4, reputation: 2, industryRespect: 2 },
+          },
+          {
+            text: "The film sinks without a ripple. You were good in it; nobody will ever know.",
+            money: 120_000,
+            effects: { movies: 1, failedMovies: 1, fame: 2, burnout: 3 },
+          },
+        ],
+      },
+      {
+        label: "Pass",
+        hint: "Selective",
+        outcomes: [{ text: "You wait for something worthier. Waiting is also a career strategy, allegedly.", effects: { reputation: 1 } }],
+      },
+    ],
+  },
+  {
+    id: "role_offer_star",
+    place: "Los Angeles",
+    text: "A studio offers you a major role in their fall release. Real budget, real co-stars, a release date already printed on posters that don't exist yet.",
+    minStats: { fame: 40 },
+    weight: 12,
+    tags: ["work", "movie", "studio"],
+    options: [
+      {
+        label: "Sign on",
+        hint: "$2.5M",
+        chance: 0.55,
+        modifiers: { talent: 0.25, fame: 0.15, luck: 0.15 },
+        outcomes: [
+          {
+            text: "The film lands. Your performance is the consensus highlight, and the box office backs it up.",
+            money: 2_500_000,
+            effects: { movies: 1, successfulMovies: 1, fame: 8, reputation: 4, industryRespect: 3, leadingRoles: 1, culturalImpact: 2, legacy: 2 },
+          },
+          {
+            text: "The film disappoints. Not a catastrophe — just another entry in the 'what happened?' column.",
+            money: 2_500_000,
+            effects: { movies: 1, failedMovies: 1, fame: 3, reputation: -2, burnout: 5 },
+          },
+        ],
+      },
+      {
+        label: "Pass",
+        hint: "Selective",
+        outcomes: [{ text: "You hold out for something better. The calendar does not care.", effects: { ego: 2 } }],
+      },
+    ],
+  },
+  {
     id: "young_director_returns",
     place: "Los Angeles",
     text: "The young director you once took a chance on is now one of the most sought-after filmmakers alive. She has written a role for you. Only you.",
