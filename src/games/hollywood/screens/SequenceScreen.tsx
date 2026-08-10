@@ -73,6 +73,7 @@ export function SequenceScreen({
               prompt={prompt}
               items={step.items}
               confirmVerb={step.confirmVerb}
+              variant={step.variant}
               onConfirm={onPick}
             />
           )}

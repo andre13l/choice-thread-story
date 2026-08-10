@@ -1,40 +1,44 @@
 import { useState } from "react";
-import type { GameState, PickItem, SequenceStep } from "../types";
-
-type PickStep = Extract<SequenceStep, { kind: "pick" }>;
+import type { PickItem } from "../types";
 
 /**
  * PICK — visually select one object/person/opportunity from a small set.
  *
  * Two treatments, same interaction: "cards" (cinematic selection grid with
- * a sticky confirm bar) and "contract" (deal memos — clicking a memo signs
- * it immediately). Used for screenplays, cast, and deal choices.
+ * a confirm button) and "contract" (deal memos — clicking a memo signs it
+ * immediately). Used for screenplays, cast, and deal choices.
  */
 export function PickInteraction({
-  game,
-  step,
+  place,
+  kicker,
   prompt,
-  onPick,
+  items,
+  confirmVerb,
+  variant,
+  onConfirm,
 }: {
-  game: GameState;
-  step: PickStep;
+  place?: string;
+  kicker: string;
   prompt: string;
-  onPick: (itemId: string) => void;
+  items: PickItem[];
+  confirmVerb?: string;
+  variant?: "cards" | "contract";
+  onConfirm: (item: PickItem) => void;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
-  const isContract = step.variant === "contract";
+  const isContract = variant === "contract";
 
-  const choose = (id: string) => {
+  const choose = (item: PickItem) => {
     if (leaving) return;
-    setSelected(id);
+    setSelected(item.id);
     setLeaving(true);
-    setTimeout(() => onPick(id), 280);
+    setTimeout(() => onConfirm(item), 280);
   };
 
   const gridCls = isContract
     ? "mt-12 grid grid-cols-1 gap-4 md:grid-cols-3"
-    : step.items.length <= 3
+    : items.length <= 3
       ? "mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3"
       : "mt-12 grid grid-cols-2 gap-4";
 
@@ -42,21 +46,22 @@ export function PickInteraction({
     <div className="anim-fade-up flex flex-1 flex-col items-center px-5 py-12 sm:px-6">
       <div className="w-full max-w-3xl">
         <p className="text-center text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
-          {step.kicker} · age {game.stats.age}
+          {place ? `${place} · ` : ""}
+          {kicker}
         </p>
         <h2 className="mt-6 text-center font-display text-[clamp(1.4rem,3.4vw,2rem)] leading-snug text-foreground">
           {prompt}
         </h2>
 
         <div className={gridCls}>
-          {step.items.map((item) =>
+          {items.map((item) =>
             isContract ? (
               <ContractCard
                 key={item.id}
                 item={item}
                 chosen={leaving && selected === item.id}
                 dimmed={leaving && selected !== item.id}
-                onSign={() => choose(item.id)}
+                onSign={() => choose(item)}
               />
             ) : (
               <button
@@ -110,7 +115,10 @@ export function PickInteraction({
         {!isContract && (
           <div className="mt-10 flex justify-center">
             <button
-              onClick={() => selected && choose(selected)}
+              onClick={() => {
+                const item = items.find((i) => i.id === selected);
+                if (item) choose(item);
+              }}
               disabled={!selected || leaving}
               className={`border px-10 py-3.5 text-[12px] font-medium uppercase tracking-[0.3em] transition-all duration-300 ${
                 selected
@@ -118,7 +126,7 @@ export function PickInteraction({
                   : "cursor-not-allowed border-border/60 text-muted-foreground/50"
               }`}
             >
-              {step.confirmVerb ?? "Confirm"}
+              {confirmVerb ?? "Confirm"}
             </button>
           </div>
         )}
