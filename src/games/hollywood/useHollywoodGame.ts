@@ -16,7 +16,12 @@ import {
   resolveOption,
 } from "./engine";
 import { hollywoodEvents } from "./content";
-import { computePercentile, computeScore, formatMoneyFull } from "./scoring";
+import {
+  careerArchetype,
+  computePercentile,
+  computeScore,
+  formatMoneyFull,
+} from "./scoring";
 import {
   loadCurrentCareer,
   recordCareer,
@@ -95,7 +100,7 @@ function finalizeCareer(game: GameState, legend: boolean): CareerSummary {
     date: new Date().toISOString(),
     score,
     percentile,
-    archetype: legend ? "LEGEND" : careerArchetypeFor(game),
+    archetype: legend ? "LEGEND" : careerArchetype(game),
     legend,
     age: game.stats.age,
     movies: game.stats.movies,
