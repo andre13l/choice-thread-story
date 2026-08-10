@@ -11,7 +11,6 @@
  * comeback events instead of ending the run.
  */
 
-import { createRng } from "../../core/rng";
 import type { EventSequence, GameEvent } from "../types";
 import { filmTitle, personName, studioName, variantRng } from "./fiction";
 
