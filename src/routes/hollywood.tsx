@@ -34,6 +34,11 @@ function HollywoodPage() {
   const { state, dispatch } = useHollywoodGame();
   const event = state.event;
 
+  // Every phase (and every turn) is a fresh screen — start at the top.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [state.phase, state.game?.turn]);
+
   return (
     <main className="min-h-screen">
       {state.phase === "intro" && <Intro onBegin={() => dispatch({ type: "begin" })} />}
