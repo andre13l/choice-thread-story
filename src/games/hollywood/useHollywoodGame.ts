@@ -114,9 +114,6 @@ function finalizeCareer(game: GameState, legend: boolean): CareerSummary {
   };
 }
 
-// Local re-export keeps the reducer readable; behavior unchanged.
-import { careerArchetype as careerArchetypeFor } from "./scoring";
-
 function reducer(state: UiState, action: Action): UiState {
   switch (action.type) {
     case "begin": {
