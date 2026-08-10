@@ -35,7 +35,7 @@ function Index() {
   const upcoming = GAMES.filter((g) => g.status === "soon");
 
   return (
-    <div className="stage flex flex-1 flex-col items-center px-6 py-14 sm:py-20">
+    <div className="stage flex flex-1 flex-col items-center justify-center px-6 py-14 sm:py-20">
       <div className="anim-fade-up flex w-full max-w-2xl flex-col items-center text-center">
         <h1 className="font-display text-[clamp(3.6rem,14vw,7.5rem)] font-bold leading-none tracking-[0.1em] text-foreground">
           {SITE.name}

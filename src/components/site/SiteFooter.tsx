@@ -24,56 +24,61 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <nav className="grid grid-cols-2 gap-x-16 gap-y-2.5 sm:grid-cols-3">
-            <span className="col-span-2 mb-1 text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground/70 sm:col-span-1">
-              Games
-            </span>
-            <span className="col-span-2 mb-1 hidden text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground/70 sm:block">
-              Platform
-            </span>
-            <span className="col-span-2 mb-1 hidden text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground/70 sm:block">
-              Legal
-            </span>
-
-            {playable.map((g) => (
+          <nav className="flex gap-14 sm:gap-16">
+            <div className="flex flex-col gap-2.5">
+              <span className="mb-1 text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground/70">
+                Games
+              </span>
+              {playable.map((g) => (
+                <Link
+                  key={g.id}
+                  to={g.to!}
+                  className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {g.name.charAt(0) + g.name.slice(1).toLowerCase()}
+                </Link>
+              ))}
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <span className="mb-1 text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground/70">
+                Platform
+              </span>
               <Link
-                key={g.id}
-                to={g.to!}
+                to="/walk-of-fame"
                 className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
               >
-                {g.name.charAt(0) + g.name.slice(1).toLowerCase()}
+                Walk of Fame
               </Link>
-            ))}
-            <Link
-              to="/walk-of-fame"
-              className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Walk of Fame
-            </Link>
-            <Link
-              to="/about"
-              className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              About
-            </Link>
-            <Link
-              to="/privacy"
-              className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Privacy
-            </Link>
-            <Link
-              to="/terms"
-              className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Terms
-            </Link>
-            <Link
-              to="/contact"
-              className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Contact
-            </Link>
+              <Link
+                to="/about"
+                className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                About
+              </Link>
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <span className="mb-1 text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground/70">
+                Legal
+              </span>
+              <Link
+                to="/privacy"
+                className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Privacy
+              </Link>
+              <Link
+                to="/terms"
+                className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Terms
+              </Link>
+              <Link
+                to="/contact"
+                className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Contact
+              </Link>
+            </div>
           </nav>
         </div>
 
