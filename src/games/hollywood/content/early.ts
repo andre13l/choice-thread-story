@@ -4,6 +4,20 @@
  */
 
 import type { GameEvent } from "../types";
+import {
+  carDeath,
+  infoProduct,
+  partyHost,
+  personName,
+  playTitle,
+  productName,
+  productionName,
+  showName,
+  stuntGig,
+  troupeName,
+  variantRng,
+  webPremise,
+} from "./fiction";
 
 export const earlyEvents: GameEvent[] = [
   {
@@ -123,7 +137,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "extra_work",
     place: "Los Angeles",
-    text: "Central Casting calls: three days as a background extra on a network drama. Standing. Nodding. Pretending to talk.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "extra_work");
+      return `Central Casting calls: three days as a background extra on ${productionName(r)}. Standing. Nodding. Pretending to talk.`;
+    },
     maxStats: { fame: 25 },
     weight: 9,
     tags: ["extra", "money"],
@@ -164,7 +182,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "cheesy_commercial",
     place: "Los Angeles",
-    text: "An audition for a regional mattress commercial. The catchphrase is humiliating. The check is not.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "cheesy_commercial");
+      return `An audition for a commercial for ${productName(r)}. The catchphrase is humiliating. The check is not.`;
+    },
     maxStats: { fame: 30 },
     weight: 8,
     tags: ["commercial", "money"],
@@ -244,7 +266,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "student_film",
     place: "Los Angeles",
-    text: "A film school student offers you the lead in her thesis short. No pay. She seems genuinely talented.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "student_film");
+      return `${personName(r)}, a film school student, offers you the lead in a thesis short. No pay. The script seems genuinely good.`;
+    },
     maxStats: { fame: 30 },
     weight: 7,
     tags: ["indie", "relationships"],
@@ -318,7 +344,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "improv_troupe",
     place: "Los Angeles",
-    text: "An improv troupe with a cult following needs a new member. Tuesday nights, no pay, an audience of nineteen people.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "improv_troupe");
+      return `An improv troupe called ${troupeName(r)} needs a new member. Tuesday nights, no pay, an audience of nineteen people.`;
+    },
     maxStats: { fame: 25 },
     weight: 6,
     tags: ["training", "connections"],
@@ -349,7 +379,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "industry_party",
     place: "Hollywood Hills",
-    text: "You're catering a party in the Hills. Half the guest list is in the trades. Staff are strictly forbidden from pitching.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "industry_party");
+      return `You're catering a party in the Hills for ${partyHost(r)}. Half the guest list is in the trades. Staff are strictly forbidden from pitching.`;
+    },
     maxStats: { fame: 20 },
     weight: 7,
     tags: ["connections", "risk"],
@@ -388,7 +422,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "cattle_call",
     place: "Burbank",
-    text: "Open call for a soap opera. Four hundred people, two roles, a casting director who has already seen everything.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "cattle_call");
+      return `Open call for the soap “${showName(r)}”. Four hundred people, two roles, a casting director who has already seen everything.`;
+    },
     maxStats: { fame: 25 },
     weight: 7,
     tags: ["audition"],
@@ -529,7 +567,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "stunt_work",
     place: "Los Angeles",
-    text: "A stunt coordinator needs someone your size for a 'simple' fall off a second-story roof. Pays triple.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "stunt_work");
+      return `A stunt coordinator needs someone your size for ${stuntGig(r)}. Pays triple.`;
+    },
     maxStats: { fame: 25 },
     weight: 5,
     tags: ["risk", "money"],
@@ -599,7 +641,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "web_series",
     place: "Los Angeles",
-    text: "Your roommate's friend is shooting a web series in the apartment. Zero budget. The script is, surprisingly, funny.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "web_series");
+      return `Your roommate's friend is shooting a web series — ${webPremise(r)} — in the apartment. Zero budget. The script is, surprisingly, funny.`;
+    },
     maxStats: { fame: 20 },
     weight: 7,
     tags: ["indie", "viral"],
@@ -770,7 +816,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "car_breaks",
     place: "Los Angeles",
-    text: "Your car — which is also your commute, your changing room, and occasionally your bedroom — dies on the 101.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "car_breaks");
+      return `Your car — which is also your commute, your changing room, and occasionally your bedroom — dies ${carDeath(r)}.`;
+    },
     maxStats: { fame: 20 },
     weight: 5,
     tags: ["life", "money"],
@@ -833,7 +883,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "infomercial_offer",
     place: "Los Angeles",
-    text: "Sal — or someone like Sal — has you booked on a 3 a.m. infomercial for a fitness device with a legally ambiguous name.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "infomercial_offer");
+      return `Sal — or someone like Sal — has you booked on a 3 a.m. infomercial for ${infoProduct(r)} with a legally ambiguous name.`;
+    },
     requiresFlags: { shadyAgent: true },
     maxStats: { fame: 25 },
     weight: 6,
@@ -874,7 +928,11 @@ export const earlyEvents: GameEvent[] = [
   {
     id: "theater_play",
     place: "Silver Lake",
-    text: "A tiny theater is doing a Beckett play. No pay, forty seats, but a real director and real reviews.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "theater_play");
+      return `A tiny theater is doing ${playTitle(r)}. No pay, forty seats, but a real director and real reviews.`;
+    },
     maxStats: { fame: 30 },
     weight: 6,
     tags: ["theater", "reputation"],

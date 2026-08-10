@@ -415,8 +415,12 @@ const movieGreenlight: GameEvent = {
       : "The folder lands on the table again. Three screenplays, one greenlight. They want you to carry it — and they'll let you shape how it gets made.",
   minAge: 20,
   maxAge: 72,
-  minStats: { fame: 12 },
-  weight: (s) => (s.stats.fame >= 70 ? 2.5 : 5),
+  minStats: { fame: 6 },
+  // Reachable in an ordinary healthy career; the rich-cadence boost in
+  // pickEvent makes it surge after a run of quick choices.
+  weight: (s) => (s.stats.fame >= 70 ? 6 : 9),
+  repeatable: true,
+  family: "production",
   tags: ["movie", "production", "chain"],
   sequence: {
     steps: [

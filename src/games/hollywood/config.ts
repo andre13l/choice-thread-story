@@ -47,3 +47,16 @@ export const PACING = {
   softEndAge: 57,
   hardEndAge: 78,
 } as const;
+
+/**
+ * Variety tuning — how aggressively repetition is prevented and how often
+ * rich (multi-step) interactions surface in ordinary play. Not player-facing.
+ */
+export const VARIETY = {
+  /** Minimum turns between two events of the same family. */
+  familyCooldownTurns: 6,
+  /** Turns without a sequence event before eligible sequences get boosted. */
+  richCadenceTurns: 8,
+  /** Weight multiplier for eligible sequences once the cadence lapses. */
+  richBoost: 14,
+} as const;

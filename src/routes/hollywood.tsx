@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { SITE } from "@/config/site";
+import { TEST_MODE } from "@/games/hollywood/config";
 import { useHollywoodGame } from "@/games/hollywood/useHollywoodGame";
 import { CharacterIntro } from "@/games/hollywood/screens/CharacterIntro";
 import { EndingScreen } from "@/games/hollywood/screens/EndingScreen";
@@ -76,6 +77,16 @@ function HollywoodPage() {
       )}
       {state.phase === "legend" && state.summary && (
         <LegendSequence summary={state.summary} onRestart={() => dispatch({ type: "restart" })} />
+      )}
+      {/* TEST_MODE-only inspection shortcut for the movie-making chain.
+          Not rendered in production (TEST_MODE = false). */}
+      {TEST_MODE && state.game && (state.phase === "event" || state.phase === "reveal") && (
+        <button
+          onClick={() => dispatch({ type: "dev_showcase" })}
+          className="fixed bottom-3 left-3 z-50 rounded-full border border-border/40 bg-background/60 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground/50 backdrop-blur-sm transition-colors hover:text-muted-foreground"
+        >
+          dev · film chain
+        </button>
       )}
     </main>
   );

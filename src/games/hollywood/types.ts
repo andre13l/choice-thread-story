@@ -60,6 +60,12 @@ export interface GameState {
   turn: number;
   /** Recently shown event ids — avoids immediate repeats. */
   recentEventIds: string[];
+  /** Every event id shown this career. Non-repeatable events are retired. */
+  seenEventIds: string[];
+  /** Family -> turn a family member was last shown (near-duplicate cooldown). */
+  familyTurns: Record<string, number>;
+  /** Turns since the last multi-step (rich interaction) event. */
+  turnsSinceRich: number;
   /** Event forced next (follow-up), if any. */
   queuedEventId: string | null;
   /** 0 = none, 1+ = inside the hidden final chain. */
@@ -123,6 +129,19 @@ export interface GameEvent {
   weight: number | ((s: GameState) => number);
   /** Can only appear once per career. */
   once?: boolean;
+  /**
+   * May appear more than once per career. Default false: a shown event is
+   * retired unless the eligible pool is exhausted. Repeatable events should
+   * regenerate their copy per occurrence (see content/fiction.ts) so the
+   * player never perceives the same question twice.
+   */
+  repeatable?: boolean;
+  /**
+   * Near-duplicate group (auditions, role offers, parties...). Defaults to
+   * tags[0]. After one family member appears, the rest cool down for a
+   * few turns so similar prompts never cluster.
+   */
+  family?: string;
   tags: string[];
   /**
    * Multi-step interactive sequence. When present, the game loop drives

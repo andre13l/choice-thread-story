@@ -36,7 +36,23 @@ export interface SavedRun {
 export function loadCurrentCareer(): SavedRun | null {
   const run = safeParse<SavedRun>(localStorage.getItem(KEYS.current));
   if (!run || !run.game || run.game.history.length === 0) return null;
+  run.game = migrateGame(run.game);
   return run;
+}
+
+/**
+ * Older saves predate the variety memory (per-career seen list, family
+ * cooldowns, rich cadence). Rebuild the seen list from history so existing
+ * careers degrade gracefully instead of replaying everything.
+ */
+function migrateGame(g: GameState): GameState {
+  return {
+    ...g,
+    films: g.films ?? [],
+    seenEventIds: g.seenEventIds ?? g.history.map((h) => h.eventId),
+    familyTurns: g.familyTurns ?? {},
+    turnsSinceRich: g.turnsSinceRich ?? 0,
+  };
 }
 
 export function saveCurrentCareer(run: SavedRun | null): void {
