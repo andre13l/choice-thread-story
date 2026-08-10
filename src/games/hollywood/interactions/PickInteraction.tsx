@@ -17,12 +17,12 @@ export function PickInteraction({
   variant,
   onConfirm,
 }: {
-  place?: string;
+  place?: string | undefined;
   kicker: string;
   prompt: string;
   items: PickItem[];
-  confirmVerb?: string;
-  variant?: "cards" | "contract";
+  confirmVerb?: string | undefined;
+  variant?: "cards" | "contract" | undefined;
   onConfirm: (item: PickItem) => void;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
