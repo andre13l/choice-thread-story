@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { SITE } from "@/config/site";
 import { useHollywoodGame } from "@/games/hollywood/useHollywoodGame";
 import { CharacterIntro } from "@/games/hollywood/screens/CharacterIntro";
