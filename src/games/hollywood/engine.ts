@@ -7,7 +7,7 @@
  */
 
 import { LEGEND_CONFIG, LEGEND_ELIGIBILITY, PACING, TEST_MODE } from "./config";
-import { randInt, pickWeighted, type Rng } from "./rng";
+import { randInt, pickWeighted, type Rng } from "../core/rng";
 import type {
   CareerStats,
   EventOption,
