@@ -253,13 +253,17 @@ function reducer(state: UiState, action: Action): UiState {
       if (!TEST_MODE || !state.game) return state;
       const event = hollywoodEvents.find((e) => e.id === "movie_greenlight");
       if (!event) return state;
-      saveCurrentCareer({ game: state.game, eventId: event.id });
+      // Mark it like any naturally-picked event so the variety memory
+      // (rich cadence, family cooldowns) stays accurate.
+      const game = markEventShown(state.game, event);
+      saveCurrentCareer({ game, eventId: event.id });
       return {
         ...state,
         phase: "event",
+        game,
         event,
         outcome: null,
-        seq: freshSeq(state.game, event),
+        seq: freshSeq(game, event),
       };
     }
     case "restart":
