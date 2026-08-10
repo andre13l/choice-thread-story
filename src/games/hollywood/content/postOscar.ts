@@ -837,5 +837,3 @@ function contractSequence(): EventSequence {
   };
 }
 
-/* Keep createRng referenced for future deterministic variants in this file. */
-void createRng;
