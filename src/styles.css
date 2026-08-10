@@ -7,9 +7,8 @@
 /*
  * PATHS design system.
  *
- * Editorial, cinematic, restrained.
- * Warm off-white paper, near-black ink, hairline gray borders,
- * a single muted red reserved for dangerous decisions.
+ * Dark cinema. Near-black warm ink, projector-light haze, hairline
+ * borders, brassy gold reserved for prestige, a single red for danger.
  */
 
 @theme inline {
@@ -42,6 +41,8 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -64,40 +65,42 @@
 
 :root {
   --radius: 0.1875rem;
-  --background: oklch(0.981 0.004 85);
-  --foreground: oklch(0.17 0.006 60);
-  --card: oklch(0.995 0.002 85);
-  --card-foreground: oklch(0.17 0.006 60);
-  --popover: oklch(0.995 0.002 85);
-  --popover-foreground: oklch(0.17 0.006 60);
-  --primary: oklch(0.17 0.006 60);
-  --primary-foreground: oklch(0.981 0.004 85);
-  --secondary: oklch(0.955 0.004 80);
-  --secondary-foreground: oklch(0.17 0.006 60);
-  --muted: oklch(0.955 0.004 80);
-  --muted-foreground: oklch(0.52 0.01 60);
-  --accent: oklch(0.94 0.005 80);
-  --accent-foreground: oklch(0.17 0.006 60);
-  --destructive: oklch(0.5 0.14 27);
-  --destructive-foreground: oklch(0.98 0.003 85);
-  --danger: oklch(0.5 0.14 27);
-  --danger-foreground: oklch(0.98 0.003 85);
-  --border: oklch(0.885 0.006 75);
-  --input: oklch(0.885 0.006 75);
-  --ring: oklch(0.6 0.01 60);
+  --background: oklch(0.155 0.007 62);
+  --foreground: oklch(0.93 0.01 85);
+  --card: oklch(0.2 0.009 64);
+  --card-foreground: oklch(0.93 0.01 85);
+  --popover: oklch(0.2 0.009 64);
+  --popover-foreground: oklch(0.93 0.01 85);
+  --primary: oklch(0.93 0.01 85);
+  --primary-foreground: oklch(0.16 0.008 62);
+  --secondary: oklch(0.235 0.01 64);
+  --secondary-foreground: oklch(0.93 0.01 85);
+  --muted: oklch(0.235 0.01 64);
+  --muted-foreground: oklch(0.64 0.014 72);
+  --accent: oklch(0.27 0.012 66);
+  --accent-foreground: oklch(0.93 0.01 85);
+  --destructive: oklch(0.6 0.2 27);
+  --destructive-foreground: oklch(0.97 0.005 85);
+  --danger: oklch(0.65 0.19 27);
+  --danger-foreground: oklch(0.97 0.005 85);
+  --gold: oklch(0.8 0.105 82);
+  --gold-foreground: oklch(0.17 0.012 70);
+  --border: oklch(0.3 0.011 66);
+  --input: oklch(0.34 0.012 66);
+  --ring: oklch(0.72 0.03 78);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.981 0.004 85);
-  --sidebar-foreground: oklch(0.17 0.006 60);
-  --sidebar-primary: oklch(0.17 0.006 60);
-  --sidebar-primary-foreground: oklch(0.981 0.004 85);
-  --sidebar-accent: oklch(0.955 0.004 80);
-  --sidebar-accent-foreground: oklch(0.17 0.006 60);
-  --sidebar-border: oklch(0.885 0.006 75);
-  --sidebar-ring: oklch(0.6 0.01 60);
+  --sidebar: oklch(0.18 0.008 62);
+  --sidebar-foreground: oklch(0.93 0.01 85);
+  --sidebar-primary: oklch(0.93 0.01 85);
+  --sidebar-primary-foreground: oklch(0.16 0.008 62);
+  --sidebar-accent: oklch(0.235 0.01 64);
+  --sidebar-accent-foreground: oklch(0.93 0.01 85);
+  --sidebar-border: oklch(0.3 0.011 66);
+  --sidebar-ring: oklch(0.72 0.03 78);
 }
 
 @layer base {
@@ -117,8 +120,13 @@
   }
 
   ::selection {
-    background: var(--color-foreground);
-    color: var(--color-background);
+    background: var(--color-gold);
+    color: var(--color-gold-foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
   }
 }
 
@@ -174,6 +182,85 @@
 
 /* The hidden sequence renders in near-black, off-theme by design. */
 .legend-screen {
-  background-color: oklch(0.1 0.004 60);
+  background-color: oklch(0.08 0.004 60);
   color: oklch(0.93 0.004 80);
+}
+
+/*
+ * Cinematic atmosphere. `stage` layers a projector spotlight, an edge
+ * vignette and film grain over a full-screen scene. The overlays are
+ * translucent and non-interactive — texture, not UI.
+ */
+@utility stage {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--color-background);
+  background-image:
+    radial-gradient(115% 85% at 50% -12%, oklch(0.29 0.022 74 / 0.5) 0%, transparent 58%),
+    radial-gradient(85% 65% at 50% 118%, oklch(0.22 0.016 66 / 0.4) 0%, transparent 62%);
+
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    background: radial-gradient(135% 105% at 50% 42%, transparent 52%, oklch(0.07 0.005 62 / 0.6) 100%);
+  }
+
+  &::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 61;
+    pointer-events: none;
+    opacity: 0.07;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* Tactile budget sliders (Allocation interaction). */
+@utility alloc-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 26px;
+  background: transparent;
+  cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    height: 2px;
+    background: var(--color-border);
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: -9px;
+    height: 20px;
+    width: 20px;
+    border-radius: 9999px;
+    background: var(--color-foreground);
+    border: 1px solid var(--color-background);
+    transition: transform 0.15s ease;
+  }
+
+  &:hover::-webkit-slider-thumb,
+  &:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+  }
+
+  &::-moz-range-track {
+    height: 2px;
+    background: var(--color-border);
+  }
+
+  &::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 9999px;
+    background: var(--color-foreground);
+    border: 1px solid var(--color-background);
+  }
 }

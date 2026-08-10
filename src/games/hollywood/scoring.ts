@@ -103,3 +103,18 @@ export function formatMoneyFull(n: number): string {
   const neg = n < 0;
   return `${neg ? "-" : ""}$${Math.abs(Math.round(n)).toLocaleString("en-US")}`;
 }
+
+/**
+ * Public career status. This is the ONLY fame framing the HUD shows —
+ * the number itself stays visible, but the tier is how it reads.
+ */
+export function fameTier(fame: number): string {
+  if (fame < 5) return "Nobody";
+  if (fame < 15) return "Aspiring";
+  if (fame < 30) return "Working actor";
+  if (fame < 45) return "Recognized";
+  if (fame < 60) return "In demand";
+  if (fame < 75) return "Star";
+  if (fame < 90) return "Superstar";
+  return "Icon";
+}

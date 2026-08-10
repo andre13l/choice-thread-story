@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Lock } from "lucide-react";
+import { Clapperboard, Lock } from "lucide-react";
 import { GAMES } from "@/config/games";
 import { SITE } from "@/config/site";
 import { loadBest, loadCount, loadCurrentCareer } from "@/games/hollywood/storage";
@@ -34,7 +34,7 @@ function Index() {
   const upcoming = GAMES.filter((g) => g.status === "soon");
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-6 py-16">
+    <main className="stage flex min-h-screen flex-col items-center justify-center px-6 py-16">
       <div className="anim-fade-up flex w-full max-w-xl flex-col items-center text-center">
         <h1 className="font-serif text-[clamp(4.5rem,16vw,9rem)] leading-none tracking-[0.08em] text-foreground">
           {SITE.name}
@@ -49,11 +49,11 @@ function Index() {
           {flagship?.to && (
             <Link
               to={flagship.to}
-              className="group mt-6 block border border-border bg-card px-8 py-8 text-left transition-all duration-300 hover:border-foreground hover:shadow-[0_14px_40px_-18px_rgba(0,0,0,0.25)]"
+              className="group mt-6 block border border-border bg-card/60 px-8 py-8 text-left backdrop-blur-sm transition-all duration-300 hover:border-gold/50 hover:shadow-[0_18px_50px_-20px] hover:shadow-gold/20"
             >
               <div className="flex items-baseline justify-between">
-                <span className="text-xl" aria-hidden>
-                  🎬
+                <span aria-hidden>
+                  <Clapperboard className="h-6 w-6 text-gold" />
                 </span>
                 <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground transition-colors group-hover:text-foreground">
                   Start
@@ -81,7 +81,7 @@ function Index() {
             {upcoming.map((game) => (
               <div
                 key={game.id}
-                className="flex flex-col justify-between border border-border/70 px-5 py-4 opacity-45"
+                className="flex flex-col justify-between border border-border/70 bg-card/30 px-5 py-4 opacity-45"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-serif text-lg tracking-[0.08em] text-muted-foreground">

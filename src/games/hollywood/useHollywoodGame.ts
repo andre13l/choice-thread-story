@@ -1,9 +1,11 @@
 /**
  * HOLLYWOOD — game-loop state machine.
  *
- * The reducer mirrors the original route implementation exactly; it was
- * lifted out of src/routes/hollywood.tsx during the multi-game reorg so
- * the route file is thin wiring and screens are separate components.
+ * Ordinary events resolve through the QUICK CHOICE compatibility path
+ * (choose -> resolveOption -> applyOutcome). Events with a `sequence`
+ * drive a multi-step interaction context instead; finishing the last
+ * step calls the sequence's resolver and lands on the same reveal
+ * screen as any other outcome.
  */
 
 import { useEffect, useReducer } from "react";
@@ -27,7 +29,15 @@ import {
   recordCareer,
   saveCurrentCareer,
 } from "./storage";
-import type { CareerSummary, GameEvent, GameState, Outcome } from "./types";
+import type {
+  CareerSummary,
+  EventOption,
+  GameEvent,
+  GameState,
+  Outcome,
+  PickItem,
+  SequenceContext,
+} from "./types";
 
 export type Phase = "intro" | "character" | "event" | "reveal" | "ending" | "legend";
 
@@ -38,12 +48,18 @@ export interface OutcomeView {
   end?: "career" | "legend" | undefined;
 }
 
+export interface SeqState {
+  stepIndex: number;
+  ctx: SequenceContext;
+}
+
 interface UiState {
   phase: Phase;
   game: GameState | null;
   event: GameEvent | null;
   outcome: OutcomeView | null;
   summary: CareerSummary | null;
+  seq: SeqState | null;
 }
 
 type Action =
@@ -51,6 +67,8 @@ type Action =
   | { type: "resume"; game: GameState; event: GameEvent | null }
   | { type: "character_ok" }
   | { type: "choose"; index: number }
+  | { type: "seq_pick"; item: PickItem }
+  | { type: "seq_alloc"; values: Record<string, number> }
   | { type: "continue" }
   | { type: "restart" };
 
@@ -114,11 +132,38 @@ function finalizeCareer(game: GameState, legend: boolean): CareerSummary {
   };
 }
 
+function freshSeqCtx(game: GameState): SequenceContext {
+  return { game, rng, picks: {}, pickItems: {}, allocations: {} };
+}
+
+function freshSeq(game: GameState, event: GameEvent | null): SeqState | null {
+  return event?.sequence ? { stepIndex: 0, ctx: freshSeqCtx(game) } : null;
+}
+
+/** Final sequence step completed: resolve the chain into an outcome. */
+function finishSequence(state: UiState, ctx: SequenceContext): UiState {
+  const event = state.event;
+  const game = state.game;
+  if (!event?.sequence || !game) return state;
+  const result = event.sequence.resolve(ctx);
+  const synthetic: EventOption = {
+    label: `Made “${result.film?.title ?? "a film"}”`,
+    outcomes: [result.outcome],
+  };
+  const choice = { option: synthetic, outcome: result.outcome, success: true };
+  let nextGame = applyOutcome(game, event, choice);
+  if (result.film) {
+    nextGame = { ...nextGame, films: [...(nextGame.films ?? []), result.film] };
+  }
+  const outcome = buildOutcomeView(result.outcome, game);
+  return { ...state, phase: "reveal", game: nextGame, outcome, seq: null };
+}
+
 function reducer(state: UiState, action: Action): UiState {
   switch (action.type) {
     case "begin": {
       const game = createCareer(Date.now() % 2147483647);
-      return { phase: "character", game, event: null, outcome: null, summary: null };
+      return { phase: "character", game, event: null, outcome: null, summary: null, seq: null };
     }
     case "resume":
       return {
@@ -127,6 +172,7 @@ function reducer(state: UiState, action: Action): UiState {
         event: action.event,
         outcome: null,
         summary: null,
+        seq: freshSeq(action.game, action.event),
       };
     case "character_ok": {
       if (!state.game) return state;
@@ -138,11 +184,11 @@ function reducer(state: UiState, action: Action): UiState {
         queuedEventId: null,
       };
       saveCurrentCareer({ game, eventId: event.id });
-      return { ...state, phase: "event", game, event };
+      return { ...state, phase: "event", game, event, seq: freshSeq(game, event) };
     }
     case "choose": {
-      if (!state.game || !state.event) return state;
-      const option = state.event.options[action.index];
+      if (!state.game || !state.event || state.event.sequence) return state;
+      const option = state.event.options?.[action.index];
       if (!option) return state;
       const choice = resolveOption(state.game, option, rng, state.event.id);
       let game = applyOutcome(state.game, state.event, choice);
@@ -152,24 +198,51 @@ function reducer(state: UiState, action: Action): UiState {
       const outcome = buildOutcomeView(choice.outcome, state.game);
       return { ...state, phase: "reveal", game, outcome };
     }
+    case "seq_pick": {
+      const sequence = state.event?.sequence;
+      if (!state.seq || !sequence) return state;
+      const step = sequence.steps[state.seq.stepIndex];
+      if (!step || step.kind !== "pick") return state;
+      const ctx: SequenceContext = {
+        ...state.seq.ctx,
+        picks: { ...state.seq.ctx.picks, [step.id]: action.item.id },
+        pickItems: { ...state.seq.ctx.pickItems, [step.id]: action.item },
+      };
+      const nextIndex = state.seq.stepIndex + 1;
+      if (nextIndex >= sequence.steps.length) return finishSequence(state, ctx);
+      return { ...state, seq: { stepIndex: nextIndex, ctx } };
+    }
+    case "seq_alloc": {
+      const sequence = state.event?.sequence;
+      if (!state.seq || !sequence) return state;
+      const step = sequence.steps[state.seq.stepIndex];
+      if (!step || step.kind !== "allocation") return state;
+      const ctx: SequenceContext = {
+        ...state.seq.ctx,
+        allocations: { ...state.seq.ctx.allocations, [step.id]: action.values },
+      };
+      const nextIndex = state.seq.stepIndex + 1;
+      if (nextIndex >= sequence.steps.length) return finishSequence(state, ctx);
+      return { ...state, seq: { stepIndex: nextIndex, ctx } };
+    }
     case "continue": {
       if (!state.game) return state;
       if (state.outcome?.end === "legend") {
         const summary = finalizeCareer(state.game, true);
         recordCareer(summary);
-        return { ...state, phase: "legend", summary };
+        return { ...state, phase: "legend", summary, seq: null };
       }
       if (state.outcome?.end === "career" || checkEnd(state.game, rng) === "career") {
         const summary = finalizeCareer(state.game, false);
         recordCareer(summary);
-        return { ...state, phase: "ending", summary };
+        return { ...state, phase: "ending", summary, seq: null };
       }
       let game = advanceTime(state.game, rng);
       const event = pickEvent(game, hollywoodEvents, rng);
       if (!event) {
         const summary = finalizeCareer(game, false);
         recordCareer(summary);
-        return { ...state, phase: "ending", game, summary };
+        return { ...state, phase: "ending", game, summary, seq: null };
       }
       game = {
         ...game,
@@ -177,11 +250,11 @@ function reducer(state: UiState, action: Action): UiState {
         queuedEventId: null,
       };
       saveCurrentCareer({ game, eventId: event.id });
-      return { ...state, phase: "event", game, event, outcome: null };
+      return { ...state, phase: "event", game, event, outcome: null, seq: freshSeq(game, event) };
     }
     case "restart":
       saveCurrentCareer(null);
-      return { phase: "intro", game: null, event: null, outcome: null, summary: null };
+      return { phase: "intro", game: null, event: null, outcome: null, summary: null, seq: null };
     default:
       return state;
   }
@@ -194,9 +267,11 @@ export function useHollywoodGame() {
     event: null,
     outcome: null,
     summary: null,
+    seq: null,
   });
 
-  // Resume an interrupted path (decision points only).
+  // Resume an interrupted path (decision points only; an interrupted
+  // sequence restarts from its first step).
   useEffect(() => {
     const saved = loadCurrentCareer();
     if (saved) {

@@ -6,6 +6,8 @@
  * same engine, stats model and resolution rules.
  */
 
+import type { Rng } from "../core/rng";
+
 export interface CareerStats {
   age: number;
   /** Net worth in dollars. Can go negative (debt). */
@@ -41,7 +43,7 @@ export interface CareerStats {
 export type StatKey = keyof CareerStats;
 
 /** Flags let events remember earlier decisions across decades. */
-export type CareerFlags = Record<string, number | boolean>;
+export type CareerFlags = Record<string, number | boolean | string>;
 
 export interface HistoryEntry {
   age: number;
@@ -64,6 +66,8 @@ export interface GameState {
   legendStage: number;
   legendFailed: boolean;
   careerId: number;
+  /** Produced films (movie-production chains). Seeds future callbacks. */
+  films: FilmRecord[];
 }
 
 export interface Outcome {
@@ -120,7 +124,13 @@ export interface GameEvent {
   /** Can only appear once per career. */
   once?: boolean;
   tags: string[];
-  options: EventOption[];
+  /**
+   * Multi-step interactive sequence. When present, the game loop drives
+   * the sequence instead of rendering quick-choice options.
+   */
+  sequence?: EventSequence;
+  /** Quick-choice options. Optional only for sequence events. */
+  options?: EventOption[];
 }
 
 export interface CareerSummary {
@@ -139,4 +149,107 @@ export interface CareerSummary {
   peakMoney: number;
   finalMoney: number;
   peakFame: number;
+}
+
+/* ------------------------------------------------------------------ */
+/* Interaction system                                                   */
+/*                                                                      */
+/* An event may declare a `sequence`: an ordered list of interaction    */
+/* steps (today: PICK and ALLOCATION; MAP, NEGOTIATION, TIMED and SCENE */
+/* slot in as new SequenceStep variants later). The game loop threads a */
+/* SequenceContext through the steps and hands it to `resolve`, which   */
+/* produces the same Outcome a quick-choice option would.               */
+/* ------------------------------------------------------------------ */
+
+/** A labeled trait chip shown on pick cards. Flavor, not spreadsheet. */
+export interface PickTrait {
+  label: string;
+  value: string;
+  tone?: "neutral" | "good" | "bad" | "gold";
+}
+
+export interface PickItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  traits?: PickTrait[];
+  /** Resolver payload (quality, draw, cost...). Never rendered directly. */
+  data?: Record<string, number | string | boolean>;
+}
+
+export interface AllocationCategory {
+  id: string;
+  label: string;
+  description?: string;
+  /** Minimum percent of the total this category must receive. */
+  min?: number;
+}
+
+/** Mutable context threaded through a multi-step sequence. */
+export interface SequenceContext {
+  game: GameState;
+  rng: Rng;
+  /** stepId -> chosen item id. */
+  picks: Record<string, string>;
+  /** stepId -> full chosen item (resolver reads data payloads). */
+  pickItems: Record<string, PickItem>;
+  /** stepId -> categoryId -> percent of total (0-100, sums to 100). */
+  allocations: Record<string, Record<string, number>>;
+}
+
+export interface SequenceResult {
+  outcome: Outcome;
+  /** Structured memory of a produced film, for future callbacks. */
+  film?: FilmRecord;
+}
+
+export type SequenceStep =
+  | {
+      kind: "pick";
+      id: string;
+      kicker: string;
+      place?: string;
+      prompt: string | ((ctx: SequenceContext) => string);
+      items: PickItem[];
+      confirmVerb?: string;
+    }
+  | {
+      kind: "allocation";
+      id: string;
+      kicker: string;
+      place?: string;
+      prompt: string | ((ctx: SequenceContext) => string);
+      /** Secondary line, e.g. a budget breakdown. */
+      note?: (ctx: SequenceContext) => string;
+      /** Finite resource total. Deterministic given ctx. */
+      total: (ctx: SequenceContext) => number;
+      categories: AllocationCategory[];
+    };
+
+export interface EventSequence {
+  steps: SequenceStep[];
+  resolve: (ctx: SequenceContext) => SequenceResult;
+}
+
+/**
+ * One produced film. The seed of future callbacks: cult revivals,
+ * sequels, reunions with the co-star, financial hangovers.
+ */
+export interface FilmRecord {
+  title: string;
+  screenplayId: string;
+  coStarId: string;
+  coStar: string;
+  ageAtRelease: number;
+  budget: number;
+  gross: number;
+  /** 0-100 critical reception. */
+  critics: number;
+  /** Verdict key, e.g. "breakout" | "disaster" | "cult" | ... */
+  kind: string;
+  cult?: boolean;
+  sequelInterest?: boolean;
+  awards?: number;
+  oscars?: number;
 }

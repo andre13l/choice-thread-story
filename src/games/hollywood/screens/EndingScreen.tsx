@@ -42,7 +42,7 @@ export function EndingScreen({
   };
 
   return (
-    <div className="anim-fade-up flex min-h-screen flex-col items-center justify-center px-6 py-16">
+    <div className="stage anim-fade-up flex min-h-screen flex-col items-center justify-center px-6 py-16">
       <div className="w-full max-w-md text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
           Your path
@@ -50,11 +50,12 @@ export function EndingScreen({
         <p className="mt-4 text-[12px] uppercase tracking-[0.2em] text-muted-foreground">
           Age {summary.age}
         </p>
-        <h2 className="mt-3 font-serif text-[clamp(2.5rem,8vw,3.5rem)] leading-tight text-foreground">
+        <div className="mt-6 h-px w-16 mx-auto bg-gold/70" />
+        <h2 className="mt-4 font-serif text-[clamp(2.5rem,8vw,3.5rem)] leading-tight text-foreground">
           {summary.archetype}
         </h2>
 
-        <div className="mt-10 divide-y divide-border border border-border bg-card text-left">
+        <div className="mt-10 divide-y divide-border/60 border border-border/70 bg-card/50 text-left backdrop-blur-sm">
           {rows.map(([label, value]) => (
             <div key={label} className="flex items-baseline justify-between px-5 py-3">
               <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
@@ -72,7 +73,7 @@ export function EndingScreen({
           <p className="mt-2 font-serif text-[clamp(3rem,10vw,4.5rem)] leading-none text-foreground">
             {summary.score.toLocaleString("en-US")}
           </p>
-          <p className="mt-2 text-[12px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+          <p className="mt-2 text-[12px] font-medium uppercase tracking-[0.22em] text-gold/80">
             {formatPercentile(summary.percentile)}
           </p>
           {lived > 1 && (
