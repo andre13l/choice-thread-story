@@ -1,6 +1,6 @@
 import type { GameState } from "../types";
 import type { OutcomeView } from "../useHollywoodGame";
-import { StatHeader } from "./StatHeader";
+import { ScreenShell } from "./ScreenShell";
 
 export function RevealScreen({
   game,
@@ -12,23 +12,24 @@ export function RevealScreen({
   onContinue: () => void;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <StatHeader game={game} />
-      <div className="anim-fade-up flex flex-1 flex-col items-center justify-center px-6 py-12">
+    <ScreenShell game={game}>
+      <div className="anim-fade-up flex flex-1 flex-col items-center justify-center px-5 py-14 sm:px-6">
         <div className="w-full max-w-xl text-center">
           <p className="font-serif text-[clamp(1.35rem,3.2vw,1.75rem)] leading-snug text-foreground">
             {outcome.text}
           </p>
           {outcome.note && (
-            <p className="mt-4 font-serif text-base italic text-muted-foreground">{outcome.note}</p>
+            <p className="mt-5 font-serif text-base italic text-gold/80">{outcome.note}</p>
           )}
           {outcome.lines.length > 0 && (
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-2">
               {outcome.lines.map((line, i) => (
                 <span
                   key={i}
-                  className={`text-[12px] font-medium uppercase tracking-[0.18em] ${
-                    line.negative ? "text-danger" : "text-muted-foreground"
+                  className={`border px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.18em] ${
+                    line.negative
+                      ? "border-danger/40 text-danger"
+                      : "border-border/80 text-foreground/80"
                   }`}
                 >
                   {line.label}
@@ -44,6 +45,6 @@ export function RevealScreen({
           </button>
         </div>
       </div>
-    </div>
+    </ScreenShell>
   );
 }

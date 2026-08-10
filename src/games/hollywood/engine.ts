@@ -64,6 +64,7 @@ export function createCareer(seed: number): GameState {
     legendStage: 0,
     legendFailed: false,
     careerId: seed,
+    films: [],
   };
 }
 

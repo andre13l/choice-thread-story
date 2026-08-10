@@ -7,6 +7,7 @@ import { EventScreen } from "@/games/hollywood/screens/EventScreen";
 import { Intro } from "@/games/hollywood/screens/Intro";
 import { LegendSequence } from "@/games/hollywood/screens/LegendSequence";
 import { RevealScreen } from "@/games/hollywood/screens/RevealScreen";
+import { SequenceScreen } from "@/games/hollywood/screens/SequenceScreen";
 
 export const Route = createFileRoute("/hollywood")({
   head: () => ({
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/hollywood")({
 
 function HollywoodPage() {
   const { state, dispatch } = useHollywoodGame();
+  const event = state.event;
 
   return (
     <main className="min-h-screen">
@@ -37,12 +39,23 @@ function HollywoodPage() {
       {state.phase === "character" && state.game && (
         <CharacterIntro game={state.game} onContinue={() => dispatch({ type: "character_ok" })} />
       )}
-      {state.phase === "event" && state.game && state.event && (
+      {state.phase === "event" && state.game && event && !event.sequence && (
         <EventScreen
           key={state.game.turn}
           game={state.game}
-          event={state.event}
+          event={event}
           onChoose={(index) => dispatch({ type: "choose", index })}
+        />
+      )}
+      {state.phase === "event" && state.game && event?.sequence && state.seq && (
+        <SequenceScreen
+          key={`${state.game.turn}-${state.seq.stepIndex}`}
+          game={state.game}
+          event={event}
+          stepIndex={state.seq.stepIndex}
+          ctx={state.seq.ctx}
+          onPick={(item) => dispatch({ type: "seq_pick", item })}
+          onAlloc={(values) => dispatch({ type: "seq_alloc", values })}
         />
       )}
       {state.phase === "reveal" && state.game && state.outcome && (
