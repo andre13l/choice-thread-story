@@ -164,7 +164,7 @@ function ModeSelect({ onSelect }: { onSelect: (metric: Metric) => void }) {
   };
 
   return (
-    <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-6 py-16 text-center">
+    <div className="stage anim-fade-up flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center">
       <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
         {SITE.name}
       </p>
@@ -287,7 +287,7 @@ function PlayScreen({
   })();
 
   return (
-    <div className="stage flex min-h-screen flex-col items-center px-5 py-10 sm:px-6 sm:py-14">
+    <div className="stage flex min-h-screen flex-col items-center justify-center px-5 py-10 sm:px-6 sm:py-14">
       <div className="flex w-full max-w-3xl items-center justify-between">
         <Link
           to="/"
