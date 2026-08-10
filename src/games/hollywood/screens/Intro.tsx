@@ -8,7 +8,7 @@ export function Intro({ onBegin }: { onBegin: () => void }) {
         {SITE.name}
       </p>
       <div className="mt-8 h-px w-16 bg-gold/70" />
-      <h1 className="mt-6 font-serif text-[clamp(3.5rem,12vw,7rem)] leading-none tracking-[0.08em] text-foreground">
+      <h1 className="mt-6 font-display text-[clamp(3.5rem,12vw,7rem)] leading-none tracking-[0.08em] text-foreground">
         HOLLYWOOD
       </h1>
       <p className="mt-8 max-w-sm text-base leading-relaxed text-muted-foreground">

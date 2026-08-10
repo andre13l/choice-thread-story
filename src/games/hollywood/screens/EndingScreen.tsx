@@ -51,7 +51,7 @@ export function EndingScreen({
           Age {summary.age}
         </p>
         <div className="mt-6 h-px w-16 mx-auto bg-gold/70" />
-        <h2 className="mt-4 font-serif text-[clamp(2.5rem,8vw,3.5rem)] leading-tight text-foreground">
+        <h2 className="mt-4 font-display text-[clamp(2.5rem,8vw,3.5rem)] leading-tight text-foreground">
           {summary.archetype}
         </h2>
 
@@ -61,7 +61,7 @@ export function EndingScreen({
               <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 {label}
               </span>
-              <span className="font-serif text-lg text-foreground">{value}</span>
+              <span className="font-display text-lg text-foreground">{value}</span>
             </div>
           ))}
         </div>
@@ -70,7 +70,7 @@ export function EndingScreen({
           <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
             Career score
           </p>
-          <p className="mt-2 font-serif text-[clamp(3rem,10vw,4.5rem)] leading-none text-foreground">
+          <p className="mt-2 font-display text-[clamp(3rem,10vw,4.5rem)] leading-none text-foreground">
             {summary.score.toLocaleString("en-US")}
           </p>
           <p className="mt-2 text-[12px] font-medium uppercase tracking-[0.22em] text-gold/80">

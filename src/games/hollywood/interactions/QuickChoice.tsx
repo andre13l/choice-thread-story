@@ -24,7 +24,7 @@ export function QuickChoice({
         <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
           {(event.place ?? "Los Angeles").toUpperCase()} — Age {game.stats.age}
         </p>
-        <p className="mt-6 font-serif text-[clamp(1.35rem,3.2vw,1.75rem)] leading-snug text-foreground">
+        <p className="mt-6 font-display text-[clamp(1.35rem,3.2vw,1.75rem)] leading-snug text-foreground">
           {text}
         </p>
 
@@ -35,7 +35,7 @@ export function QuickChoice({
               onClick={() => onChoose(i)}
               className="group flex items-baseline gap-5 border border-border/80 bg-card/50 px-5 py-4 text-left backdrop-blur-sm transition-all duration-200 hover:border-foreground/60 hover:bg-card sm:px-6"
             >
-              <span className="shrink-0 font-serif text-sm italic text-muted-foreground/50 transition-colors duration-200 group-hover:text-gold">
+              <span className="shrink-0 font-display text-sm italic text-muted-foreground/50 transition-colors duration-200 group-hover:text-gold">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className="min-w-0 flex-1 text-[15px] font-medium leading-snug text-foreground">

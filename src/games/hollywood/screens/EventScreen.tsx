@@ -1,9 +1,11 @@
+import { CallInteraction } from "../interactions/CallInteraction";
 import { QuickChoice } from "../interactions/QuickChoice";
 import type { GameEvent, GameState } from "../types";
 import { ScreenShell } from "./ScreenShell";
 
 /**
- * Ordinary events: the default QUICK CHOICE compatibility path.
+ * Ordinary events: the default QUICK CHOICE compatibility path, with
+ * alternative presentations routed by `event.presentation`.
  * Sequence events are routed to SequenceScreen by the page.
  */
 export function EventScreen({
@@ -17,7 +19,11 @@ export function EventScreen({
 }) {
   return (
     <ScreenShell game={game}>
-      <QuickChoice game={game} event={event} onChoose={onChoose} />
+      {event.presentation === "call" ? (
+        <CallInteraction game={game} event={event} onChoose={onChoose} />
+      ) : (
+        <QuickChoice game={game} event={event} onChoose={onChoose} />
+      )}
     </ScreenShell>
   );
 }

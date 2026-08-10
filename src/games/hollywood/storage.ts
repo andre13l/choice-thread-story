@@ -17,6 +17,7 @@ const KEYS = {
   history: `${PREFIX}.hollywood.history`,
   best: `${PREFIX}.hollywood.best`,
   count: `${PREFIX}.hollywood.count`,
+  legends: `${PREFIX}.hollywood.legends`,
 };
 
 function safeParse<T>(raw: string | null): T | null {
@@ -71,6 +72,7 @@ export function recordCareer(summary: CareerSummary): void {
   if (!best || summary.score > best.score) {
     localStorage.setItem(KEYS.best, JSON.stringify(summary));
   }
+  if (summary.legend) recordLegend(summary);
   localStorage.setItem(KEYS.count, String(loadCount() + 1));
   saveCurrentCareer(null);
 }
@@ -82,4 +84,41 @@ export function loadBest(): CareerSummary | null {
 export function loadCount(): number {
   const n = Number(localStorage.getItem(KEYS.count));
   return Number.isFinite(n) ? n : 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Walk of Fame                                                         */
+/*                                                                      */
+/* Compact, permanent record of LEGEND careers. Kept separate from     */
+/* the rolling 25-entry history so a star can never be pushed off      */
+/* the pavement by later runs. When verified global legends exist      */
+/* (backend), this module is the swap point.                            */
+/* ------------------------------------------------------------------ */
+
+export interface LegendRecord {
+  careerId: number;
+  date: string;
+  score: number;
+  age: number;
+  movies: number;
+  oscars: number;
+  peakMoney: number;
+}
+
+function recordLegend(summary: CareerSummary): void {
+  const entry: LegendRecord = {
+    careerId: summary.careerId,
+    date: summary.date,
+    score: summary.score,
+    age: summary.age,
+    movies: summary.movies,
+    oscars: summary.oscars,
+    peakMoney: summary.peakMoney,
+  };
+  const legends = [entry, ...loadLegends()].slice(0, 50);
+  localStorage.setItem(KEYS.legends, JSON.stringify(legends));
+}
+
+export function loadLegends(): LegendRecord[] {
+  return safeParse<LegendRecord[]>(localStorage.getItem(KEYS.legends)) ?? [];
 }

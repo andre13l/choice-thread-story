@@ -36,7 +36,7 @@ function Index() {
   return (
     <main className="stage flex min-h-screen flex-col items-center justify-center px-6 py-16">
       <div className="anim-fade-up flex w-full max-w-xl flex-col items-center text-center">
-        <h1 className="font-serif text-[clamp(4.5rem,16vw,9rem)] leading-none tracking-[0.08em] text-foreground">
+        <h1 className="font-display text-[clamp(4.5rem,16vw,9rem)] leading-none tracking-[0.08em] text-foreground">
           {SITE.name}
         </h1>
         <p className="mt-5 text-sm tracking-wide text-muted-foreground">{SITE.tagline}</p>
@@ -59,7 +59,7 @@ function Index() {
                   Start
                 </span>
               </div>
-              <h2 className="mt-5 font-serif text-4xl tracking-[0.06em] text-foreground">
+              <h2 className="mt-5 font-display text-4xl tracking-[0.06em] text-foreground">
                 {flagship.name}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">{flagship.tagline}</p>
@@ -84,7 +84,7 @@ function Index() {
                 className="flex flex-col justify-between border border-border/70 bg-card/30 px-5 py-4 opacity-45"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-serif text-lg tracking-[0.08em] text-muted-foreground">
+                  <span className="font-display text-lg tracking-[0.08em] text-muted-foreground">
                     {game.name}
                   </span>
                   <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">

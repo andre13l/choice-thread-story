@@ -17,4 +17,15 @@ export const SITE = {
     "A collection of short, highly replayable cinema and pop-culture games. How far can you make it?",
   /** localStorage namespace. Keep stable — see note above. */
   storagePrefix: "paths.v1",
+  /**
+   * Contact address rendered on /contact. Intentionally empty until a real
+   * inbox exists — the page explains instead of inventing one.
+   */
+  contactEmail: "",
+  /**
+   * Social profiles for the footer. An empty url means the profile is not
+   * live yet; the footer only renders profiles with a configured url.
+   * No placeholders are shown for accounts that don't exist.
+   */
+  socials: [] as { label: string; url: string }[],
 } as const;

@@ -59,8 +59,10 @@
 }
 
 @theme {
-  --font-serif: "Instrument Serif", "Georgia", serif;
-  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  /* Squared / geometric typography — game-platform character in display,
+     neutral geometric sans for body copy. */
+  --font-display: "Chakra Petch", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -263,4 +265,35 @@
     background: var(--color-foreground);
     border: 1px solid var(--color-background);
   }
+}
+
+/* Incoming-call motion (Call interaction). */
+@keyframes paths-call-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--foreground) 25%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 22px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.anim-call-pulse {
+  animation: paths-call-pulse 1.7s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes paths-call-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.anim-call-glow {
+  animation: paths-call-glow 1.7s ease-in-out infinite;
 }
