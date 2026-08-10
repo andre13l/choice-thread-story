@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { AllocationInteraction } from "../interactions/AllocationInteraction";
 import { PickInteraction } from "../interactions/PickInteraction";
 import type { GameEvent, GameState, PickItem, SequenceContext } from "../types";
@@ -26,6 +27,12 @@ export function SequenceScreen({
   onAlloc: (values: Record<string, number>) => void;
 }) {
   const sequence = event.sequence;
+
+  // Each step is a fresh "screen" — never inherit the previous step's scroll.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [stepIndex]);
+
   if (!sequence) return null;
   const step = sequence.steps[stepIndex];
   if (!step) return null;
