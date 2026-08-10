@@ -6,9 +6,12 @@
  * All keys are namespaced and versioned.
  */
 
+import { SITE } from "@/config/site";
 import type { CareerSummary, GameState } from "./types";
 
-const PREFIX = "paths.v1";
+// Prefix comes from site config but must stay value-stable: existing
+// players' careers live under these keys (see src/config/site.ts).
+const PREFIX = SITE.storagePrefix;
 const KEYS = {
   current: `${PREFIX}.hollywood.current`,
   history: `${PREFIX}.hollywood.history`,
