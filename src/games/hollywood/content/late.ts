@@ -6,6 +6,7 @@
  */
 
 import type { GameEvent } from "../types";
+import { filmTitle, personName, variantRng } from "./fiction";
 
 export const lateEvents: GameEvent[] = [
   {
@@ -194,7 +195,11 @@ export const lateEvents: GameEvent[] = [
   {
     id: "role_offer_veteran",
     place: "Los Angeles",
-    text: "A respected director wants you for a supporting role — the kind of part that wins things for actors with your mileage. Three weeks of work.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "role_offer_veteran");
+      return `${personName(r)} wants you for a supporting role in “${filmTitle(r)}” — the kind of part that wins things for actors with your mileage. Three weeks of work.`;
+    },
     minStats: { fame: 45, age: 48 },
     weight: 11,
     tags: ["work", "movie"],

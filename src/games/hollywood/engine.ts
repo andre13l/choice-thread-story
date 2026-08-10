@@ -6,7 +6,7 @@
  * Music/Football/Business/Racing later) are just arrays of GameEvent data.
  */
 
-import { LEGEND_CONFIG, LEGEND_ELIGIBILITY, PACING, TEST_MODE } from "./config";
+import { LEGEND_CONFIG, LEGEND_ELIGIBILITY, PACING, TEST_MODE, VARIETY } from "./config";
 import { randInt, pickWeighted, type Rng } from "../core/rng";
 import type {
   CareerStats,
@@ -60,6 +60,9 @@ export function createCareer(seed: number): GameState {
     history: [],
     turn: 0,
     recentEventIds: [],
+    seenEventIds: [],
+    familyTurns: {},
+    turnsSinceRich: 0,
     queuedEventId: null,
     legendStage: 0,
     legendFailed: false,
@@ -101,7 +104,13 @@ export function characterFlavor(stats: CareerStats): string {
 /* Eligibility & selection                                             */
 /* ------------------------------------------------------------------ */
 
-export function isEligible(event: GameEvent, s: GameState): boolean {
+/** Near-duplicate group for cooldowns: explicit family, else first tag. */
+export function familyOf(event: GameEvent): string {
+  return event.family ?? event.tags[0] ?? event.id;
+}
+
+/** Hard gates: age, stats, flags, one-time rules. Variety rules live in isEligible. */
+function gatesOk(event: GameEvent, s: GameState): boolean {
   const st = s.stats;
   if (event.minAge !== undefined && st.age < event.minAge) return false;
   if (event.maxAge !== undefined && st.age > event.maxAge) return false;
@@ -135,6 +144,45 @@ export function isEligible(event: GameEvent, s: GameState): boolean {
   return true;
 }
 
+/**
+ * Full eligibility for normal selection: hard gates plus variety rules —
+ * a shown event is retired unless explicitly repeatable, and events from
+ * the same family (auditions, role offers, parties...) cool down so
+ * near-duplicate prompts never cluster.
+ */
+export function isEligible(event: GameEvent, s: GameState): boolean {
+  if (!gatesOk(event, s)) return false;
+  if (!event.repeatable && s.seenEventIds.includes(event.id)) return false;
+  const lastFamilyTurn = s.familyTurns[familyOf(event)];
+  if (lastFamilyTurn !== undefined && s.turn - lastFamilyTurn < VARIETY.familyCooldownTurns)
+    return false;
+  return true;
+}
+
+/** Eligibility ignoring the exact-event retirement (families still cool down). */
+function isEligibleAllowingSeen(event: GameEvent, s: GameState): boolean {
+  if (!gatesOk(event, s)) return false;
+  const lastFamilyTurn = s.familyTurns[familyOf(event)];
+  if (lastFamilyTurn !== undefined && s.turn - lastFamilyTurn < VARIETY.familyCooldownTurns)
+    return false;
+  return true;
+}
+
+/**
+ * Record that an event was presented: retires it for the career (unless
+ * repeatable), starts its family's cooldown, and tracks rich-interaction
+ * cadence. Forced follow-ups queue through queuedEventId instead.
+ */
+export function markEventShown(s: GameState, event: GameEvent): GameState {
+  return {
+    ...s,
+    recentEventIds: [...s.recentEventIds, event.id].slice(-4),
+    seenEventIds: [...s.seenEventIds, event.id],
+    familyTurns: { ...s.familyTurns, [familyOf(event)]: s.turn },
+    turnsSinceRich: event.sequence ? 0 : s.turnsSinceRich + 1,
+  };
+}
+
 export function pickEvent(s: GameState, events: GameEvent[], rng: Rng): GameEvent | null {
   if (s.queuedEventId) {
     const forced = events.find((e) => e.id === s.queuedEventId);
@@ -155,11 +203,26 @@ export function pickEvent(s: GameState, events: GameEvent[], rng: Rng): GameEven
     if (start) return start;
   }
 
-  const eligible = events.filter((e) => isEligible(e, s) && e.id !== "legend_signal" && e.id !== "legend_gamble");
+  const pool = events.filter((e) => e.id !== "legend_signal" && e.id !== "legend_gamble");
+  const strict = pool.filter((e) => isEligible(e, s));
+  // Long careers can exhaust the strict pool. Fallbacks keep them alive:
+  // first re-allow already-seen events (families still cool down), then
+  // anything that passes the hard gates.
+  const eligible =
+    strict.length > 0
+      ? strict
+      : pool.filter((e) => isEligibleAllowingSeen(e, s)).length > 0
+        ? pool.filter((e) => isEligibleAllowingSeen(e, s))
+        : pool.filter((e) => gatesOk(e, s));
   if (eligible.length === 0) return null;
-  return pickWeighted(rng, eligible, (e) =>
-    typeof e.weight === "function" ? e.weight(s) : e.weight,
-  );
+
+  // Rhythm: Quick Choice stays the majority, but once a career has gone a
+  // while without a multi-step interaction, eligible sequences surge.
+  const richDue = s.turnsSinceRich >= VARIETY.richCadenceTurns;
+  return pickWeighted(rng, eligible, (e) => {
+    const w = typeof e.weight === "function" ? e.weight(s) : e.weight;
+    return richDue && e.sequence ? w * VARIETY.richBoost : w;
+  });
 }
 
 /* ------------------------------------------------------------------ */

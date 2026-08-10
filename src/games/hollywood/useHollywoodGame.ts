@@ -14,8 +14,10 @@ import {
   applyOutcome,
   checkEnd,
   createCareer,
+  markEventShown,
   pickEvent,
   resolveOption,
+  TEST_MODE,
 } from "./engine";
 import { hollywoodEvents } from "./content";
 import {
@@ -70,6 +72,7 @@ type Action =
   | { type: "seq_pick"; item: PickItem }
   | { type: "seq_alloc"; values: Record<string, number> }
   | { type: "continue" }
+  | { type: "dev_showcase" }
   | { type: "restart" };
 
 // NOTE: seeded deterministic runs (for server-side verification later)
@@ -178,11 +181,7 @@ function reducer(state: UiState, action: Action): UiState {
       if (!state.game) return state;
       const event = pickEvent(state.game, hollywoodEvents, rng);
       if (!event) return state;
-      const game = {
-        ...state.game,
-        recentEventIds: [...state.game.recentEventIds, event.id].slice(-4),
-        queuedEventId: null,
-      };
+      const game = { ...markEventShown(state.game, event), queuedEventId: null };
       saveCurrentCareer({ game, eventId: event.id });
       return { ...state, phase: "event", game, event, seq: freshSeq(game, event) };
     }
@@ -244,13 +243,24 @@ function reducer(state: UiState, action: Action): UiState {
         recordCareer(summary);
         return { ...state, phase: "ending", game, summary, seq: null };
       }
-      game = {
-        ...game,
-        recentEventIds: [...game.recentEventIds, event.id].slice(-4),
-        queuedEventId: null,
-      };
+      game = { ...markEventShown(game, event), queuedEventId: null };
       saveCurrentCareer({ game, eventId: event.id });
       return { ...state, phase: "event", game, event, outcome: null, seq: freshSeq(game, event) };
+    }
+    case "dev_showcase": {
+      // TEST_MODE-only inspection entry point for the movie-making chain.
+      // Never rendered when test mode is off (see routes/hollywood.tsx).
+      if (!TEST_MODE || !state.game) return state;
+      const event = hollywoodEvents.find((e) => e.id === "movie_greenlight");
+      if (!event) return state;
+      saveCurrentCareer({ game: state.game, eventId: event.id });
+      return {
+        ...state,
+        phase: "event",
+        event,
+        outcome: null,
+        seq: freshSeq(state.game, event),
+      };
     }
     case "restart":
       saveCurrentCareer(null);

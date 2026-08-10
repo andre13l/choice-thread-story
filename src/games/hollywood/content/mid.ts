@@ -4,6 +4,7 @@
  */
 
 import type { GameEvent } from "../types";
+import { filmTitle, personName, studioName, variantRng } from "./fiction";
 
 export const midEvents: GameEvent[] = [
   {
@@ -1140,7 +1141,11 @@ export const midEvents: GameEvent[] = [
   {
     id: "role_offer_working",
     place: "Los Angeles",
-    text: "A role in a working production — nothing glamorous, but it's a real part in a real movie. The town runs on people who say yes to these.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "role_offer_working");
+      return `${personName(r)} is directing “${filmTitle(r)}” for ${studioName(r)} — nothing glamorous, but it's a real part in a real movie. The town runs on people who say yes to these.`;
+    },
     minStats: { fame: 5 },
     maxStats: { fame: 45 },
     weight: 12,
@@ -1174,7 +1179,11 @@ export const midEvents: GameEvent[] = [
   {
     id: "role_offer_star",
     place: "Los Angeles",
-    text: "A studio offers you a major role in their fall release. Real budget, real co-stars, a release date already printed on posters that don't exist yet.",
+    repeatable: true,
+    text: (s) => {
+      const r = variantRng(s, "role_offer_star");
+      return `${studioName(r)} offers you a major role in “${filmTitle(r)}”, their fall release. Real budget, real co-stars, a release date already printed on posters that don't exist yet.`;
+    },
     minStats: { fame: 40 },
     weight: 12,
     tags: ["work", "movie", "studio"],
