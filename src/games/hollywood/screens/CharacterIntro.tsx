@@ -10,8 +10,8 @@ export function CharacterIntro({ game, onContinue }: { game: GameState; onContin
         <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
           Los Angeles
         </p>
-        <h2 className="mt-6 font-serif text-6xl text-foreground">You are 18.</h2>
-        <p className="mt-6 font-serif text-lg italic leading-relaxed text-muted-foreground">
+        <h2 className="mt-6 font-display text-6xl text-foreground">You are 18.</h2>
+        <p className="mt-6 font-display text-lg italic leading-relaxed text-muted-foreground">
           {characterFlavor(s)}
         </p>
 
@@ -20,19 +20,19 @@ export function CharacterIntro({ game, onContinue }: { game: GameState; onContin
             <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
               Money
             </p>
-            <p className="mt-2 font-serif text-xl text-foreground">{formatMoney(s.money)}</p>
+            <p className="mt-2 font-display text-xl text-foreground">{formatMoney(s.money)}</p>
           </div>
           <div className="px-4 py-5">
             <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
               Fame
             </p>
-            <p className="mt-2 font-serif text-xl text-foreground">{Math.round(s.fame)}</p>
+            <p className="mt-2 font-display text-xl text-foreground">{Math.round(s.fame)}</p>
           </div>
           <div className="px-4 py-5">
             <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
               Connections
             </p>
-            <p className="mt-2 font-serif text-xl text-foreground">{Math.round(s.connections)}</p>
+            <p className="mt-2 font-display text-xl text-foreground">{Math.round(s.connections)}</p>
           </div>
         </div>
 

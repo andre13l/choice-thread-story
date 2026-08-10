@@ -29,16 +29,16 @@ export function LegendSequence({
   return (
     <div className="legend-screen fixed inset-0 z-50 flex flex-col items-center justify-center px-6 text-center">
       {!finale && (
-        <p key={step} className="anim-legend-text font-serif text-2xl tracking-wide md:text-3xl">
+        <p key={step} className="anim-legend-text font-display text-2xl tracking-wide md:text-3xl">
           {LEGEND_STEPS[step]!.text}
         </p>
       )}
       {finale && (
         <div className="anim-fade-in flex flex-col items-center">
-          <h1 className="font-serif text-[clamp(5rem,18vw,11rem)] leading-none tracking-[0.12em]">
+          <h1 className="font-display text-[clamp(5rem,18vw,11rem)] leading-none tracking-[0.12em]">
             LEGEND
           </h1>
-          <p className="mt-8 font-serif text-xl italic opacity-80">You made it.</p>
+          <p className="mt-8 font-display text-xl italic opacity-80">You made it.</p>
           <p className="mt-10 text-[11px] uppercase tracking-[0.3em] opacity-50">
             Career score — {summary.score.toLocaleString("en-US")}
           </p>

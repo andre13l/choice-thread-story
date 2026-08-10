@@ -364,6 +364,18 @@ export function advanceTime(s: GameState, rng: Rng): GameState {
   } else if (stats.money < 2000 && stats.fame < 10) {
     stats.money += randInt(rng, 150, 600); // survival jobs
   }
+  // Post-peak volatility: very large fortunes are exposed — ventures,
+  // markets, entourages, bad paper. Direction leans on hidden luck vs
+  // risk appetite, so a rich career can unravel over time without any
+  // single obvious mistake. The higher the climb, the longer the fall.
+  if (stats.money > 40_000_000) {
+    const exposure = 0.08 + stats.financialRisk / 250;
+    if (rng() < exposure) {
+      stats.money -= Math.round(stats.money * (0.03 + rng() * 0.09));
+    } else if (rng() < stats.luck / 400) {
+      stats.money += Math.round(stats.money * (0.02 + rng() * 0.05));
+    }
+  }
   // Longevity builds legacy once the industry takes you seriously.
   // A truly extraordinary career compounds: respect, fame, cultural
   // weight and a body of work each feed what history remembers.

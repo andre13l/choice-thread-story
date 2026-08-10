@@ -261,6 +261,7 @@ export const midEvents: GameEvent[] = [
             text: "The envelope opens. It's your name. You float to the stage and forget everyone's names, starting with your own.",
             effects: { oscars: 1, awards: 1, fame: 15, industryRespect: 15, legacy: 10, reputation: 8, money: 200_000 },
             flags: { oscarWinner: true },
+            forceEventId: "post_oscar_door",
           },
           {
             text: "Nominated. You smile through the envelope, the applause, the after-party. Everyone says 'it's an honor'. It is. It also isn't.",
@@ -278,6 +279,7 @@ export const midEvents: GameEvent[] = [
             text: "The work speaks. The Academy listens. You win without a single lunch.",
             effects: { oscars: 1, awards: 1, fame: 15, industryRespect: 15, legacy: 10, reputation: 8 },
             flags: { oscarWinner: true },
+            forceEventId: "post_oscar_door",
           },
           {
             text: "The work speaks. Unfortunately, forty other actors had lunch with the voters.",

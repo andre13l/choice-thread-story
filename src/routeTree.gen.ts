@@ -10,11 +10,32 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as HigherLowerRouteImport } from './routes/higher-lower'
 import { Route as HollywoodRouteImport } from './routes/hollywood'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as WalkOfFameRouteImport } from './routes/walk-of-fame'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HigherLowerRoute = HigherLowerRouteImport.update({
+  id: '/higher-lower',
+  path: '/higher-lower',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HollywoodRoute = HollywoodRouteImport.update({
@@ -22,31 +43,95 @@ const HollywoodRoute = HollywoodRouteImport.update({
   path: '/hollywood',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalkOfFameRoute = WalkOfFameRouteImport.update({
+  id: '/walk-of-fame',
+  path: '/walk-of-fame',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
+  '/walk-of-fame': typeof WalkOfFameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
+  '/walk-of-fame': typeof WalkOfFameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
+  '/walk-of-fame': typeof WalkOfFameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/hollywood'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/higher-lower'
+    | '/hollywood'
+    | '/privacy'
+    | '/terms'
+    | '/walk-of-fame'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/hollywood'
-  id: '__root__' | '/' | '/hollywood'
+  to:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/higher-lower'
+    | '/hollywood'
+    | '/privacy'
+    | '/terms'
+    | '/walk-of-fame'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/higher-lower'
+    | '/hollywood'
+    | '/privacy'
+    | '/terms'
+    | '/walk-of-fame'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  ContactRoute: typeof ContactRoute
+  HigherLowerRoute: typeof HigherLowerRoute
   HollywoodRoute: typeof HollywoodRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
+  WalkOfFameRoute: typeof WalkOfFameRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +143,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/higher-lower': {
+      id: '/higher-lower'
+      path: '/higher-lower'
+      fullPath: '/higher-lower'
+      preLoaderRoute: typeof HigherLowerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/hollywood': {
       id: '/hollywood'
       path: '/hollywood'
@@ -65,12 +171,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HollywoodRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/walk-of-fame': {
+      id: '/walk-of-fame'
+      path: '/walk-of-fame'
+      fullPath: '/walk-of-fame'
+      preLoaderRoute: typeof WalkOfFameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  ContactRoute: ContactRoute,
+  HigherLowerRoute: HigherLowerRoute,
   HollywoodRoute: HollywoodRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
+  WalkOfFameRoute: WalkOfFameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

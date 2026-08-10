@@ -67,7 +67,7 @@ export function AllocationInteraction({
             </p>
           )}
         </div>
-        <p className="mt-5 font-serif text-[clamp(1.35rem,3.2vw,1.8rem)] leading-snug text-foreground">
+        <p className="mt-5 font-display text-[clamp(1.35rem,3.2vw,1.8rem)] leading-snug text-foreground">
           {prompt}
         </p>
         {note && (
@@ -82,7 +82,7 @@ export function AllocationInteraction({
             <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
               To allocate
             </p>
-            <p className="font-serif text-3xl leading-none text-foreground">{formatMoney(total)}</p>
+            <p className="font-display text-3xl leading-none text-foreground">{formatMoney(total)}</p>
           </div>
 
           {/* Distribution bar */}
@@ -129,7 +129,7 @@ export function AllocationInteraction({
                       {c.label}
                     </span>
                   </div>
-                  <span className="shrink-0 font-serif text-lg text-foreground">
+                  <span className="shrink-0 font-display text-lg text-foreground">
                     {formatMoney((total * pct) / 100)}
                     <span className="ml-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       {pct}%

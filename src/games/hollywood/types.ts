@@ -142,6 +142,12 @@ export interface GameEvent {
    * few turns so similar prompts never cluster.
    */
   family?: string;
+  /**
+   * Visual treatment for the decision screen. Default is the standard
+   * quick-choice list. "call" renders an incoming-call interaction; the
+   * event's options map to answer / decline / (optional) third action.
+   */
+  presentation?: "call";
   tags: string[];
   /**
    * Multi-step interactive sequence. When present, the game loop drives
@@ -232,6 +238,11 @@ export type SequenceStep =
       prompt: string | ((ctx: SequenceContext) => string);
       items: PickItem[];
       confirmVerb?: string;
+      /**
+       * Card treatment. "cards" is the default cinematic grid; "contract"
+       * renders each item as a signable deal memo (studio, terms, fee).
+       */
+      variant?: "cards" | "contract";
     }
   | {
       kind: "allocation";

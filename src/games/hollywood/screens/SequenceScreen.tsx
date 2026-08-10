@@ -61,7 +61,7 @@ export function SequenceScreen({
 
         <div key={stepIndex} className="flex flex-1 flex-col">
           {stepIndex === 0 && (
-            <p className="anim-fade-up mx-auto mt-8 w-full max-w-xl px-5 font-serif text-base italic leading-relaxed text-muted-foreground sm:px-6">
+            <p className="anim-fade-up mx-auto mt-8 w-full max-w-xl px-5 font-display text-base italic leading-relaxed text-muted-foreground sm:px-6">
               {setup}
             </p>
           )}
@@ -73,6 +73,7 @@ export function SequenceScreen({
               prompt={prompt}
               items={step.items}
               confirmVerb={step.confirmVerb}
+              variant={step.variant}
               onConfirm={onPick}
             />
           )}

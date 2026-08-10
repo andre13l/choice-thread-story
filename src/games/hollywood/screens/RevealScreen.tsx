@@ -15,11 +15,11 @@ export function RevealScreen({
     <ScreenShell game={game}>
       <div className="anim-fade-up flex flex-1 flex-col items-center justify-center px-5 py-14 sm:px-6">
         <div className="w-full max-w-xl text-center">
-          <p className="font-serif text-[clamp(1.35rem,3.2vw,1.75rem)] leading-snug text-foreground">
+          <p className="font-display text-[clamp(1.35rem,3.2vw,1.75rem)] leading-snug text-foreground">
             {outcome.text}
           </p>
           {outcome.note && (
-            <p className="mt-5 font-serif text-base italic text-gold/80">{outcome.note}</p>
+            <p className="mt-5 font-display text-base italic text-gold/80">{outcome.note}</p>
           )}
           {outcome.lines.length > 0 && (
             <div className="mt-9 flex flex-wrap items-center justify-center gap-2">
