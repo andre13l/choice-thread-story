@@ -6,6 +6,7 @@
  * point — the UI only ever sees { score, percentile }.
  */
 
+import { SITE } from "@/config/site";
 import type { CareerStats, GameState } from "./types";
 
 export function computeScore(stats: CareerStats): number {
@@ -75,7 +76,7 @@ export function shareText(args: {
   peakMoney: number;
 }): string {
   return [
-    "PATHS — HOLLYWOOD",
+    `${SITE.name} — HOLLYWOOD`,
     "",
     `🎬 ${args.movies} Movies`,
     `🏆 ${args.oscars} ${args.oscars === 1 ? "Oscar" : "Oscars"}`,
