@@ -148,27 +148,28 @@ export async function renderCareerCard(s: CareerSnapshot): Promise<HTMLCanvasEle
     ["Avg critics", `${s.avgCritics}`, FG],
     ["Career score", s.score.toLocaleString("en-US"), FG],
   ];
-  const gridTop = 600;
+  const gridTop = 556;
+  const rowH = 106;
   const colW = (CARD_W - 160) / 2;
   cells.forEach(([label, value, color], i) => {
     const col = i % 2;
     const row = Math.floor(i / 2);
     const x = 80 + col * colW;
-    const ry = gridTop + row * 118;
+    const ry = gridTop + row * rowH;
     ctx.strokeStyle = LINE;
     ctx.lineWidth = 1;
-    ctx.strokeRect(x, ry, colW, 118);
+    ctx.strokeRect(x, ry, colW, rowH);
     ctx.textAlign = "left";
     ctx.font = `500 19px ${UI}`;
     ctx.fillStyle = MUTED;
-    track(ctx, label.toUpperCase(), x + 28, ry + 42, 4);
+    track(ctx, label.toUpperCase(), x + 28, ry + 40, 4);
     ctx.font = `700 46px ${DISPLAY}`;
     ctx.fillStyle = color;
-    ctx.fillText(value, x + 26, ry + 92);
+    ctx.fillText(value, x + 26, ry + 86);
   });
 
   // Film lines
-  let ly = gridTop + 3 * 118 + 60;
+  let ly = gridTop + 3 * rowH + 52;
   const filmLine = (label: string, title: string, right: string, color: string) => {
     ctx.textAlign = "left";
     ctx.font = `500 19px ${UI}`;
@@ -186,7 +187,7 @@ export async function renderCareerCard(s: CareerSnapshot): Promise<HTMLCanvasEle
     ctx.moveTo(80, ly + 74);
     ctx.lineTo(CARD_W - 80, ly + 74);
     ctx.stroke();
-    ly += 112;
+    ly += 106;
   };
 
   if (s.biggestHit) filmLine("Biggest hit", s.biggestHit.title, formatMoney(s.biggestHit.worldwide), GOLD);
