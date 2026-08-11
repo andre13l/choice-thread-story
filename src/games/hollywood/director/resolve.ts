@@ -7,8 +7,8 @@
  */
 
 import { createRng } from "../../core/rng";
-import { productionMonths, yearOf } from "./pacing";
 import { hashString, noise, range } from "./names";
+import { productionMonths, yearOf } from "./pacing";
 import type { Actor, Allocation, DirectorCareer, FilmResult, Project, Verdict } from "./types";
 
 const NON_THEATRICAL = new Set(["musicvideo", "commercial", "adult"]);
@@ -99,7 +99,7 @@ export function resolveFilm(args: {
   );
 
   const theatrical = isTheatrical(project);
-  const prodMonths = productionMonths(project, r);
+  const prodMonths = productionMonths(project, r, theatrical);
   let opening = 0;
   let worldwide = 0;
 

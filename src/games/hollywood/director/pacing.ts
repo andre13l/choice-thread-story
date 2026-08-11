@@ -12,7 +12,6 @@
 import type { Rng } from "../../core/rng";
 import { DIRECTOR_PACING } from "./config";
 import { range } from "./names";
-import { isTheatrical } from "./resolve";
 import type { DirectorCareer, FilmResult, Project } from "./types";
 
 export function yearOf(months: number): number {
@@ -24,8 +23,8 @@ export function ageOf(months: number): number {
 }
 
 /** Months from green light to release. Scope decides. */
-export function productionMonths(project: Project, r: Rng): number {
-  if (!isTheatrical(project)) return Math.max(1, Math.round(range(r, 1, 3)));
+export function productionMonths(project: Project, r: Rng, theatrical: boolean): number {
+  if (!theatrical) return Math.max(1, Math.round(range(r, 1, 3)));
   const b = project.budget;
   let lo: number;
   let hi: number;
