@@ -36,11 +36,11 @@ export const DIRECTOR_LEGEND = {
 /** How the career ends when it ends. Pressure, not a timer. */
 export const DIRECTOR_DECLINE = {
   /** Cycles before an ending may be considered at all. */
-  minFilms: 5,
+  minFilms: 7,
   /** Ruin threshold on personal net worth. */
   ruinMoney: -3_000_000,
-  baseChance: TEST_MODE ? 0.05 : 0.02,
-  ageRampStart: 62,
+  baseChance: TEST_MODE ? 0.05 : 0.013,
+  ageRampStart: 64,
   ageRampPerYear: 0.02,
   maxChance: 0.34,
 } as const;

@@ -28,7 +28,7 @@ export function productionMonths(project: Project, r: Rng, theatrical: boolean):
   const b = project.budget;
   let lo: number;
   let hi: number;
-  if (b < 1_500_000) [lo, hi] = [3, 7];
+  if (b < 1_500_000) [lo, hi] = [2, 5];
   else if (b < 8_000_000) [lo, hi] = [6, 11];
   else if (b < 35_000_000) [lo, hi] = [10, 16];
   else if (b < 90_000_000) [lo, hi] = [14, 22];
@@ -54,20 +54,27 @@ export function gapMonths(
 
   let lo = 1;
   let hi = 5;
-  if (great) [lo, hi] = [1, 4];
-  else if (film.verdict === "disaster") [lo, hi] = [10, 30];
-  else if (bad) [lo, hi] = [4, 14];
+  if (great) [lo, hi] = [0, 3];
+  else if (film.verdict === "disaster") [lo, hi] = [8, 22];
+  else if (bad) [lo, hi] = [3, 10];
 
-  if (access < 14) {
-    lo += 10;
-    hi += 26;
-  } else if (access < 24) {
-    lo += 3;
-    hi += 9;
+  if (film.budget < 3_000_000) {
+    lo = lo * 0.6;
+    hi = hi * 0.7;
   }
-  if (c.momentum < -40) {
-    lo += 4;
-    hi += 12;
+  // A cold phone only costs years once there is a career to lose.
+  if (c.films.length >= 3) {
+    if (access < 14) {
+      lo += 8;
+      hi += 20;
+    } else if (access < 24) {
+      lo += 2;
+      hi += 6;
+    }
+    if (c.momentum < -40) {
+      lo += 3;
+      hi += 9;
+    }
   }
   if (c.age >= 66) hi += 8;
   return Math.max(0, Math.round(range(r, lo, hi)));
