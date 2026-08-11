@@ -8,9 +8,10 @@
 import { createRng } from "../../core/rng";
 import { formatMoney } from "../scoring";
 import { DIRECTOR_DECLINE, DIRECTOR_LEGEND, DIRECTOR_PACING } from "./config";
-import { hashString, range } from "./names";
+import { hashString } from "./names";
 import { accessScore, directorTier } from "./offers";
-import type { CareerSnapshot, DirectorCareer, FilmResult, Genre } from "./types";
+import { ageOf, gapMonths, makeTimeJump, passMonths, yearOf, type TimeJump } from "./pacing";
+import type { CareerSnapshot, DirectorCareer, FilmResult, Genre, ShareFilm } from "./types";
 
 function clamp(v: number, lo = 0, hi = 100): number {
   return Math.max(lo, Math.min(hi, v));
@@ -21,7 +22,8 @@ export function newCareer(careerId: number): DirectorCareer {
     careerId,
     seed: (careerId ^ 0x9e3779b9) >>> 0,
     cycle: 0,
-    year: 2004,
+    months: 0,
+    year: DIRECTOR_PACING.startYear,
     age: DIRECTOR_PACING.startAge,
     money: DIRECTOR_PACING.startMoney,
     reputation: 4,
@@ -106,7 +108,10 @@ export interface CycleEffects {
 }
 
 /** Apply a released film to the career. Mutates nothing; returns new state. */
-export function applyFilm(c: DirectorCareer, film: FilmResult): { career: DirectorCareer; effects: CycleEffects } {
+export function applyFilm(
+  c: DirectorCareer,
+  film: FilmResult,
+): { career: DirectorCareer; effects: CycleEffects; jump: TimeJump | null } {
   const r = createRng((hashString(`apply:${film.id}`) ^ c.seed) >>> 0);
   const ratio = film.worldwide / Math.max(1, film.budget);
   const scale = Math.log10(Math.max(10, film.worldwide)) - 5.6; // ~0 at $400k, ~3.4 at $1B
@@ -129,13 +134,28 @@ export function applyFilm(c: DirectorCareer, film: FilmResult): { career: Direct
   mastery[film.genre] = clamp((mastery[film.genre] ?? 0) + 8 + (film.critics - 50) * 0.16, 0, 100);
 
   const money = c.money + film.directorTake;
-  const years = Math.round(range(r, DIRECTOR_PACING.yearsPerFilm[0], DIRECTOR_PACING.yearsPerFilm[1]));
+
+  // Elastic time: the shoot itself, then whatever downtime the career earns.
+  const startMonths = c.months ?? 0;
+  const afterRelease = startMonths + film.productionMonths;
+  const interim: DirectorCareer = { ...c, momentum: clamp(c.momentum * 0.55 + momentumDelta, -100, 100) };
+  const gap = gapMonths(interim, film, accessScore(interim), r);
+  const months = afterRelease + gap;
+  const tone: "up" | "down" | "flat" =
+    film.worldwide > film.budget * 2.5 && film.critics >= 58
+      ? "up"
+      : film.studioResult < 0
+        ? "down"
+        : "flat";
+  const jump = makeTimeJump(gap, afterRelease, tone, r);
 
   const career: DirectorCareer = {
     ...c,
     cycle: c.cycle + 1,
-    year: c.year + years,
-    age: c.age + years,
+    months,
+    year: yearOf(months),
+    age: ageOf(months),
+    idleCycles: 0,
     money,
     reputation: clamp(c.reputation + repDelta),
     recognition: clamp(c.recognition + recDelta - 1.2),
@@ -156,6 +176,7 @@ export function applyFilm(c: DirectorCareer, film: FilmResult): { career: Direct
 
   return {
     career,
+    jump,
     effects: {
       moneyDelta: film.directorTake,
       reputation: Math.round(repDelta),
@@ -187,18 +208,24 @@ export function applyAwards(c: DirectorCareer, awards: AwardsRun): DirectorCaree
 }
 
 /** Passing on everything: a year burns and the town forgets a little. */
-export function applyPass(c: DirectorCareer): DirectorCareer {
-  return {
+export function applyPass(c: DirectorCareer): { career: DirectorCareer; jump: TimeJump | null } {
+  const r = createRng((c.seed ^ hashString(`pass:${c.cycle}`)) >>> 0);
+  const startMonths = c.months ?? 0;
+  const gap = passMonths(c, r);
+  const months = startMonths + gap;
+  const career: DirectorCareer = {
     ...c,
     cycle: c.cycle + 1,
-    year: c.year + 1,
-    age: c.age + 1,
+    months,
+    year: yearOf(months),
+    age: ageOf(months),
     idleCycles: c.idleCycles + 1,
     recognition: clamp(c.recognition - 4),
     studioTrust: clamp(c.studioTrust - 3),
     momentum: clamp(c.momentum - 12, -100, 100),
     money: c.money - Math.max(20_000, Math.abs(c.money) * 0.03),
   };
+  return { career, jump: makeTimeJump(gap, startMonths, "down", r) };
 }
 
 /* ------------------------------------------------------------------ */
