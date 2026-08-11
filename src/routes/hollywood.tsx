@@ -13,6 +13,7 @@ import { DirectorLegend } from "@/games/hollywood/director/screens/DirectorLegen
 import { FilmographySheet } from "@/games/hollywood/director/screens/FilmographySheet";
 import { OffersScreen } from "@/games/hollywood/director/screens/OffersScreen";
 import { PremiereScreen } from "@/games/hollywood/director/screens/PremiereScreen";
+import { TimeJumpScreen } from "@/games/hollywood/director/screens/TimeJumpScreen";
 import { useDirectorGame } from "@/games/hollywood/director/useDirectorGame";
 
 export const Route = createFileRoute("/hollywood")({
@@ -54,6 +55,10 @@ function HollywoodPage() {
 
       {inRun && (
         <DirectorHeader career={state.career} onOpenFilmography={() => setFilmographyOpen(true)} />
+      )}
+
+      {state.phase === "transition" && state.jump && (
+        <TimeJumpScreen jump={state.jump} onDone={() => dispatch({ type: "transition_done" })} />
       )}
 
       {state.phase === "offers" && (
