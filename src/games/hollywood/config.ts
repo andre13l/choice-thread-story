@@ -7,13 +7,15 @@
  */
 
 /**
- * TEST_MODE — while true, the hidden final state becomes reachable in roughly
- * 1 of every 30-100 extraordinary careers so we can experience it in
- * development. When false, the architecture targets approximately
- * 1 / 1,000,000 careers across all players (eligibility rarity multiplied by
- * the per-turn trigger below).
+ * TEST_MODE — development-only switch. It relaxes rarity so the hidden final
+ * state can be experienced while building, and it is the single gate for the
+ * developer inspection controls. It MUST stay false: any public session
+ * (preview included) renders zero dev UI and plays on production odds, where
+ * the architecture targets roughly 1 / 1,000,000 careers across all players.
+ * Flip it locally while working, never commit it as true.
  */
-export const TEST_MODE = true;
+export const TEST_MODE = false;
+
 
 export const LEGEND_CONFIG = {
   /** Chance per turn, once internally eligible, that the final chain begins. */
