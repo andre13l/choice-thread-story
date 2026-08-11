@@ -45,7 +45,7 @@ export function EndingScreen({
     <div className="stage anim-fade-up flex min-h-screen flex-col items-center justify-center px-6 py-16">
       <div className="w-full max-w-md text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
-          Your path
+          Every path ends
         </p>
         <p className="mt-4 text-[12px] uppercase tracking-[0.2em] text-muted-foreground">
           Age {summary.age}
@@ -54,6 +54,11 @@ export function EndingScreen({
         <h2 className="mt-4 font-display text-[clamp(2.5rem,8vw,3.5rem)] leading-tight text-foreground">
           {summary.archetype}
         </h2>
+        {summary.fate && (
+          <p className="mx-auto mt-6 max-w-sm text-[14px] italic leading-relaxed text-muted-foreground">
+            {summary.fate}
+          </p>
+        )}
 
         <div className="mt-10 divide-y divide-border/60 border border-border/70 bg-card/50 text-left backdrop-blur-sm">
           {rows.map(([label, value]) => (

@@ -864,8 +864,8 @@ export const lateEvents: GameEvent[] = [
         hint: "A quiet close",
         outcomes: [
           {
-            text: "You stop auditioning. The phone slows, then stills. The garden is excellent. The story is yours now, all of it.",
-            effects: { burnout: -20, legacy: 3 },
+            text: "You stop auditioning. The tributes are lovely — that's the trap. Within a year the dinners stop including you and the montages speak about you in past tense. The garden is excellent. So is the phone that no longer rings, and the slow discovery that this town's version of a happy ending is just a quieter way of being forgotten.",
+            effects: { burnout: -15, legacy: -6, fame: -10 },
             end: "career",
           },
         ],

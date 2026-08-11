@@ -60,3 +60,26 @@ export const VARIETY = {
   /** Weight multiplier for eligible sequences once the cadence lapses. */
   richBoost: 14,
 } as const;
+
+/**
+ * Downfall tuning — hidden. Every non-legend path ends; these numbers
+ * shape when the ending starts hunting and how hard pressure pushes it.
+ * The player never sees any of this.
+ */
+export const DOWNFALL = {
+  /** No pressure-triggered ending before the career has a story to lose. */
+  minTurns: 10,
+  /** Base per-turn chance once the career is in the high-stakes tier. */
+  baseChancePerTurn: TEST_MODE ? 0.05 : 0.02,
+  /** Total pressure below this adds nothing. */
+  pressureFloor: 120,
+  /** Extra per-turn chance per point of pressure above the floor. */
+  pressureScale: 0.0008,
+  /** From this age, the ending hunts harder every year. */
+  ageRampStart: 62,
+  ageRampPerYear: 0.012,
+  /** Hard ceiling so late careers still get meaningful final chapters. */
+  maxChancePerTurn: 0.3,
+  /** Turns after a shown downfall event before another can trigger. */
+  crisisCooldownTurns: 5,
+} as const;

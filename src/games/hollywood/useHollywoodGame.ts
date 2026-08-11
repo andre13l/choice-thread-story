@@ -12,13 +12,13 @@ import { useEffect, useReducer } from "react";
 import {
   advanceTime,
   applyOutcome,
-  checkEnd,
   createCareer,
   markEventShown,
   pickEvent,
   resolveOption,
   TEST_MODE,
 } from "./engine";
+import { pickTerminalEvent } from "./downfall";
 import { hollywoodEvents } from "./content";
 import {
   careerArchetype,
@@ -73,6 +73,7 @@ type Action =
   | { type: "seq_alloc"; values: Record<string, number> }
   | { type: "continue" }
   | { type: "dev_showcase" }
+  | { type: "dev_tool"; tool: "mogul" | "legend" | "downfall" }
   | { type: "restart" };
 
 // NOTE: seeded deterministic runs (for server-side verification later)
@@ -113,7 +114,10 @@ function buildOutcomeView(outcome: Outcome, game: GameState): OutcomeView {
   return { text: outcome.text, note: outcome.note, lines, end: outcome.end };
 }
 
-function finalizeCareer(game: GameState, legend: boolean): CareerSummary {
+/** Used only if a career ends with no terminal event available. */
+const FALLBACK_FATE = "The calls slowed, then stopped. Hollywood kept going. It always does.";
+
+function finalizeCareer(game: GameState, legend: boolean, fate?: string): CareerSummary {
   const score = computeScore(game.stats);
   const percentile = computePercentile(score);
   return {
@@ -132,6 +136,64 @@ function finalizeCareer(game: GameState, legend: boolean): CareerSummary {
     peakMoney: game.stats.peakMoney,
     finalMoney: game.stats.money,
     peakFame: game.stats.peakFame,
+    fate: fate ?? FALLBACK_FATE,
+  };
+}
+
+/* TEST_MODE-only state shapers for the dev controls. Never reachable
+   in production: the buttons rendering these actions are gated. */
+function devMogulState(game: GameState): GameState {
+  return {
+    ...game,
+    stats: {
+      ...game.stats,
+      age: Math.max(game.stats.age, 47),
+      money: 180_000_000,
+      careerEarnings: Math.max(game.stats.careerEarnings, 420_000_000),
+      fame: 85,
+      peakFame: Math.max(game.stats.peakFame, 85),
+      reputation: 72,
+      connections: 70,
+      influence: 60,
+      industryRespect: 72,
+      legacy: 48,
+      culturalImpact: 44,
+      movies: Math.max(game.stats.movies, 14),
+      leadingRoles: Math.max(game.stats.leadingRoles, 10),
+      oscars: Math.max(game.stats.oscars, 2),
+      awards: Math.max(game.stats.awards, 7),
+      successfulMovies: Math.max(game.stats.successfulMovies, 9),
+      publicPerception: 62,
+      ego: 70,
+      financialRisk: 45,
+    },
+    flags: { ...game.flags, postOscar: true, survivedDisaster: true },
+  };
+}
+
+function devLegendState(game: GameState): GameState {
+  return {
+    ...game,
+    stats: {
+      ...game.stats,
+      age: Math.max(game.stats.age, 46),
+      money: Math.max(game.stats.money, 90_000_000),
+      careerEarnings: Math.max(game.stats.careerEarnings, 300_000_000),
+      fame: Math.max(game.stats.fame, 78),
+      peakFame: Math.max(game.stats.peakFame, 78),
+      reputation: Math.max(game.stats.reputation, 70),
+      industryRespect: Math.max(game.stats.industryRespect, 60),
+      legacy: Math.max(game.stats.legacy, 48),
+      culturalImpact: Math.max(game.stats.culturalImpact, 42),
+      movies: Math.max(game.stats.movies, 10),
+      leadingRoles: Math.max(game.stats.leadingRoles, 8),
+      oscars: Math.max(game.stats.oscars, 2),
+      awards: Math.max(game.stats.awards, 6),
+      successfulMovies: Math.max(game.stats.successfulMovies, 7),
+    },
+    flags: { ...game.flags, postOscar: true, survivedDisaster: true },
+    legendFailed: false,
+    legendStage: 0,
   };
 }
 
@@ -194,6 +256,11 @@ function reducer(state: UiState, action: Action): UiState {
       if (state.event.id === "legend_gamble" && !choice.success) {
         game = { ...game, legendFailed: true };
       }
+      // Surviving a downfall event buys real breathing room: reset the
+      // pressure clock so the career gets a genuine second act.
+      if (choice.outcome.flags?.["survivedDisaster"]) {
+        game = { ...game, downfallTurns: 0, downfallCheckTurns: 0 };
+      }
       const outcome = buildOutcomeView(choice.outcome, state.game);
       return { ...state, phase: "reveal", game, outcome };
     }
@@ -227,18 +294,33 @@ function reducer(state: UiState, action: Action): UiState {
     case "continue": {
       if (!state.game) return state;
       if (state.outcome?.end === "legend") {
-        const summary = finalizeCareer(state.game, true);
+        const summary = finalizeCareer(state.game, true, state.outcome.text);
         recordCareer(summary);
         return { ...state, phase: "legend", summary, seq: null };
       }
-      if (state.outcome?.end === "career" || checkEnd(state.game, rng) === "career") {
-        const summary = finalizeCareer(state.game, false);
+      if (state.outcome?.end === "career") {
+        const summary = finalizeCareer(state.game, false, state.outcome.text);
         recordCareer(summary);
         return { ...state, phase: "ending", summary, seq: null };
       }
       let game = advanceTime(state.game, rng);
+      // The downfall engine decides whether this turn opens the final
+      // chapter — and which family of ending this career has earned.
+      const terminal = pickTerminalEvent(game, hollywoodEvents, rng);
+      if (terminal) {
+        game = { ...markEventShown(game, terminal), queuedEventId: null };
+        saveCurrentCareer({ game, eventId: terminal.id });
+        return { ...state, phase: "event", game, event: terminal, outcome: null, seq: null };
+      }
       const event = pickEvent(game, hollywoodEvents, rng);
       if (!event) {
+        // Content exhausted: the path must close. Force an ending if one fits.
+        const forced = pickTerminalEvent(game, hollywoodEvents, rng, { force: true });
+        if (forced) {
+          game = { ...markEventShown(game, forced), queuedEventId: null };
+          saveCurrentCareer({ game, eventId: forced.id });
+          return { ...state, phase: "event", game, event: forced, outcome: null, seq: null };
+        }
         const summary = finalizeCareer(game, false);
         recordCareer(summary);
         return { ...state, phase: "ending", game, summary, seq: null };
@@ -246,6 +328,32 @@ function reducer(state: UiState, action: Action): UiState {
       game = { ...markEventShown(game, event), queuedEventId: null };
       saveCurrentCareer({ game, eventId: event.id });
       return { ...state, phase: "event", game, event, outcome: null, seq: freshSeq(game, event) };
+    }
+    case "dev_tool": {
+      // TEST_MODE-only inspection controls. Never rendered in production.
+      if (!TEST_MODE || !state.game) return state;
+      if (action.tool === "mogul") {
+        let game = devMogulState(state.game);
+        const event = pickEvent(game, hollywoodEvents, rng);
+        if (!event) return state;
+        game = { ...markEventShown(game, event), queuedEventId: null };
+        saveCurrentCareer({ game, eventId: event.id });
+        return { ...state, phase: "event", game, event, outcome: null, seq: freshSeq(game, event) };
+      }
+      if (action.tool === "legend") {
+        let game = devLegendState(state.game);
+        const event = hollywoodEvents.find((e) => e.id === "legend_signal");
+        if (!event) return state;
+        game = markEventShown(game, event);
+        saveCurrentCareer({ game, eventId: event.id });
+        return { ...state, phase: "event", game, event, outcome: null, seq: null };
+      }
+      // downfall: force the terminal picker immediately.
+      const event = pickTerminalEvent(state.game, hollywoodEvents, rng, { force: true });
+      if (!event) return state;
+      const game = { ...markEventShown(state.game, event), queuedEventId: null };
+      saveCurrentCareer({ game, eventId: event.id });
+      return { ...state, phase: "event", game, event, outcome: null, seq: null };
     }
     case "dev_showcase": {
       // TEST_MODE-only inspection entry point for the movie-making chain.
