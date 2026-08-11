@@ -342,18 +342,49 @@ export function percentileFor(score: number): number {
   return Math.min(0.9999, Math.max(0.01, p)) * 100;
 }
 
+function toShareFilm(f: FilmResult): ShareFilm {
+  return {
+    title: f.title,
+    year: f.year,
+    budget: f.budget,
+    worldwide: f.worldwide,
+    critics: f.critics,
+    oscars: f.oscars,
+  };
+}
+
 export function snapshot(c: DirectorCareer): CareerSnapshot {
   const score = careerScore(c);
-  const best = [...c.films].sort((a, b) => b.worldwide - a.worldwide)[0];
+  const films = c.films;
+  const byGross = [...films].sort((a, b) => b.worldwide - a.worldwide);
+  const best = byGross[0];
+  const worst = [...films].sort((a, b) => a.studioResult - b.studioResult)[0];
+  const last = films[films.length - 1];
+  const n = Math.max(1, films.length);
+  const startYear = DIRECTOR_PACING.startYear;
+  const endYear = yearOf(c.months ?? 0);
+  const topFilms = [...films]
+    .sort((a, b) => b.oscars * 3 + b.culturalImpact / 40 - (a.oscars * 3 + a.culturalImpact / 40))
+    .slice(0, 3)
+    .map(toShareFilm);
   return {
     careerId: c.careerId,
     date: new Date().toISOString(),
     age: c.age,
-    films: c.films.length,
+    startYear,
+    endYear,
+    spanYears: Math.max(1, endYear - startYear),
+    films: films.length,
     oscars: c.oscars,
     nominations: c.nominations,
-    totalBoxOffice: c.films.reduce((a, f) => a + f.worldwide, 0),
+    totalBoxOffice: films.reduce((a, f) => a + f.worldwide, 0),
     ...(best ? { bestFilm: `${best.title} — ${formatMoney(best.worldwide)}` } : {}),
+    avgCritics: Math.round(films.reduce((a, f) => a + f.critics, 0) / n),
+    avgAudience: Math.round(films.reduce((a, f) => a + f.audience, 0) / n),
+    ...(best ? { biggestHit: toShareFilm(best) } : {}),
+    ...(worst ? { biggestFlop: toShareFilm(worst) } : {}),
+    ...(last ? { finalFilm: toShareFilm(last) } : {}),
+    topFilms,
     peakMoney: c.peak.money,
     finalMoney: c.money,
     score,
@@ -363,3 +394,4 @@ export function snapshot(c: DirectorCareer): CareerSnapshot {
     fate: c.fate ?? careerFate(c),
   };
 }
+
