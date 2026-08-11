@@ -121,7 +121,7 @@ export function makeTimeJump(
   tone: "up" | "down" | "flat",
   r: Rng,
 ): TimeJump | null {
-  if (months < 15 && !(tone === "up" && months >= 9)) return null;
+  if (months < 24 && !(tone === "up" && months >= 12)) return null;
   const pool = tone === "down" ? DOWN : tone === "up" ? UP : FLAT;
   return {
     headline: pool[Math.floor(r() * pool.length)]!,
