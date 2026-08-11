@@ -19,8 +19,12 @@ export function DirectorHeader({
     <header className="sticky top-0 z-40 border-b border-border/50 bg-background/75 backdrop-blur-md">
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground sm:px-6 sm:text-[11px]">
         <span className="shrink-0">
-          {career.year} <span className="text-muted-foreground/50">· {career.age}</span>
+          <span className="text-foreground/90">Film #{career.films.length + 1}</span>{" "}
+          <span className="text-muted-foreground/50">
+            · {career.year} · {career.age}
+          </span>
         </span>
+
         <span className={career.money < 0 ? "text-danger" : "text-foreground/90"}>
           {formatMoney(career.money)}
         </span>

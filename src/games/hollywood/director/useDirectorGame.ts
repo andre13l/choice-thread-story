@@ -24,6 +24,7 @@ import {
 import { generateCast } from "./casting";
 import { presetCareer, type PresetId } from "./dev";
 import { hashString } from "./names";
+import type { TimeJump } from "./pacing";
 import { generateOffers } from "./offers";
 import { resolveFilm } from "./resolve";
 import { loadCareer, recordCareer, saveCareer } from "./storage";
@@ -36,6 +37,7 @@ export type Phase =
   | "budget"
   | "premiere"
   | "awards"
+  | "transition"
   | "ending"
   | "legend";
 
@@ -44,6 +46,7 @@ interface Pending {
   effects: CycleEffects;
   awards: AwardsRun | null;
   careerAfter: DirectorCareer;
+  jump: TimeJump | null;
 }
 
 export interface State {
@@ -57,6 +60,7 @@ export interface State {
   pending: Pending | null;
   snapshot: CareerSnapshot | null;
   resumed: boolean;
+  jump: TimeJump | null;
 }
 
 export type Action =
@@ -69,6 +73,7 @@ export type Action =
   | { type: "confirm_budget"; alloc: Allocation }
   | { type: "premiere_done" }
   | { type: "awards_done" }
+  | { type: "transition_done" }
   | { type: "restart" }
   | { type: "dev_preset"; preset: PresetId }
   | { type: "dev_end" }
@@ -90,6 +95,7 @@ function startCycle(career: DirectorCareer): State {
     pending: null,
     snapshot: null,
     resumed: false,
+    jump: null,
   };
 }
 
@@ -114,7 +120,8 @@ function finalize(state: State): State {
     return { ...state, career, phase: "ending", snapshot: snap, pending: null };
   }
   saveCareer(career);
-  return startCycle(career);
+  const next = startCycle(career);
+  return pending.jump ? { ...next, phase: "transition", jump: pending.jump } : next;
 }
 
 function reducer(state: State, action: Action): State {
@@ -133,8 +140,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, phase: "casting", project: action.project, pool, cast: [] };
     }
     case "pass": {
-      const career = applyPass(state.career);
-      const r = createRng((career.seed ^ hashString(`pass:${career.cycle}`)) >>> 0);
+      const { career, jump } = applyPass(state.career);
+      const r = createRng((career.seed ^ hashString(`passend:${career.cycle}`)) >>> 0);
       if (r() < endingChance(career)) {
         const ended = { ...career, ended: true, fate: careerFate(career) };
         const snap = snapshot(ended);
@@ -143,7 +150,8 @@ function reducer(state: State, action: Action): State {
         return { ...state, career: ended, phase: "ending", snapshot: snap };
       }
       saveCareer(career);
-      return startCycle(career);
+      const next = startCycle(career);
+      return jump ? { ...next, phase: "transition" as const, jump } : next;
     }
     case "back_to_offers":
       return { ...state, phase: "offers", project: null, pool: [], cast: [] };
@@ -152,10 +160,10 @@ function reducer(state: State, action: Action): State {
     case "confirm_budget": {
       const project = state.project!;
       const film = resolveFilm({ project, cast: state.cast, alloc: action.alloc, career: state.career });
-      const { career: afterFilm, effects } = applyFilm(state.career, film);
+      const { career: afterFilm, effects, jump } = applyFilm(state.career, film);
       const awards = runAwards(film, afterFilm);
       const careerAfter = awards ? applyAwards(afterFilm, awards) : afterFilm;
-      return { ...state, phase: "premiere", pending: { film, effects, awards, careerAfter } };
+      return { ...state, phase: "premiere", pending: { film, effects, awards, careerAfter, jump } };
     }
     case "premiere_done": {
       if (state.pending?.awards) return { ...state, phase: "awards" };
@@ -163,6 +171,8 @@ function reducer(state: State, action: Action): State {
     }
     case "awards_done":
       return finalize(state);
+    case "transition_done":
+      return { ...state, phase: "offers", jump: null };
     case "restart": {
       const career = newCareer(freshId());
       saveCareer(career);
@@ -201,6 +211,7 @@ const INITIAL: State = {
   pending: null,
   snapshot: null,
   resumed: false,
+  jump: null,
 };
 
 export function useDirectorGame() {

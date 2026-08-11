@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ShareResult } from "./ShareResult";
 import type { CareerSnapshot } from "../types";
 
 /* The hidden sequence. No labels, no explanation — just the moment. */
@@ -17,6 +18,7 @@ export function DirectorLegend({
   onRestart: () => void;
 }) {
   const [step, setStep] = useState(0);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     if (step >= STEPS.length) return;
@@ -44,13 +46,20 @@ export function DirectorLegend({
             {snapshot.score.toLocaleString("en-US")}
           </p>
           <button
+            onClick={() => setSharing(true)}
+            className="mt-10 border border-current px-12 py-3 text-[11px] font-medium uppercase tracking-[0.3em] opacity-70 transition-opacity duration-300 hover:opacity-100"
+          >
+            Share result
+          </button>
+          <button
             onClick={onRestart}
-            className="mt-14 border border-current px-12 py-3.5 text-[12px] font-medium uppercase tracking-[0.3em] opacity-80 transition-opacity duration-300 hover:opacity-100"
+            className="mt-4 border border-current px-12 py-3.5 text-[12px] font-medium uppercase tracking-[0.3em] opacity-80 transition-opacity duration-300 hover:opacity-100"
           >
             Direct another career
           </button>
         </div>
       )}
+      {sharing && <ShareResult snapshot={snapshot} onClose={() => setSharing(false)} />}
     </div>
   );
 }

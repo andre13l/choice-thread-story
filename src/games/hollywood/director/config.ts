@@ -8,12 +8,12 @@ export { TEST_MODE };
 
 export const DIRECTOR_PACING = {
   startAge: 24,
+  startYear: 2004,
   startMoney: 8_000,
-  /** Years consumed by one film cycle. */
-  yearsPerFilm: [1, 3] as const,
   softEndAge: 68,
   hardEndAge: 82,
 } as const;
+
 
 /**
  * The hidden escape. Eligibility sits at the extreme tail of a director's
@@ -36,11 +36,11 @@ export const DIRECTOR_LEGEND = {
 /** How the career ends when it ends. Pressure, not a timer. */
 export const DIRECTOR_DECLINE = {
   /** Cycles before an ending may be considered at all. */
-  minFilms: 5,
+  minFilms: 7,
   /** Ruin threshold on personal net worth. */
   ruinMoney: -3_000_000,
-  baseChance: TEST_MODE ? 0.05 : 0.02,
-  ageRampStart: 62,
+  baseChance: TEST_MODE ? 0.05 : 0.013,
+  ageRampStart: 64,
   ageRampPerYear: 0.02,
   maxChance: 0.34,
 } as const;
