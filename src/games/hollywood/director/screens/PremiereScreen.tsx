@@ -211,8 +211,9 @@ function Money({ value }: { value: number }) {
 
 function GrossPanel({ film, theatrical }: { film: FilmResult; theatrical: boolean }) {
   const n = useCountUp(film.worldwide, 1800);
-  const ratio = film.worldwide / Math.max(1, film.budget);
-  const width = Math.min(100, (1 / Math.max(0.2, ratio)) * 100);
+  const max = Math.max(film.worldwide, film.budget, 1);
+  const grossW = (film.worldwide / max) * 100;
+  const budgetW = (film.budget / max) * 100;
   const profit = film.studioResult >= 0;
   return (
     <div className="anim-fade-up mt-3 border border-border/70 bg-card/40 px-5 py-5">
@@ -226,12 +227,16 @@ function GrossPanel({ film, theatrical }: { film: FilmResult; theatrical: boolea
       >
         {formatMoney(n)}
       </p>
-      <div className="mt-5 h-3 w-full bg-secondary/70">
-        <div className={`h-full ${profit ? "bg-gold/70" : "bg-danger/60"}`} style={{ width: "100%" }} />
+      <div className="mt-5 h-3 w-full bg-secondary/40">
+        <div
+          className={`h-full transition-[width] duration-1000 ${profit ? "bg-gold/70" : "bg-danger/60"}`}
+          style={{ width: `${grossW}%` }}
+        />
       </div>
-      <div className="mt-1 h-3 w-full">
-        <div className="h-full bg-foreground/25" style={{ width: `${width}%` }} />
+      <div className="mt-1 h-3 w-full bg-secondary/40">
+        <div className="h-full bg-foreground/25" style={{ width: `${budgetW}%` }} />
       </div>
+
       <div className="mt-2 flex items-baseline justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         <span>Budget {formatMoney(film.budget)}</span>
         <span className={profit ? "text-foreground/80" : "text-danger"}>
