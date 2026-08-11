@@ -15,6 +15,7 @@ function film(over: Partial<FilmResult>, i: number): FilmResult {
     year: 2006 + i * 2,
     budget: 20_000_000,
     marketingSpend: 5_000_000,
+    productionMonths: 14,
     cast: [{ name: "Vera Rask", status: "Name" }],
     occupancy: 60,
     opening: 12_000_000,

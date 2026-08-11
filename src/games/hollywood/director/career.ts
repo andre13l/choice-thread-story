@@ -155,7 +155,6 @@ export function applyFilm(
     months,
     year: yearOf(months),
     age: ageOf(months),
-    idleCycles: 0,
     money,
     reputation: clamp(c.reputation + repDelta),
     recognition: clamp(c.recognition + recDelta - 1.2),
