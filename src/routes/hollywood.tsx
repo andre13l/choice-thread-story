@@ -1,108 +1,144 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SITE } from "@/config/site";
 import { TEST_MODE } from "@/games/hollywood/config";
-import { useHollywoodGame } from "@/games/hollywood/useHollywoodGame";
-import { CharacterIntro } from "@/games/hollywood/screens/CharacterIntro";
-import { EndingScreen } from "@/games/hollywood/screens/EndingScreen";
-import { EventScreen } from "@/games/hollywood/screens/EventScreen";
-import { Intro } from "@/games/hollywood/screens/Intro";
-import { LegendSequence } from "@/games/hollywood/screens/LegendSequence";
-import { RevealScreen } from "@/games/hollywood/screens/RevealScreen";
-import { SequenceScreen } from "@/games/hollywood/screens/SequenceScreen";
+import { PRESETS } from "@/games/hollywood/director/dev";
+import { AwardsScreen } from "@/games/hollywood/director/screens/AwardsScreen";
+import { BudgetScreen } from "@/games/hollywood/director/screens/BudgetScreen";
+import { CareerEndScreen } from "@/games/hollywood/director/screens/CareerEndScreen";
+import { CastingScreen } from "@/games/hollywood/director/screens/CastingScreen";
+import { DirectorHeader } from "@/games/hollywood/director/screens/DirectorHeader";
+import { DirectorIntro } from "@/games/hollywood/director/screens/DirectorIntro";
+import { DirectorLegend } from "@/games/hollywood/director/screens/DirectorLegend";
+import { FilmographySheet } from "@/games/hollywood/director/screens/FilmographySheet";
+import { OffersScreen } from "@/games/hollywood/director/screens/OffersScreen";
+import { PremiereScreen } from "@/games/hollywood/director/screens/PremiereScreen";
+import { useDirectorGame } from "@/games/hollywood/director/useDirectorGame";
 
 export const Route = createFileRoute("/hollywood")({
   head: () => ({
     meta: [
-      { title: `HOLLYWOOD — ${SITE.name}` },
+      { title: `HOLLYWOOD — Direct your own films | ${SITE.name}` },
       {
         name: "description",
         content:
-          "Everyone comes to Hollywood wanting to make it. A short, replayable career simulation where every choice changes your path. How far can you make it?",
+          "Direct your way through Hollywood. Choose the project, cast it, spend the budget, then watch the premiere fill — or empty. A short, endlessly replayable career simulation.",
       },
-      { property: "og:title", content: `HOLLYWOOD — ${SITE.name}` },
+      { property: "og:title", content: `HOLLYWOOD — Direct your own films | ${SITE.name}` },
       {
         property: "og:description",
-        content: "Everyone comes here wanting to make it. Let's see what happens to you.",
+        content: "Pick the film. Cast it. Spend the money. Then watch the room fill.",
       },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HollywoodPage,
 });
 
 function HollywoodPage() {
-  const { state, dispatch } = useHollywoodGame();
-  const event = state.event;
+  const { state, dispatch } = useDirectorGame();
+  const [filmographyOpen, setFilmographyOpen] = useState(false);
 
-  // Every phase (and every turn) is a fresh screen — start at the top.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-  }, [state.phase, state.game?.turn]);
+  }, [state.phase, state.career.cycle]);
+
+  const inRun = state.phase !== "intro" && state.phase !== "ending" && state.phase !== "legend";
 
   return (
-    <main className="min-h-screen">
-      {state.phase === "intro" && <Intro onBegin={() => dispatch({ type: "begin" })} />}
-      {state.phase === "character" && state.game && (
-        <CharacterIntro game={state.game} onContinue={() => dispatch({ type: "character_ok" })} />
+    <main className="stage flex min-h-screen flex-col">
+      {state.phase === "intro" && (
+        <DirectorIntro onBegin={() => dispatch({ type: "begin" })} resumed={state.resumed} />
       )}
-      {state.phase === "event" && state.game && event && !event.sequence && (
-        <EventScreen
-          key={state.game.turn}
-          game={state.game}
-          event={event}
-          onChoose={(index) => dispatch({ type: "choose", index })}
+
+      {inRun && (
+        <DirectorHeader career={state.career} onOpenFilmography={() => setFilmographyOpen(true)} />
+      )}
+
+      {state.phase === "offers" && (
+        <OffersScreen
+          career={state.career}
+          offers={state.offers}
+          onSelect={(project) => dispatch({ type: "select_project", project })}
+          onPass={() => dispatch({ type: "pass" })}
         />
       )}
-      {state.phase === "event" && state.game && event?.sequence && state.seq && (
-        <SequenceScreen
-          key={`${state.game.turn}-${state.seq.stepIndex}`}
-          game={state.game}
-          event={event}
-          stepIndex={state.seq.stepIndex}
-          ctx={state.seq.ctx}
-          onPick={(item) => dispatch({ type: "seq_pick", item })}
-          onAlloc={(values) => dispatch({ type: "seq_alloc", values })}
+
+      {state.phase === "casting" && state.project && (
+        <CastingScreen
+          project={state.project}
+          pool={state.pool}
+          onConfirm={(cast) => dispatch({ type: "confirm_cast", cast })}
+          onBack={() => dispatch({ type: "back_to_offers" })}
         />
       )}
-      {state.phase === "reveal" && state.game && state.outcome && (
-        <RevealScreen
-          game={state.game}
-          outcome={state.outcome}
-          onContinue={() => dispatch({ type: "continue" })}
+
+      {state.phase === "budget" && state.project && (
+        <BudgetScreen
+          project={state.project}
+          cast={state.cast}
+          onConfirm={(alloc) => dispatch({ type: "confirm_budget", alloc })}
+          onBack={() => dispatch({ type: "select_project", project: state.project! })}
         />
       )}
-      {state.phase === "ending" && state.summary && (
-        <EndingScreen summary={state.summary} onRestart={() => dispatch({ type: "restart" })} />
+
+      {state.phase === "premiere" && state.pending && (
+        <PremiereScreen
+          key={state.pending.film.id}
+          film={state.pending.film}
+          effects={state.pending.effects}
+          onDone={() => dispatch({ type: "premiere_done" })}
+        />
       )}
-      {state.phase === "legend" && state.summary && (
-        <LegendSequence summary={state.summary} onRestart={() => dispatch({ type: "restart" })} />
+
+      {state.phase === "awards" && state.pending?.awards && (
+        <AwardsScreen
+          awards={state.pending.awards}
+          onDone={() => dispatch({ type: "awards_done" })}
+        />
       )}
-      {/* TEST_MODE-only inspection controls: film chain showcase, a
-          high-success mogul state, the LEGEND chain entry, and the downfall
-          engine's terminal picker. None of this renders in production
-          (TEST_MODE = false). */}
-      {TEST_MODE && state.game && (state.phase === "event" || state.phase === "reveal") && (
-        <div className="fixed bottom-3 left-3 z-50 flex flex-col items-start gap-1">
-          <p className="px-2.5 text-[8px] font-medium uppercase tracking-[0.24em] text-muted-foreground/40">
+
+      {state.phase === "ending" && state.snapshot && (
+        <CareerEndScreen snapshot={state.snapshot} onRestart={() => dispatch({ type: "restart" })} />
+      )}
+
+      {state.phase === "legend" && state.snapshot && (
+        <DirectorLegend snapshot={state.snapshot} onRestart={() => dispatch({ type: "restart" })} />
+      )}
+
+      {filmographyOpen && (
+        <FilmographySheet films={state.career.films} onClose={() => setFilmographyOpen(false)} />
+      )}
+
+      {/* TEST_MODE-only inspection controls: jump straight to a career tier,
+          or force an ending. Never rendered in production. */}
+      {TEST_MODE && inRun && (
+        <div className="fixed bottom-3 left-3 z-40 flex max-w-[45vw] flex-wrap items-start gap-1">
+          <p className="w-full px-1 text-[8px] font-medium uppercase tracking-[0.24em] text-muted-foreground/40">
             dev
           </p>
-          {(
-            [
-              ["film chain", { type: "dev_showcase" } as const],
-              ["mogul state", { type: "dev_tool", tool: "mogul" } as const],
-              ["legend chain", { type: "dev_tool", tool: "legend" } as const],
-              ["force downfall", { type: "dev_tool", tool: "downfall" } as const],
-            ] as const
-          ).map(([label, action]) => (
+          {PRESETS.map((p) => (
             <button
-              key={label}
-              onClick={() => dispatch(action)}
-              className="rounded-full border border-border/40 bg-background/60 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground/50 backdrop-blur-sm transition-colors hover:text-muted-foreground"
+              key={p.id}
+              onClick={() => dispatch({ type: "dev_preset", preset: p.id })}
+              className="border border-border/40 bg-background/60 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-muted-foreground/50 backdrop-blur-sm transition-colors hover:text-muted-foreground"
             >
-              {label}
+              {p.label}
             </button>
           ))}
+          <button
+            onClick={() => dispatch({ type: "dev_end" })}
+            className="border border-border/40 bg-background/60 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-muted-foreground/50 backdrop-blur-sm transition-colors hover:text-muted-foreground"
+          >
+            end career
+          </button>
+          <button
+            onClick={() => dispatch({ type: "dev_legend" })}
+            className="border border-border/40 bg-background/60 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-muted-foreground/50 backdrop-blur-sm transition-colors hover:text-muted-foreground"
+          >
+            legend
+          </button>
         </div>
       )}
     </main>
