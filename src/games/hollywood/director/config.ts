@@ -8,12 +8,12 @@ export { TEST_MODE };
 
 export const DIRECTOR_PACING = {
   startAge: 24,
+  startYear: 2004,
   startMoney: 8_000,
-  /** Years consumed by one film cycle. */
-  yearsPerFilm: [1, 3] as const,
   softEndAge: 68,
   hardEndAge: 82,
 } as const;
+
 
 /**
  * The hidden escape. Eligibility sits at the extreme tail of a director's
