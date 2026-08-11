@@ -123,7 +123,7 @@ export async function renderCareerCard(s: CareerSnapshot): Promise<HTMLCanvasEle
   ctx.fillStyle = MUTED;
   track(
     ctx,
-    `${s.films} FILMS · ${s.spanYears} YEARS · AGE ${s.age}`,
+    `${s.films} ${s.films === 1 ? "FILM" : "FILMS"} · ${s.spanYears} ${s.spanYears === 1 ? "YEAR" : "YEARS"} · AGE ${s.age}`,
     cx,
     head.length > 1 ? 452 : 400,
     6,
