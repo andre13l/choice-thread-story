@@ -148,8 +148,8 @@ export async function renderCareerCard(s: CareerSnapshot): Promise<HTMLCanvasEle
     ["Avg critics", `${s.avgCritics}`, FG],
     ["Career score", s.score.toLocaleString("en-US"), FG],
   ];
-  const gridTop = 556;
-  const rowH = 106;
+  const gridTop = 540;
+  const rowH = 100;
   const colW = (CARD_W - 160) / 2;
   cells.forEach(([label, value, color], i) => {
     const col = i % 2;
@@ -169,7 +169,7 @@ export async function renderCareerCard(s: CareerSnapshot): Promise<HTMLCanvasEle
   });
 
   // Film lines
-  let ly = gridTop + 3 * rowH + 52;
+  let ly = gridTop + 3 * rowH + 46;
   const filmLine = (label: string, title: string, right: string, color: string) => {
     ctx.textAlign = "left";
     ctx.font = `500 19px ${UI}`;
@@ -187,7 +187,7 @@ export async function renderCareerCard(s: CareerSnapshot): Promise<HTMLCanvasEle
     ctx.moveTo(80, ly + 74);
     ctx.lineTo(CARD_W - 80, ly + 74);
     ctx.stroke();
-    ly += 106;
+    ly += 104;
   };
 
   if (s.biggestHit) filmLine("Biggest hit", s.biggestHit.title, formatMoney(s.biggestHit.worldwide), GOLD);
