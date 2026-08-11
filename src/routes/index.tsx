@@ -1,9 +1,36 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, ChevronRight, Clapperboard, Lock } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronRight,
+  Clapperboard,
+  Lock,
+  Share2,
+  Sparkles,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { GAMES } from "@/config/games";
 import { SITE } from "@/config/site";
 import { loadBest, loadCount, loadCurrentCareer } from "@/games/hollywood/storage";
+
+/** Per-game tile identity so the three playable games never read alike. */
+const TILE_META: Record<string, { label: string; icon: ReactNode }> = {
+  "higher-lower": {
+    label: "30-second arcade",
+    icon: (
+      <>
+        <ArrowUp className="h-4 w-4" />
+        <ArrowDown className="-ml-1.5 h-4 w-4" />
+      </>
+    ),
+  },
+  connect: {
+    label: "Path puzzle",
+    icon: <Share2 className="h-4 w-4 text-link" />,
+  },
+};
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
