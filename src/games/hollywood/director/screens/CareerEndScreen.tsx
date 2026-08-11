@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { SITE } from "@/config/site";
 import { formatMoney, formatMoneyFull } from "../../scoring";
 import { loadCount } from "../storage";
 import type { CareerSnapshot } from "../types";
+import { ShareResult } from "./ShareResult";
 
 function formatPercentile(p: number): string {
   const top = 100 - p;
@@ -17,38 +17,35 @@ export function CareerEndScreen({
   snapshot: CareerSnapshot;
   onRestart: () => void;
 }) {
-  const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const lived = useMemo(() => loadCount(), []);
 
   const rows: [string, string][] = [
     ["Films directed", String(snapshot.films)],
+    ["Career span", `${snapshot.startYear}–${snapshot.endYear}`],
     ["Total box office", formatMoney(snapshot.totalBoxOffice)],
+    ["Avg critics", `${snapshot.avgCritics}`],
     ["Nominations", String(snapshot.nominations)],
     ["Oscars", String(snapshot.oscars)],
+    ...(snapshot.biggestHit
+      ? ([
+          [
+            "Biggest hit",
+            `${snapshot.biggestHit.title} · ${formatMoney(snapshot.biggestHit.worldwide)}`,
+          ],
+        ] as [string, string][])
+      : []),
+    ...(snapshot.biggestFlop && snapshot.biggestFlop.title !== snapshot.biggestHit?.title
+      ? ([
+          [
+            "Biggest loss",
+            `${snapshot.biggestFlop.title} · ${formatMoney(snapshot.biggestFlop.worldwide)}`,
+          ],
+        ] as [string, string][])
+      : []),
     ["Peak net worth", formatMoneyFull(snapshot.peakMoney)],
     ["Final net worth", formatMoneyFull(snapshot.finalMoney)],
   ];
-
-  const share = async () => {
-    const text = [
-      `${SITE.name} — HOLLYWOOD`,
-      "",
-      `🎬 ${snapshot.films} films directed`,
-      `🎟️ ${formatMoney(snapshot.totalBoxOffice)} worldwide`,
-      `🏆 ${snapshot.oscars} ${snapshot.oscars === 1 ? "Oscar" : "Oscars"}`,
-      `⭐ ${snapshot.score.toLocaleString("en-US")} career score`,
-      `🌎 ${formatPercentile(snapshot.percentile)}`,
-      "",
-      "What would you direct?",
-    ].join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* clipboard unavailable */
-    }
-  };
 
   return (
     <div className="stage anim-fade-up flex min-h-screen flex-col items-center justify-center px-6 py-16">
@@ -78,7 +75,7 @@ export function CareerEndScreen({
               <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 {label}
               </span>
-              <span className="font-display text-lg text-foreground">{value}</span>
+              <span className="ml-4 truncate font-display text-lg text-foreground">{value}</span>
             </div>
           ))}
         </div>
@@ -108,10 +105,10 @@ export function CareerEndScreen({
             Start over
           </button>
           <button
-            onClick={share}
+            onClick={() => setSharing(true)}
             className="border border-border px-12 py-3.5 text-[12px] font-medium uppercase tracking-[0.3em] text-foreground transition-colors duration-300 hover:border-foreground"
           >
-            {copied ? "Copied" : "Share"}
+            Share result
           </button>
           <Link
             to="/"
@@ -121,6 +118,7 @@ export function CareerEndScreen({
           </Link>
         </div>
       </div>
+      {sharing && <ShareResult snapshot={snapshot} onClose={() => setSharing(false)} />}
     </div>
   );
 }
