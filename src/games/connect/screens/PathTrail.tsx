@@ -1,7 +1,9 @@
+import { useEffect, useRef } from "react";
 import { GRAPH, type GraphNode } from "../graph";
 
 /**
- * Breadcrumb of the route so far. Horizontally scrollable on mobile.
+ * Breadcrumb of the route so far. Horizontally scrollable on mobile and
+ * kept pinned to the newest step.
  */
 export function PathTrail({
   path,
@@ -10,8 +12,18 @@ export function PathTrail({
   path: GraphNode[];
   onJump?: (index: number) => void;
 }) {
+  const scroller = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scroller.current;
+    if (el) el.scrollLeft = el.scrollWidth;
+  }, [path.length]);
+
   return (
-    <div className="-mx-5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div
+      ref={scroller}
+      className="-mx-5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+
       <div className="flex w-max items-center gap-2 py-1">
         {path.map((node, i) => {
           const label =
