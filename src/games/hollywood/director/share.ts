@@ -7,7 +7,7 @@
  */
 
 import { SITE } from "@/config/site";
-import { formatMoney } from "../../scoring";
+import { formatMoney } from "../scoring";
 import type { CareerSnapshot } from "./types";
 
 export const CARD_W = 1080;
