@@ -309,7 +309,7 @@ function PersonPage({ personId, onPick }: { personId: string; onPick: (movieId: 
         </div>
       </div>
       <p className="mt-8 text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
-        {person.movieIds.length} films
+        {person.movieIds.length} {person.movieIds.length === 1 ? "film" : "films"}
       </p>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {person.movieIds.map((id) => {
@@ -364,7 +364,7 @@ function MoviePage({ movieId, onPick }: { movieId: string; onPick: (personId: st
                   {person.name}
                 </span>
                 <span className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  {person.movieIds.length} films
+                  {person.movieIds.length} {person.movieIds.length === 1 ? "film" : "films"}
                 </span>
               </span>
             </button>
