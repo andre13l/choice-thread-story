@@ -63,7 +63,7 @@ export function careerArchetype(s: GameState): string {
   if (st.successfulMovies >= 9 && st.careerEarnings >= 150_000_000) return "Box Office King";
   if (st.influence >= 65 && st.money >= 80_000_000) return "Hollywood Mogul";
   if (st.money >= 100_000_000 && st.fame < 35) return "Rich and Forgotten";
-  if (st.age >= 63 && st.publicPerception >= 55 && st.reputation >= 50) return "Beloved Veteran";
+  if (st.age >= 63 && st.publicPerception >= 55 && st.reputation >= 50) return "Cautionary Tale";
   if (st.fame < 15 && st.movies < 6) return "Forgotten Actor";
   return "Hollywood Survivor";
 }

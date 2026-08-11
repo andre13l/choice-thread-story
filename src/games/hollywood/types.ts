@@ -42,6 +42,21 @@ export interface CareerStats {
 
 export type StatKey = keyof CareerStats;
 
+/**
+ * Downfall families. Terminal events declare one; the downfall engine
+ * weighs them against the accumulated shape of the career. Never named
+ * anywhere player-facing.
+ */
+export type DownfallFamily =
+  | "financial"
+  | "scandal"
+  | "irrelevance"
+  | "isolation"
+  | "feud"
+  | "accident"
+  | "studio"
+  | "legacy";
+
 /** Flags let events remember earlier decisions across decades. */
 export type CareerFlags = Record<string, number | boolean | string>;
 
@@ -74,6 +89,10 @@ export interface GameState {
   careerId: number;
   /** Produced films (movie-production chains). Seeds future callbacks. */
   films: FilmRecord[];
+  /** Turns the downfall pressure has been building. Reset when a terminal event fires. */
+  downfallTurns: number;
+  /** Cooldown turns remaining before the downfall engine may roll again. */
+  downfallCheckTurns: number;
 }
 
 export interface Outcome {
@@ -143,6 +162,15 @@ export interface GameEvent {
    */
   family?: string;
   /**
+   * Terminal event: an ending situation. Never picked by the normal event
+   * pool — only the downfall engine surfaces these, choosing the family
+   * whose pressure best matches how the career was lived. Outcomes carry
+   * `end: "career"`, except rare survival branches (comeback fuel).
+   */
+  terminal?: boolean;
+  /** Which downfall pressure drives this terminal event's selection. */
+  downfallFamily?: DownfallFamily;
+  /**
    * Visual treatment for the decision screen. Default is the standard
    * quick-choice list. "call" renders an incoming-call interaction; the
    * event's options map to answer / decline / (optional) third action.
@@ -174,6 +202,11 @@ export interface CareerSummary {
   peakMoney: number;
   finalMoney: number;
   peakFame: number;
+  /**
+   * The final outcome line of the career — how this specific path ended.
+   * Shown on the ending screen as the epitaph. Never a victory statement.
+   */
+  fate?: string;
 }
 
 /* ------------------------------------------------------------------ */

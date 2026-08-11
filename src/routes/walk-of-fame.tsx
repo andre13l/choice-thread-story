@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SITE } from "@/config/site";
-import { loadLegends, type LegendRecord } from "@/games/hollywood/storage";
+import { loadPublishedStars, type LegendRecord } from "@/games/hollywood/storage";
 import { formatMoney } from "@/games/hollywood/scoring";
 
 export const Route = createFileRoute("/walk-of-fame")({
@@ -33,7 +33,8 @@ function WalkOfFamePage() {
   const [legends, setLegends] = useState<LegendRecord[] | null>(null);
 
   useEffect(() => {
-    setLegends(loadLegends());
+    // Only verified stars ever appear here. Nothing local qualifies yet.
+    setLegends(loadPublishedStars());
   }, []);
 
   return (
@@ -50,11 +51,13 @@ function WalkOfFamePage() {
         <div className="mx-auto mt-10 max-w-xl space-y-4 text-[15px] leading-relaxed text-muted-foreground">
           <p>Every path ends. Almost all of them are forgotten.</p>
           <p>
-            A very small number of careers go further than fame, further than money,
-            further than awards. When one does, its name is set here — permanently.
+            A very small number of careers refuse to end the usual way. When one
+            does — and it has been verified, frame by frame — its name is set
+            here. Permanently.
           </p>
           <p className="text-[13px] text-muted-foreground/70">
-            Nobody sets out to earn a star. It simply happens, or it doesn't.
+            There is no form to fill in. No amount of fame, money, or awards is
+            enough on its own. It simply happens, or it doesn't.
           </p>
         </div>
 

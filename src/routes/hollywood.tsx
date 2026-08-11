@@ -78,15 +78,32 @@ function HollywoodPage() {
       {state.phase === "legend" && state.summary && (
         <LegendSequence summary={state.summary} onRestart={() => dispatch({ type: "restart" })} />
       )}
-      {/* TEST_MODE-only inspection shortcut for the movie-making chain.
-          Not rendered in production (TEST_MODE = false). */}
+      {/* TEST_MODE-only inspection controls: film chain showcase, a
+          high-success mogul state, the LEGEND chain entry, and the downfall
+          engine's terminal picker. None of this renders in production
+          (TEST_MODE = false). */}
       {TEST_MODE && state.game && (state.phase === "event" || state.phase === "reveal") && (
-        <button
-          onClick={() => dispatch({ type: "dev_showcase" })}
-          className="fixed bottom-3 left-3 z-50 rounded-full border border-border/40 bg-background/60 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground/50 backdrop-blur-sm transition-colors hover:text-muted-foreground"
-        >
-          dev · film chain
-        </button>
+        <div className="fixed bottom-3 left-3 z-50 flex flex-col items-start gap-1">
+          <p className="px-2.5 text-[8px] font-medium uppercase tracking-[0.24em] text-muted-foreground/40">
+            dev
+          </p>
+          {(
+            [
+              ["film chain", { type: "dev_showcase" } as const],
+              ["mogul state", { type: "dev_tool", tool: "mogul" } as const],
+              ["legend chain", { type: "dev_tool", tool: "legend" } as const],
+              ["force downfall", { type: "dev_tool", tool: "downfall" } as const],
+            ] as const
+          ).map(([label, action]) => (
+            <button
+              key={label}
+              onClick={() => dispatch(action)}
+              className="rounded-full border border-border/40 bg-background/60 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground/50 backdrop-blur-sm transition-colors hover:text-muted-foreground"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       )}
     </main>
   );

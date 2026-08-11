@@ -53,6 +53,8 @@ function migrateGame(g: GameState): GameState {
     seenEventIds: g.seenEventIds ?? g.history.map((h) => h.eventId),
     familyTurns: g.familyTurns ?? {},
     turnsSinceRich: g.turnsSinceRich ?? 0,
+    downfallTurns: g.downfallTurns ?? 0,
+    downfallCheckTurns: g.downfallCheckTurns ?? 0,
   };
 }
 
@@ -121,4 +123,15 @@ function recordLegend(summary: CareerSummary): void {
 
 export function loadLegends(): LegendRecord[] {
   return safeParse<LegendRecord[]>(localStorage.getItem(KEYS.legends)) ?? [];
+}
+
+/**
+ * Walk of Fame stars. The pavement only displays verified records, and
+ * nothing local is verifiable — a browser can mint any localStorage value.
+ * Until the backend (verified run re-simulation + publication) exists,
+ * this always returns an empty pavement and local LEGENDs stay private
+ * to the player's own ending screen. The backend swaps in here.
+ */
+export function loadPublishedStars(): LegendRecord[] {
+  return [];
 }

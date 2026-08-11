@@ -68,6 +68,8 @@ export function createCareer(seed: number): GameState {
     legendFailed: false,
     careerId: seed,
     films: [],
+    downfallTurns: 0,
+    downfallCheckTurns: 0,
   };
 }
 
@@ -110,7 +112,7 @@ export function familyOf(event: GameEvent): string {
 }
 
 /** Hard gates: age, stats, flags, one-time rules. Variety rules live in isEligible. */
-function gatesOk(event: GameEvent, s: GameState): boolean {
+export function hardGatesOk(event: GameEvent, s: GameState): boolean {
   const st = s.stats;
   if (event.minAge !== undefined && st.age < event.minAge) return false;
   if (event.maxAge !== undefined && st.age > event.maxAge) return false;
@@ -151,7 +153,7 @@ function gatesOk(event: GameEvent, s: GameState): boolean {
  * near-duplicate prompts never cluster.
  */
 export function isEligible(event: GameEvent, s: GameState): boolean {
-  if (!gatesOk(event, s)) return false;
+  if (!hardGatesOk(event, s)) return false;
   if (!event.repeatable && s.seenEventIds.includes(event.id)) return false;
   const lastFamilyTurn = s.familyTurns[familyOf(event)];
   if (lastFamilyTurn !== undefined && s.turn - lastFamilyTurn < VARIETY.familyCooldownTurns)
@@ -161,7 +163,7 @@ export function isEligible(event: GameEvent, s: GameState): boolean {
 
 /** Eligibility ignoring the exact-event retirement (families still cool down). */
 function isEligibleAllowingSeen(event: GameEvent, s: GameState): boolean {
-  if (!gatesOk(event, s)) return false;
+  if (!hardGatesOk(event, s)) return false;
   const lastFamilyTurn = s.familyTurns[familyOf(event)];
   if (lastFamilyTurn !== undefined && s.turn - lastFamilyTurn < VARIETY.familyCooldownTurns)
     return false;
@@ -203,7 +205,11 @@ export function pickEvent(s: GameState, events: GameEvent[], rng: Rng): GameEven
     if (start) return start;
   }
 
-  const pool = events.filter((e) => e.id !== "legend_signal" && e.id !== "legend_gamble");
+  // Terminal (downfall) events are never in the ordinary pool — the
+  // downfall engine surfaces them when the career's own shape calls for it.
+  const pool = events.filter(
+    (e) => e.id !== "legend_signal" && e.id !== "legend_gamble" && !e.terminal,
+  );
   const strict = pool.filter((e) => isEligible(e, s));
   // Long careers can exhaust the strict pool. Fallbacks keep them alive:
   // first re-allow already-seen events (families still cool down), then
@@ -213,7 +219,7 @@ export function pickEvent(s: GameState, events: GameEvent[], rng: Rng): GameEven
       ? strict
       : pool.filter((e) => isEligibleAllowingSeen(e, s)).length > 0
         ? pool.filter((e) => isEligibleAllowingSeen(e, s))
-        : pool.filter((e) => gatesOk(e, s));
+        : pool.filter((e) => hardGatesOk(e, s));
   if (eligible.length === 0) return null;
 
   // Rhythm: Quick Choice stays the majority, but once a career has gone a
@@ -399,24 +405,8 @@ export function advanceTime(s: GameState, rng: Rng): GameState {
 }
 
 /* ------------------------------------------------------------------ */
-/* Endings                                                             */
-/* ------------------------------------------------------------------ */
-
-export type EndCheck = "continue" | "career" | "legend";
-
-/** Should this career end now? */
-export function checkEnd(s: GameState, rng: Rng): EndCheck {
-  const st = s.stats;
-  if (st.age >= PACING.hardEndAge) return "career";
-  if (st.money < -40_000_000) return "career"; // total ruin
-  if (st.burnout >= 100 && rng() < 0.5) return "career";
-  if (st.age >= PACING.softEndAge) {
-    const p = (st.age - PACING.softEndAge) / 14;
-    if (rng() < p) return "career";
-  }
-  return "continue";
-}
-
+/* Endings live in ./downfall.ts — every non-legend path ends there,   */
+/* driven by the accumulated shape of the career.                       */
 /* ------------------------------------------------------------------ */
 /* The hidden architecture. Never referenced by any UI copy.           */
 /* ------------------------------------------------------------------ */
