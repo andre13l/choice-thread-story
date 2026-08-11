@@ -82,7 +82,7 @@ export function gapMonths(
 
 /** Turning everything down. The town notices, slowly. */
 export function passMonths(c: DirectorCareer, r: Rng): number {
-  const base = range(r, 6, 18);
+  const base = range(r, 12, 26);
   return Math.round(base + (c.momentum < -30 ? range(r, 4, 16) : 0));
 }
 

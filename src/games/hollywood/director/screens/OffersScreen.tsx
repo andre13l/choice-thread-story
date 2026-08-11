@@ -43,7 +43,7 @@ export function OffersScreen({
             onClick={onPass}
             className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/70 transition-colors hover:text-foreground"
           >
-            Take the year off
+            Take time off
           </button>
         </div>
       </div>
