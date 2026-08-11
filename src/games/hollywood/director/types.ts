@@ -118,6 +118,8 @@ export interface FilmResult {
   /** What the director personally took home (fee + backend - stake). */
   directorTake: number;
   verdict: Verdict;
+  /** Months from green light to release. */
+  productionMonths: number;
   /** 0-100 internal awards heat. */
   awardsHeat: number;
   culturalImpact: number;
@@ -134,6 +136,8 @@ export interface DirectorCareer {
   careerId: number;
   seed: number;
   cycle: number;
+  /** Months elapsed since the career began. Source of truth for time. */
+  months: number;
   year: number;
   age: number;
   /** Personal net worth. Can go negative. */
@@ -166,15 +170,33 @@ export interface DirectorCareer {
   fate?: string;
 }
 
+export interface ShareFilm {
+  title: string;
+  year: number;
+  budget: number;
+  worldwide: number;
+  critics: number;
+  oscars: number;
+}
+
 export interface CareerSnapshot {
   careerId: number;
   date: string;
   age: number;
+  startYear: number;
+  endYear: number;
+  spanYears: number;
   films: number;
   oscars: number;
   nominations: number;
   totalBoxOffice: number;
   bestFilm?: string;
+  avgCritics: number;
+  avgAudience: number;
+  biggestHit?: ShareFilm;
+  biggestFlop?: ShareFilm;
+  finalFilm?: ShareFilm;
+  topFilms: ShareFilm[];
   peakMoney: number;
   finalMoney: number;
   score: number;
