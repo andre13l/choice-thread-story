@@ -7,6 +7,7 @@
  */
 
 import { createRng } from "../../core/rng";
+import { productionMonths, yearOf } from "./pacing";
 import { hashString, noise, range } from "./names";
 import type { Actor, Allocation, DirectorCareer, FilmResult, Project, Verdict } from "./types";
 
@@ -98,6 +99,7 @@ export function resolveFilm(args: {
   );
 
   const theatrical = isTheatrical(project);
+  const prodMonths = productionMonths(project, r);
   let opening = 0;
   let worldwide = 0;
 
@@ -159,7 +161,8 @@ export function resolveFilm(args: {
     title: project.title,
     genre: project.genre,
     studio: project.studio,
-    year: career.year,
+    year: yearOf((career.months ?? 0) + prodMonths),
+    productionMonths: prodMonths,
     budget,
     marketingSpend: Math.round(marketingSpend),
     cast: cast.map((a) => ({ name: a.name, status: a.status })),
