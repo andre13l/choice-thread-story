@@ -43,6 +43,8 @@
   --color-ring-offset-background: var(--background);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
+  --color-link: var(--link);
+  --color-link-foreground: var(--link-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -87,6 +89,9 @@
   --danger-foreground: oklch(0.97 0.005 85);
   --gold: oklch(0.8 0.105 82);
   --gold-foreground: oklch(0.17 0.012 70);
+  /* CONNECT accent — cool signal colour, deliberately not Hollywood gold. */
+  --link: oklch(0.79 0.11 195);
+  --link-foreground: oklch(0.17 0.012 70);
   --border: oklch(0.3 0.011 66);
   --input: oklch(0.34 0.012 66);
   --ring: oklch(0.72 0.03 78);

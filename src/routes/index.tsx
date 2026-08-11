@@ -1,9 +1,36 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, ChevronRight, Clapperboard, Lock } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronRight,
+  Clapperboard,
+  Lock,
+  Share2,
+  Sparkles,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { GAMES } from "@/config/games";
 import { SITE } from "@/config/site";
 import { loadBest, loadCount, loadCurrentCareer } from "@/games/hollywood/storage";
+
+/** Per-game tile identity so the three playable games never read alike. */
+const TILE_META: Record<string, { label: string; icon: ReactNode }> = {
+  "higher-lower": {
+    label: "30-second arcade",
+    icon: (
+      <>
+        <ArrowUp className="h-4 w-4" />
+        <ArrowDown className="-ml-1.5 h-4 w-4" />
+      </>
+    ),
+  },
+  connect: {
+    label: "Path puzzle",
+    icon: <Share2 className="h-4 w-4 text-link" />,
+  },
+};
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -85,29 +112,32 @@ function Index() {
 
           {/* Fast games */}
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {playable.map((game) => (
-              <Link
-                key={game.id}
-                to={game.to!}
-                className="group flex flex-col justify-between border border-border/80 bg-card/40 px-6 py-5 text-left backdrop-blur-sm transition-all duration-300 hover:border-foreground/40 hover:bg-card/60"
-              >
-                <div className="flex items-center justify-between">
-                  <span aria-hidden className="flex items-center gap-0.5 text-foreground/70">
-                    <ArrowUp className="h-4 w-4" />
-                    <ArrowDown className="h-4 w-4 -ml-1.5" />
-                  </span>
-                  <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground transition-colors group-hover:text-foreground">
-                    30-second game
-                  </span>
-                </div>
-                <div className="mt-4">
-                  <span className="font-display text-2xl font-semibold tracking-[0.05em] text-foreground">
-                    {game.name}
-                  </span>
-                  <p className="mt-1.5 text-[13px] text-muted-foreground">{game.tagline}</p>
-                </div>
-              </Link>
-            ))}
+            {playable.map((game) => {
+              const meta = TILE_META[game.id] ?? { label: "Play", icon: <Sparkles className="h-4 w-4" /> };
+              return (
+                <Link
+                  key={game.id}
+                  to={game.to!}
+                  className="group flex flex-col justify-between border border-border/80 bg-card/40 px-6 py-5 text-left backdrop-blur-sm transition-all duration-300 hover:border-foreground/40 hover:bg-card/60"
+                >
+                  <div className="flex items-center justify-between">
+                    <span aria-hidden className="flex items-center gap-0.5 text-foreground/70">
+                      {meta.icon}
+                    </span>
+                    <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground transition-colors group-hover:text-foreground">
+                      {meta.label}
+                    </span>
+                  </div>
+                  <div className="mt-4">
+                    <span className="font-display text-2xl font-semibold tracking-[0.05em] text-foreground">
+                      {game.name}
+                    </span>
+                    <p className="mt-1.5 text-[13px] text-muted-foreground">{game.tagline}</p>
+                  </div>
+                </Link>
+              );
+            })}
+
 
             {upcoming.map((game) => (
               <div

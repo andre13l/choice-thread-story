@@ -31,11 +31,19 @@ export const GAMES: GameSlot[] = [
     to: "/higher-lower",
   },
   {
+    id: "connect",
+    name: "CONNECT",
+    tagline: "Two actors, no shared film. Link them in the fewest clicks.",
+    status: "playable",
+    to: "/connect",
+  },
+  {
     id: "guess",
     name: "GUESS THE FILM",
     tagline: "One knows the movie. The others ask.",
     status: "soon",
   },
+
   {
     id: "daily",
     name: "DAILY",
