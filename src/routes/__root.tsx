@@ -23,6 +23,10 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       {
+        name: "google-site-verification",
+        content: "-7zSBAFdG-IBLX9YOCNmyb3mBvmO_hxbGHHMg7D-GF8",
+      },
+      {
         name: "description",
         content:
           "A collection of short, highly replayable cinema and pop-culture games. Every choice changes your path.",

@@ -16,6 +16,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as HigherLowerRouteImport } from './routes/higher-lower'
 import { Route as HollywoodRouteImport } from './routes/hollywood'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WalkOfFameRouteImport } from './routes/walk-of-fame'
 
@@ -54,6 +55,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
   '/privacy': typeof PrivacyRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
   '/privacy': typeof PrivacyRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
   '/privacy': typeof PrivacyRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/higher-lower'
     | '/hollywood'
     | '/privacy'
+    | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/higher-lower'
     | '/hollywood'
     | '/privacy'
+    | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/higher-lower'
     | '/hollywood'
     | '/privacy'
+    | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
   fileRoutesById: FileRoutesById
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   HigherLowerRoute: typeof HigherLowerRoute
   HollywoodRoute: typeof HollywoodRoute
   PrivacyRoute: typeof PrivacyRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   WalkOfFameRoute: typeof WalkOfFameRoute
 }
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -223,19 +243,10 @@ const rootRouteChildren: RootRouteChildren = {
   HigherLowerRoute: HigherLowerRoute,
   HollywoodRoute: HollywoodRoute,
   PrivacyRoute: PrivacyRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   WalkOfFameRoute: WalkOfFameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
