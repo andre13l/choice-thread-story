@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, RotateCcw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { createRng } from "@/games/core/rng";
 import { SITE } from "@/config/site";
