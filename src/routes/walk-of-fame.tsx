@@ -65,6 +65,9 @@ function WalkOfFamePage() {
         </h1>
 
         <div className="mx-auto mt-10 max-w-xl space-y-4 text-[15px] leading-relaxed text-muted-foreground">
+          <h2 className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground/70">
+            How a name gets here
+          </h2>
           <p>Every path ends. Almost all of them are forgotten.</p>
           <p>
             A very small number of careers refuse to end the usual way. When one
@@ -129,6 +132,6 @@ function WalkOfFamePage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
