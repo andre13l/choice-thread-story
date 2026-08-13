@@ -112,3 +112,15 @@ export function pickWeighted(pool: StarRating[], random: () => number): string {
   }
   return pool[pool.length - 1]!.id;
 }
+
+const POOL_CACHE = new WeakMap<Graph, StarRating[]>();
+
+/** Memoized pool for the shared runtime graph. */
+export function cachedChallengePool(graph: Graph): StarRating[] {
+  let pool = POOL_CACHE.get(graph);
+  if (!pool) {
+    pool = challengePool(graph);
+    POOL_CACHE.set(graph, pool);
+  }
+  return pool;
+}

@@ -7,7 +7,7 @@
  */
 
 import { RAW_FILMS, type RawFilm } from "./data/films";
-import { challengePool, pickWeighted, type StarRating } from "./popularity";
+import { cachedChallengePool, pickWeighted, type StarRating } from "./popularity";
 
 
 export interface Person {
@@ -172,7 +172,7 @@ export function generateChallenge(graph: Graph, options: ChallengeOptions = {}):
     endpointPool,
   } = options;
 
-  const pool = endpointPool?.length ? endpointPool : challengePool(graph);
+  const pool = endpointPool?.length ? endpointPool : cachedChallengePool(graph);
   const fallbackIds = graph.personIds.filter(
     (id) => (graph.peopleById[id]?.movieIds.length ?? 0) >= minCredits,
   );
