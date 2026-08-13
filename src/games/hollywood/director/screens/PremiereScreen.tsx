@@ -150,7 +150,9 @@ export function PremiereScreen({
             Tap to skip ahead
           </p>
         )}
+        <div ref={tailRef} aria-hidden className="h-px w-full" />
       </div>
+
     </div>
   );
 }
