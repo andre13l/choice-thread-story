@@ -11,7 +11,7 @@
  * deliberate key-migration, never as part of a cosmetic rename.
  */
 export const SITE = {
-  name: "PATHS",
+  name: "NIRCOSI",
   tagline: "Every choice changes your path.",
   description:
     "A collection of short, highly replayable cinema and pop-culture games. How far can you make it?",

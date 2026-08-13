@@ -84,7 +84,7 @@ export function SiteFooter() {
 
         <div className="mt-12 flex flex-col gap-3 border-t border-border/40 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/60">
-            © {new Date().getFullYear()} {SITE.name} — a collection of paths
+            © {new Date().getFullYear()} {SITE.name} — a collection of cinema games
           </p>
           {socials.length > 0 && (
             <div className="flex gap-5">

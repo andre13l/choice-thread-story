@@ -8,12 +8,12 @@ export const Route = createFileRoute("/terms")({
       { title: `Terms — ${SITE.name}` },
       {
         name: "description",
-        content: "The terms of use for PATHS: entertainment only, fictional content, provided as-is.",
+        content: "The terms of use for NIRCOSI: entertainment only, fictional content, provided as-is.",
       },
       { property: "og:title", content: `Terms — ${SITE.name}` },
       {
         property: "og:description",
-        content: "The terms of use for PATHS: entertainment only, fictional content, provided as-is.",
+        content: "The terms of use for NIRCOSI: entertainment only, fictional content, provided as-is.",
       },
       { property: "og:type", content: "website" },
     ],
