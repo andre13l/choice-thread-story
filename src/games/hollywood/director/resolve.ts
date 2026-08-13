@@ -8,6 +8,7 @@
 
 import { createRng } from "../../core/rng";
 import { hashString, noise, range } from "./names";
+import { studioResultOf } from "./finance";
 import { productionMonths, yearOf } from "./pacing";
 import type { Actor, Allocation, DirectorCareer, FilmResult, Project, Verdict } from "./types";
 
@@ -127,7 +128,7 @@ export function resolveFilm(args: {
     clamp(14 + appeal * 0.66 + (critics - 50) * 0.12 + noise(r) * 11, 4, 100),
   );
 
-  const studioResult = Math.round(worldwide * (theatrical ? 0.47 : 0.85) - budget);
+  const studioResult = studioResultOf(worldwide, budget, theatrical);
 
   let directorTake = project.fee;
   if (project.selfFinanced) {
