@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { formatMoney } from "../../scoring";
 import type { CycleEffects } from "../career";
 import { reactionsFor } from "../reactions";
