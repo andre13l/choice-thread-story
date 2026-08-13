@@ -26,7 +26,7 @@ export const GAMES: GameSlot[] = [
   {
     id: "higher-lower",
     name: "HIGHER / LOWER",
-    tagline: "Box office, budgets, ratings — trust your gut.",
+    tagline: "Box office, budgets, runtimes — trust your gut.",
     status: "playable",
     to: "/higher-lower",
   },

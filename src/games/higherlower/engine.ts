@@ -3,7 +3,7 @@
  */
 import type { Rng } from "@/games/core/rng";
 import { randInt } from "@/games/core/rng";
-import { MOVIES, metricValue, type Metric, type Movie } from "./data/movies";
+import { metricValue, moviesForMetric, type Metric, type Movie } from "./data/movies";
 
 export type Guess = "higher" | "lower";
 
@@ -25,7 +25,6 @@ export interface RunState {
 const METRIC_LABELS: Record<Metric, string> = {
   boxOffice: "Worldwide box office",
   budget: "Production budget",
-  rating: "IMDb rating",
   runtime: "Runtime",
   year: "Release year",
 };
@@ -35,7 +34,7 @@ export function metricLabel(metric: Metric): string {
 }
 
 /** Draw a random movie not already used in this run. */
-function drawMovie(rng: Rng, usedIds: Set<string>, pool: Movie[] = MOVIES): Movie {
+function drawMovie(rng: Rng, usedIds: Set<string>, pool: Movie[]): Movie {
   const available = pool.filter((m) => !usedIds.has(m.id));
   const source = available.length > 0 ? available : pool;
   return source[randInt(rng, 0, source.length - 1)]!;
@@ -43,17 +42,18 @@ function drawMovie(rng: Rng, usedIds: Set<string>, pool: Movie[] = MOVIES): Movi
 
 /** Draw a random movie whose metric value differs from `value`, not already used. */
 function drawDistinctMovie(rng: Rng, usedIds: Set<string>, metric: Metric, value: number): Movie {
+  const pool = moviesForMetric(metric);
   for (let attempt = 0; attempt < 60; attempt++) {
-    const candidate = drawMovie(rng, usedIds);
+    const candidate = drawMovie(rng, usedIds, pool);
     if (metricValue(candidate, metric) !== value) return candidate;
   }
-  // Extremely unlikely fallback: search the whole catalogue.
-  const fallback = MOVIES.find((m) => metricValue(m, metric) !== value);
-  return fallback ?? MOVIES[0]!;
+  // Extremely unlikely fallback: search the whole eligible pool.
+  const fallback = pool.find((m) => metricValue(m, metric) !== value);
+  return fallback ?? pool[0]!;
 }
 
 export function startRun(metric: Metric, rng: Rng): RunState {
-  const known = drawMovie(rng, new Set());
+  const known = drawMovie(rng, new Set(), moviesForMetric(metric));
   const usedIds = new Set([known.id]);
   const next = drawDistinctMovie(rng, usedIds, metric, metricValue(known, metric));
   usedIds.add(next.id);
@@ -92,8 +92,6 @@ export function formatMetricValue(metric: Metric, movie: Movie): string {
     case "boxOffice":
     case "budget":
       return formatMoney(value);
-    case "rating":
-      return value.toFixed(1);
     case "runtime":
       return formatRuntime(value);
     case "year":
@@ -114,5 +112,5 @@ export function formatRuntime(minutes: number): string {
   return `${h}h ${String(m).padStart(2, "0")}m`;
 }
 
-export const ALL_METRICS: Metric[] = ["boxOffice", "budget", "rating", "runtime", "year"];
+export const ALL_METRICS: Metric[] = ["boxOffice", "budget", "runtime", "year"];
 export type { Metric, Movie };

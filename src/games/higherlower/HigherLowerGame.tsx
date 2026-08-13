@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, RotateCcw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { createRng } from "@/games/core/rng";
 import { SITE } from "@/config/site";
@@ -149,16 +149,18 @@ export function HigherLowerGame() {
 }
 
 function ModeSelect({ onSelect }: { onSelect: (metric: Metric) => void }) {
-  const bests = useMemo(() => {
+  // Personal bests live in localStorage, so they can only be read after
+  // hydration — reading during render makes SSR and client markup disagree.
+  const [bests, setBests] = useState<Map<Metric, number>>(() => new Map());
+  useEffect(() => {
     const map = new Map<Metric, number>();
     for (const m of ALL_METRICS) map.set(m, loadBest(m));
-    return map;
+    setBests(map);
   }, []);
 
   const cardMeta: Record<Metric, { title: string; hint: string }> = {
     boxOffice: { title: "Box office", hint: "Worldwide gross" },
     budget: { title: "Budget", hint: "Production budget" },
-    rating: { title: "Rating", hint: "IMDb-style score" },
     runtime: { title: "Runtime", hint: "Minutes on screen" },
     year: { title: "Year", hint: "Release year" },
   };
@@ -359,8 +361,6 @@ function metricValueOf(movie: RunState["known"], metric: Metric): number {
       return movie.boxOfficeM;
     case "budget":
       return movie.budgetM;
-    case "rating":
-      return movie.rating;
     case "runtime":
       return movie.runtimeMin;
     case "year":

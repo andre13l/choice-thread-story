@@ -33,7 +33,7 @@ function AboutPage() {
         The flagship is <span className="text-foreground">HOLLYWOOD</span>: a full acting
         career compressed into minutes, from extra work to whatever comes after fame.
         Alongside it, <span className="text-foreground">HIGHER / LOWER</span> is the
-        thirty-second game — box office, budgets, ratings, and a streak that always feels
+        thirty-second game — box office, budgets, runtimes, and a streak that always feels
         one guess away from greatness.
       </p>
       <p>

@@ -35,12 +35,23 @@ const TILE_META: Record<string, { label: string; icon: ReactNode }> = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: `${SITE.name} — ${SITE.tagline}` },
-      { name: "description", content: SITE.description },
-      { property: "og:title", content: `${SITE.name} — ${SITE.tagline}` },
-      { property: "og:description", content: SITE.description },
+      { title: "Nircosi — Free Movie Games" },
+      {
+        name: "description",
+        content:
+          "Free movie games you can play in a minute: direct a Hollywood career, guess box office in Higher / Lower, and link actors through films in Connect.",
+      },
+      { property: "og:title", content: "Nircosi — Free Movie Games" },
+      {
+        property: "og:description",
+        content:
+          "Free movie games you can play in a minute: direct a Hollywood career, guess box office, and link actors through films.",
+      },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://nircosi.com/" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://nircosi.com/" }],
   }),
   component: Index,
 });
