@@ -1,7 +1,7 @@
 /**
- * Site identity — provisional by design.
+ * Site identity.
  *
- * The final product name/domain will be chosen later. Everything
+ * The platform brand is NIRCOSI. Everything
  * user-visible (titles, metadata, share text, storage keys) reads from
  * here so a rebrand is a one-line change, not a refactor.
  *

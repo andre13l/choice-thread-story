@@ -1,5 +1,5 @@
 /**
- * PATHS — event engine.
+ * NIRCOSI — event engine.
  *
  * Pure functions. No React. A career is a GameState threaded through
  * pickEvent -> resolveOption -> advance. Content packs (Hollywood today,

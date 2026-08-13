@@ -1,5 +1,5 @@
 /**
- * PATHS — tuning configuration.
+ * NIRCOSI — tuning configuration.
  *
  * Probability configuration lives here, deliberately separated from any UI.
  * Nothing in this file may ever be rendered, hinted at, or leaked to the
