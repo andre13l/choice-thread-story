@@ -133,6 +133,7 @@ function WalkOfFamePage() {
                 </div>
               </div>
             ))}
+            </div>
           </div>
         )}
       </div>
