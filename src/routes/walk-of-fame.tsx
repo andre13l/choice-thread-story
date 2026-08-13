@@ -21,6 +21,22 @@ export const Route = createFileRoute("/walk-of-fame")({
           "Every path ends. Almost all of them are forgotten. The Walk of Fame is where the rarest careers are written down — permanently.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://nircosi.com/walk-of-fame" },
+    ],
+    links: [{ rel: "canonical", href: "https://nircosi.com/walk-of-fame" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: `Walk of Fame — ${SITE.name}`,
+          url: "https://nircosi.com/walk-of-fame",
+          description:
+            "A record of the rarest Hollywood careers — the only ones that escaped the usual ending.",
+          isPartOf: { "@id": "https://nircosi.com/#website" },
+        }),
+      },
     ],
   }),
   component: WalkOfFamePage,
@@ -38,7 +54,7 @@ function WalkOfFamePage() {
   }, []);
 
   return (
-    <main className="stage flex flex-1 flex-col items-center px-6 py-16 sm:py-24">
+    <div className="stage flex flex-1 flex-col items-center px-6 py-16 sm:py-24">
       <div className="anim-fade-up w-full max-w-3xl text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
           {SITE.name}
@@ -49,6 +65,9 @@ function WalkOfFamePage() {
         </h1>
 
         <div className="mx-auto mt-10 max-w-xl space-y-4 text-[15px] leading-relaxed text-muted-foreground">
+          <h2 className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground/70">
+            How a name gets here
+          </h2>
           <p>Every path ends. Almost all of them are forgotten.</p>
           <p>
             A very small number of careers refuse to end the usual way. When one
@@ -75,9 +94,9 @@ function WalkOfFamePage() {
                 </div>
               ))}
             </div>
-            <p className="mt-10 text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground/70">
+            <h2 className="mt-10 text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground/70">
               The pavement is still empty
-            </p>
+            </h2>
             <p className="mt-3 text-[13px] text-muted-foreground/60">
               No name has earned it yet. Yours would be the first.
             </p>
@@ -85,7 +104,11 @@ function WalkOfFamePage() {
         )}
 
         {legends && legends.length > 0 && (
-          <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="mt-16">
+            <h2 className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground/70">
+              Verified legends
+            </h2>
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {legends.map((legend) => (
               <div
                 key={legend.careerId}
@@ -110,9 +133,10 @@ function WalkOfFamePage() {
                 </div>
               </div>
             ))}
+            </div>
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

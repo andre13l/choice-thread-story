@@ -51,9 +51,9 @@ export function EndingScreen({
           Age {summary.age}
         </p>
         <div className="mt-6 h-px w-16 mx-auto bg-gold/70" />
-        <h2 className="mt-4 font-display text-[clamp(2.5rem,8vw,3.5rem)] leading-tight text-foreground">
+        <h1 className="mt-4 font-display text-[clamp(2.5rem,8vw,3.5rem)] leading-tight text-foreground">
           {summary.archetype}
-        </h2>
+        </h1>
         {summary.fate && (
           <p className="mx-auto mt-6 max-w-sm text-[14px] italic leading-relaxed text-muted-foreground">
             {summary.fate}

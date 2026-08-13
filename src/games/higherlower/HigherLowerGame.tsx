@@ -195,7 +195,7 @@ function ModeSelect({ onSelect }: { onSelect: (metric: Metric) => void }) {
               <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
                 {metricLabel(metric)}
               </p>
-              <h3 className="mt-2 font-display text-2xl text-foreground">{cardMeta[metric].title}</h3>
+              <h2 className="mt-2 font-display text-2xl text-foreground">{cardMeta[metric].title}</h2>
               <p className="mt-1 text-[13px] text-muted-foreground">{cardMeta[metric].hint}</p>
               <div className="mt-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                 <span>Best</span>
@@ -389,6 +389,7 @@ function GameOver({
         Final streak
       </p>
       <h1 className="mt-3 font-display text-[clamp(4rem,16vw,7rem)] leading-none text-foreground">
+        <span className="sr-only">Game over — final streak: </span>
         {streak}
       </h1>
       <p className="mt-6 text-[13px] uppercase tracking-[0.2em] text-muted-foreground">

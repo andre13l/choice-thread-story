@@ -77,6 +77,7 @@ function Index() {
       <div className="anim-fade-up flex w-full max-w-2xl flex-col items-center text-center">
         <h1 className="font-display text-[clamp(3.6rem,14vw,7.5rem)] font-bold leading-none tracking-[0.1em] text-foreground">
           {SITE.name}
+          <span className="sr-only"> — free cinema and pop-culture games</span>
         </h1>
         <p className="mt-5 text-sm tracking-wide text-muted-foreground">{SITE.tagline}</p>
         <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-muted-foreground/60">
