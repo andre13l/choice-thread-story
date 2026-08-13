@@ -50,7 +50,8 @@ export function buildGraph(films: RawFilm[] = RAW_FILMS): Graph {
   const moviesById: Record<string, Movie> = {};
 
   for (const film of films) {
-    const movieId = `m-${slug(film.title)}-${film.year}`;
+    const movieId = film.id ? `m-${film.id}` : `m-${slug(film.title)}-${film.year}`;
+    if (moviesById[movieId]) continue;
     const movie: Movie = { id: movieId, title: film.title, year: film.year, personIds: [] };
     moviesById[movieId] = movie;
 

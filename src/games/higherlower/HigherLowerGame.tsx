@@ -158,7 +158,6 @@ function ModeSelect({ onSelect }: { onSelect: (metric: Metric) => void }) {
   const cardMeta: Record<Metric, { title: string; hint: string }> = {
     boxOffice: { title: "Box office", hint: "Worldwide gross" },
     budget: { title: "Budget", hint: "Production budget" },
-    rating: { title: "Rating", hint: "IMDb-style score" },
     runtime: { title: "Runtime", hint: "Minutes on screen" },
     year: { title: "Year", hint: "Release year" },
   };
@@ -359,8 +358,6 @@ function metricValueOf(movie: RunState["known"], metric: Metric): number {
       return movie.boxOfficeM;
     case "budget":
       return movie.budgetM;
-    case "rating":
-      return movie.rating;
     case "runtime":
       return movie.runtimeMin;
     case "year":

@@ -1,21 +1,27 @@
 /**
- * Local movie dataset — HIGHER/LOWER.
+ * Local movie catalogue — HIGHER / LOWER.
  *
- * Real, widely-reported figures (worldwide gross & budget in USD millions,
- * IMDb-style rating to one decimal, runtime in minutes). Structured so the
- * static array can later be swapped for a live API without touching call
- * sites — everything reads through `metricValue`.
+ * The runtime catalogue is the generated snapshot in `./generated`, validated
+ * here before gameplay ever sees it. Everything reads through `metricValue`
+ * and `moviesForMetric`, so the static array can later be swapped for a
+ * backend catalogue without touching call sites.
+ *
+ * Metrics are worldwide box office, production budget, runtime and release
+ * year. There is deliberately no rating metric — no rating or vote-count data
+ * is stored, exposed or used anywhere in gameplay.
  */
 
-export type Metric = "boxOffice" | "budget" | "rating" | "runtime" | "year";
+import { GENERATED_MOVIES } from "./generated/movies.generated";
+
+export type Metric = "boxOffice" | "budget" | "runtime" | "year";
 
 export interface Movie {
+  /** Stable catalogue id (IMDb title id), shared with CONNECT. */
   id: string;
   title: string;
   year: number;
   boxOfficeM: number;
   budgetM: number;
-  rating: number;
   runtimeMin: number;
 }
 
@@ -25,8 +31,6 @@ export function metricValue(movie: Movie, metric: Metric): number {
       return movie.boxOfficeM;
     case "budget":
       return movie.budgetM;
-    case "rating":
-      return movie.rating;
     case "runtime":
       return movie.runtimeMin;
     case "year":
@@ -34,230 +38,51 @@ export function metricValue(movie: Movie, metric: Metric): number {
   }
 }
 
-export const MOVIES: Movie[] = [
-  { id: "titanic", title: "Titanic", year: 1997, boxOfficeM: 2264, budgetM: 200, rating: 7.9, runtimeMin: 194 },
-  { id: "interstellar", title: "Interstellar", year: 2014, boxOfficeM: 731, budgetM: 165, rating: 8.7, runtimeMin: 169 },
-  { id: "wolf-of-wall-street", title: "The Wolf of Wall Street", year: 2013, boxOfficeM: 407, budgetM: 100, rating: 8.2, runtimeMin: 180 },
-  { id: "avatar", title: "Avatar", year: 2009, boxOfficeM: 2923, budgetM: 237, rating: 7.9, runtimeMin: 162 },
-  { id: "avengers-endgame", title: "Avengers: Endgame", year: 2019, boxOfficeM: 2799, budgetM: 356, rating: 8.4, runtimeMin: 181 },
-  { id: "avengers-infinity-war", title: "Avengers: Infinity War", year: 2018, boxOfficeM: 2048, budgetM: 321, rating: 8.4, runtimeMin: 149 },
-  { id: "star-wars-force-awakens", title: "Star Wars: The Force Awakens", year: 2015, boxOfficeM: 2071, budgetM: 245, rating: 7.8, runtimeMin: 138 },
-  { id: "jurassic-world", title: "Jurassic World", year: 2015, boxOfficeM: 1671, budgetM: 150, rating: 7.0, runtimeMin: 124 },
-  { id: "the-lion-king-2019", title: "The Lion King", year: 2019, boxOfficeM: 1657, budgetM: 260, rating: 6.8, runtimeMin: 118 },
-  { id: "furious-7", title: "Furious 7", year: 2015, boxOfficeM: 1516, budgetM: 190, rating: 7.1, runtimeMin: 137 },
-  { id: "frozen-2", title: "Frozen II", year: 2019, boxOfficeM: 1453, budgetM: 150, rating: 6.8, runtimeMin: 103 },
-  { id: "frozen", title: "Frozen", year: 2013, boxOfficeM: 1290, budgetM: 150, rating: 7.4, runtimeMin: 102 },
-  { id: "black-panther", title: "Black Panther", year: 2018, boxOfficeM: 1347, budgetM: 200, rating: 7.3, runtimeMin: 134 },
-  { id: "harry-potter-deathly-hallows-2", title: "Harry Potter and the Deathly Hallows: Part 2", year: 2011, boxOfficeM: 1342, budgetM: 125, rating: 8.1, runtimeMin: 130 },
-  { id: "star-wars-last-jedi", title: "Star Wars: The Last Jedi", year: 2017, boxOfficeM: 1333, budgetM: 262, rating: 6.9, runtimeMin: 152 },
-  { id: "jurassic-park", title: "Jurassic Park", year: 1993, boxOfficeM: 1029, budgetM: 63, rating: 8.2, runtimeMin: 127 },
-  { id: "the-avengers", title: "The Avengers", year: 2012, boxOfficeM: 1519, budgetM: 220, rating: 8.0, runtimeMin: 143 },
-  { id: "avengers-age-of-ultron", title: "Avengers: Age of Ultron", year: 2015, boxOfficeM: 1405, budgetM: 250, rating: 7.3, runtimeMin: 141 },
-  { id: "the-dark-knight", title: "The Dark Knight", year: 2008, boxOfficeM: 1006, budgetM: 185, rating: 9.0, runtimeMin: 152 },
-  { id: "the-dark-knight-rises", title: "The Dark Knight Rises", year: 2012, boxOfficeM: 1085, budgetM: 250, rating: 8.4, runtimeMin: 165 },
-  { id: "inception", title: "Inception", year: 2010, boxOfficeM: 839, budgetM: 160, rating: 8.8, runtimeMin: 148 },
-  { id: "the-matrix", title: "The Matrix", year: 1999, boxOfficeM: 467, budgetM: 63, rating: 8.7, runtimeMin: 136 },
-  { id: "fight-club", title: "Fight Club", year: 1999, boxOfficeM: 101, budgetM: 63, rating: 8.8, runtimeMin: 139 },
-  { id: "pulp-fiction", title: "Pulp Fiction", year: 1994, boxOfficeM: 214, budgetM: 8, rating: 8.9, runtimeMin: 154 },
-  { id: "forrest-gump", title: "Forrest Gump", year: 1994, boxOfficeM: 678, budgetM: 55, rating: 8.8, runtimeMin: 142 },
-  { id: "the-shawshank-redemption", title: "The Shawshank Redemption", year: 1994, boxOfficeM: 28, budgetM: 25, rating: 9.3, runtimeMin: 142 },
-  { id: "the-godfather", title: "The Godfather", year: 1972, boxOfficeM: 250, budgetM: 6, rating: 9.2, runtimeMin: 175 },
-  { id: "the-godfather-2", title: "The Godfather Part II", year: 1974, boxOfficeM: 48, budgetM: 13, rating: 9.0, runtimeMin: 202 },
-  { id: "goodfellas", title: "Goodfellas", year: 1990, boxOfficeM: 47, budgetM: 25, rating: 8.7, runtimeMin: 145 },
-  { id: "jaws", title: "Jaws", year: 1975, boxOfficeM: 476, budgetM: 9, rating: 8.1, runtimeMin: 124 },
-  { id: "star-wars-new-hope", title: "Star Wars", year: 1977, boxOfficeM: 775, budgetM: 11, rating: 8.6, runtimeMin: 121 },
-  { id: "the-empire-strikes-back", title: "The Empire Strikes Back", year: 1980, boxOfficeM: 550, budgetM: 18, rating: 8.7, runtimeMin: 124 },
-  { id: "return-of-the-jedi", title: "Return of the Jedi", year: 1983, boxOfficeM: 475, budgetM: 32, rating: 8.3, runtimeMin: 131 },
-  { id: "et", title: "E.T. the Extra-Terrestrial", year: 1982, boxOfficeM: 793, budgetM: 10, rating: 7.9, runtimeMin: 115 },
-  { id: "back-to-the-future", title: "Back to the Future", year: 1985, boxOfficeM: 388, budgetM: 19, rating: 8.5, runtimeMin: 116 },
-  { id: "terminator-2", title: "Terminator 2: Judgment Day", year: 1991, boxOfficeM: 520, budgetM: 102, rating: 8.6, runtimeMin: 137 },
-  { id: "titanic-2", title: "Independence Day", year: 1996, boxOfficeM: 817, budgetM: 75, rating: 6.9, runtimeMin: 145 },
-  { id: "the-lion-king-1994", title: "The Lion King", year: 1994, boxOfficeM: 968, budgetM: 45, rating: 8.5, runtimeMin: 88 },
-  { id: "toy-story", title: "Toy Story", year: 1995, boxOfficeM: 373, budgetM: 30, rating: 8.3, runtimeMin: 81 },
-  { id: "toy-story-3", title: "Toy Story 3", year: 2010, boxOfficeM: 1067, budgetM: 200, rating: 8.3, runtimeMin: 103 },
-  { id: "toy-story-4", title: "Toy Story 4", year: 2019, boxOfficeM: 1073, budgetM: 200, rating: 7.7, runtimeMin: 100 },
-  { id: "finding-nemo", title: "Finding Nemo", year: 2003, boxOfficeM: 940, budgetM: 94, rating: 8.2, runtimeMin: 100 },
-  { id: "up", title: "Up", year: 2009, boxOfficeM: 735, budgetM: 175, rating: 8.3, runtimeMin: 96 },
-  { id: "the-incredibles", title: "The Incredibles", year: 2004, boxOfficeM: 632, budgetM: 92, rating: 8.0, runtimeMin: 115 },
-  { id: "incredibles-2", title: "Incredibles 2", year: 2018, boxOfficeM: 1243, budgetM: 200, rating: 7.6, runtimeMin: 118 },
-  { id: "shrek-2", title: "Shrek 2", year: 2004, boxOfficeM: 928, budgetM: 150, rating: 7.3, runtimeMin: 93 },
-  { id: "shrek", title: "Shrek", year: 2001, boxOfficeM: 487, budgetM: 60, rating: 7.9, runtimeMin: 90 },
-  { id: "despicable-me-2", title: "Despicable Me 2", year: 2013, boxOfficeM: 970, budgetM: 76, rating: 7.3, runtimeMin: 98 },
-  { id: "minions", title: "Minions", year: 2015, boxOfficeM: 1159, budgetM: 74, rating: 6.4, runtimeMin: 91 },
-  { id: "the-super-mario-bros-movie", title: "The Super Mario Bros. Movie", year: 2023, boxOfficeM: 1362, budgetM: 100, rating: 7.0, runtimeMin: 92 },
-  { id: "barbie", title: "Barbie", year: 2023, boxOfficeM: 1447, budgetM: 145, rating: 6.8, runtimeMin: 114 },
-  { id: "oppenheimer", title: "Oppenheimer", year: 2023, boxOfficeM: 976, budgetM: 100, rating: 8.3, runtimeMin: 181 },
-  { id: "spider-man-no-way-home", title: "Spider-Man: No Way Home", year: 2021, boxOfficeM: 1922, budgetM: 200, rating: 8.2, runtimeMin: 148 },
-  { id: "spider-man-far-from-home", title: "Spider-Man: Far From Home", year: 2019, boxOfficeM: 1132, budgetM: 160, rating: 7.4, runtimeMin: 129 },
-  { id: "spider-man-into-spider-verse", title: "Spider-Man: Into the Spider-Verse", year: 2018, boxOfficeM: 384, budgetM: 90, rating: 8.4, runtimeMin: 117 },
-  { id: "spider-man-across-spider-verse", title: "Spider-Man: Across the Spider-Verse", year: 2023, boxOfficeM: 690, budgetM: 100, rating: 8.6, runtimeMin: 140 },
-  { id: "joker", title: "Joker", year: 2019, boxOfficeM: 1074, budgetM: 55, rating: 8.4, runtimeMin: 122 },
-  { id: "the-batman", title: "The Batman", year: 2022, boxOfficeM: 771, budgetM: 185, rating: 7.8, runtimeMin: 176 },
-  { id: "batman-begins", title: "Batman Begins", year: 2005, boxOfficeM: 375, budgetM: 150, rating: 8.2, runtimeMin: 140 },
-  { id: "man-of-steel", title: "Man of Steel", year: 2013, boxOfficeM: 668, budgetM: 225, rating: 7.0, runtimeMin: 143 },
-  { id: "wonder-woman", title: "Wonder Woman", year: 2017, boxOfficeM: 822, budgetM: 149, rating: 7.4, runtimeMin: 141 },
-  { id: "aquaman", title: "Aquaman", year: 2018, boxOfficeM: 1148, budgetM: 160, rating: 6.8, runtimeMin: 143 },
-  { id: "guardians-of-the-galaxy", title: "Guardians of the Galaxy", year: 2014, boxOfficeM: 773, budgetM: 170, rating: 8.0, runtimeMin: 121 },
-  { id: "guardians-of-the-galaxy-vol-3", title: "Guardians of the Galaxy Vol. 3", year: 2023, boxOfficeM: 845, budgetM: 250, rating: 7.9, runtimeMin: 150 },
-  { id: "iron-man", title: "Iron Man", year: 2008, boxOfficeM: 585, budgetM: 140, rating: 7.9, runtimeMin: 126 },
-  { id: "iron-man-3", title: "Iron Man 3", year: 2013, boxOfficeM: 1215, budgetM: 200, rating: 7.1, runtimeMin: 130 },
-  { id: "captain-america-civil-war", title: "Captain America: Civil War", year: 2016, boxOfficeM: 1155, budgetM: 250, rating: 7.8, runtimeMin: 147 },
-  { id: "black-panther-wakanda-forever", title: "Black Panther: Wakanda Forever", year: 2022, boxOfficeM: 859, budgetM: 250, rating: 6.7, runtimeMin: 161 },
-  { id: "doctor-strange", title: "Doctor Strange", year: 2016, boxOfficeM: 677, budgetM: 165, rating: 7.5, runtimeMin: 115 },
-  { id: "doctor-strange-multiverse", title: "Doctor Strange in the Multiverse of Madness", year: 2022, boxOfficeM: 956, budgetM: 200, rating: 6.9, runtimeMin: 126 },
-  { id: "thor-ragnarok", title: "Thor: Ragnarok", year: 2017, boxOfficeM: 854, budgetM: 180, rating: 7.9, runtimeMin: 130 },
-  { id: "black-widow", title: "Black Widow", year: 2021, boxOfficeM: 379, budgetM: 200, rating: 6.7, runtimeMin: 134 },
-  { id: "deadpool", title: "Deadpool", year: 2016, boxOfficeM: 783, budgetM: 58, rating: 8.0, runtimeMin: 108 },
-  { id: "deadpool-2", title: "Deadpool 2", year: 2018, boxOfficeM: 785, budgetM: 110, rating: 7.6, runtimeMin: 119 },
-  { id: "deadpool-wolverine", title: "Deadpool & Wolverine", year: 2024, boxOfficeM: 1338, budgetM: 200, rating: 7.6, runtimeMin: 128 },
-  { id: "logan", title: "Logan", year: 2017, boxOfficeM: 619, budgetM: 97, rating: 8.1, runtimeMin: 137 },
-  { id: "x-men-days-of-future-past", title: "X-Men: Days of Future Past", year: 2014, boxOfficeM: 748, budgetM: 200, rating: 7.9, runtimeMin: 132 },
-  { id: "jurassic-world-fallen-kingdom", title: "Jurassic World: Fallen Kingdom", year: 2018, boxOfficeM: 1310, budgetM: 170, rating: 6.1, runtimeMin: 128 },
-  { id: "jurassic-park-3", title: "Jurassic Park III", year: 2001, boxOfficeM: 368, budgetM: 93, rating: 5.9, runtimeMin: 92 },
-  { id: "the-lost-world-jurassic-park", title: "The Lost World: Jurassic Park", year: 1997, boxOfficeM: 618, budgetM: 73, rating: 6.5, runtimeMin: 129 },
-  { id: "king-kong-2005", title: "King Kong", year: 2005, boxOfficeM: 550, budgetM: 207, rating: 7.2, runtimeMin: 187 },
-  { id: "godzilla-2014", title: "Godzilla", year: 2014, boxOfficeM: 529, budgetM: 160, rating: 6.4, runtimeMin: 123 },
-  { id: "kong-skull-island", title: "Kong: Skull Island", year: 2017, boxOfficeM: 566, budgetM: 185, rating: 6.6, runtimeMin: 118 },
-  { id: "godzilla-vs-kong", title: "Godzilla vs. Kong", year: 2021, boxOfficeM: 470, budgetM: 155, rating: 6.3, runtimeMin: 113 },
-  { id: "pirates-of-the-caribbean", title: "Pirates of the Caribbean: The Curse of the Black Pearl", year: 2003, boxOfficeM: 655, budgetM: 140, rating: 8.0, runtimeMin: 143 },
-  { id: "pirates-dead-mans-chest", title: "Pirates of the Caribbean: Dead Man's Chest", year: 2006, boxOfficeM: 1066, budgetM: 225, rating: 7.3, runtimeMin: 151 },
-  { id: "pirates-on-stranger-tides", title: "Pirates of the Caribbean: On Stranger Tides", year: 2011, boxOfficeM: 1046, budgetM: 379, rating: 6.6, runtimeMin: 137 },
-  { id: "transformers", title: "Transformers", year: 2007, boxOfficeM: 709, budgetM: 150, rating: 7.0, runtimeMin: 144 },
-  { id: "transformers-dark-of-the-moon", title: "Transformers: Dark of the Moon", year: 2011, boxOfficeM: 1124, budgetM: 195, rating: 6.2, runtimeMin: 154 },
-  { id: "the-fast-and-the-furious", title: "The Fast and the Furious", year: 2001, boxOfficeM: 207, budgetM: 38, rating: 6.8, runtimeMin: 106 },
-  { id: "fast-five", title: "Fast Five", year: 2011, boxOfficeM: 626, budgetM: 125, rating: 7.3, runtimeMin: 130 },
-  { id: "fast-x", title: "Fast X", year: 2023, boxOfficeM: 715, budgetM: 340, rating: 5.8, runtimeMin: 141 },
-  { id: "mission-impossible-fallout", title: "Mission: Impossible - Fallout", year: 2018, boxOfficeM: 791, budgetM: 178, rating: 7.7, runtimeMin: 147 },
-  { id: "mission-impossible-dead-reckoning", title: "Mission: Impossible - Dead Reckoning Part One", year: 2023, boxOfficeM: 567, budgetM: 291, rating: 7.7, runtimeMin: 163 },
-  { id: "skyfall", title: "Skyfall", year: 2012, boxOfficeM: 1109, budgetM: 200, rating: 7.8, runtimeMin: 143 },
-  { id: "spectre", title: "Spectre", year: 2015, boxOfficeM: 880, budgetM: 245, rating: 6.8, runtimeMin: 148 },
-  { id: "no-time-to-die", title: "No Time to Die", year: 2021, boxOfficeM: 774, budgetM: 250, rating: 7.3, runtimeMin: 163 },
-  { id: "casino-royale", title: "Casino Royale", year: 2006, boxOfficeM: 616, budgetM: 150, rating: 8.0, runtimeMin: 144 },
-  { id: "the-hunger-games", title: "The Hunger Games", year: 2012, boxOfficeM: 694, budgetM: 78, rating: 7.2, runtimeMin: 142 },
-  { id: "catching-fire", title: "The Hunger Games: Catching Fire", year: 2013, boxOfficeM: 865, budgetM: 130, rating: 7.5, runtimeMin: 146 },
-  { id: "mockingjay-part-2", title: "The Hunger Games: Mockingjay - Part 2", year: 2015, boxOfficeM: 653, budgetM: 160, rating: 6.5, runtimeMin: 137 },
-  { id: "the-hunger-games-ballad", title: "The Hunger Games: The Ballad of Songbirds & Snakes", year: 2023, boxOfficeM: 342, budgetM: 100, rating: 7.2, runtimeMin: 157 },
-  { id: "twilight", title: "Twilight", year: 2008, boxOfficeM: 393, budgetM: 37, rating: 5.2, runtimeMin: 122 },
-  { id: "twilight-breaking-dawn-2", title: "The Twilight Saga: Breaking Dawn - Part 2", year: 2012, boxOfficeM: 830, budgetM: 120, rating: 5.5, runtimeMin: 116 },
-  { id: "la-la-land", title: "La La Land", year: 2016, boxOfficeM: 471, budgetM: 30, rating: 8.0, runtimeMin: 128 },
-  { id: "whiplash", title: "Whiplash", year: 2014, boxOfficeM: 49, budgetM: 3.3, rating: 8.5, runtimeMin: 106 },
-  { id: "parasite", title: "Parasite", year: 2019, boxOfficeM: 263, budgetM: 11, rating: 8.5, runtimeMin: 132 },
-  { id: "everything-everywhere", title: "Everything Everywhere All at Once", year: 2022, boxOfficeM: 143, budgetM: 25, rating: 7.8, runtimeMin: 140 },
-  { id: "get-out", title: "Get Out", year: 2017, boxOfficeM: 255, budgetM: 4.5, rating: 7.7, runtimeMin: 104 },
-  { id: "us", title: "Us", year: 2019, boxOfficeM: 256, budgetM: 20, rating: 6.8, runtimeMin: 116 },
-  { id: "a-quiet-place", title: "A Quiet Place", year: 2018, boxOfficeM: 341, budgetM: 17, rating: 7.5, runtimeMin: 90 },
-  { id: "it-2017", title: "It", year: 2017, boxOfficeM: 701, budgetM: 35, rating: 7.3, runtimeMin: 135 },
-  { id: "the-conjuring", title: "The Conjuring", year: 2013, boxOfficeM: 319, budgetM: 20, rating: 7.5, runtimeMin: 112 },
-  { id: "the-exorcist", title: "The Exorcist", year: 1973, boxOfficeM: 441, budgetM: 12, rating: 8.1, runtimeMin: 122 },
-  { id: "the-shining", title: "The Shining", year: 1980, boxOfficeM: 47, budgetM: 19, rating: 8.4, runtimeMin: 146 },
-  { id: "alien", title: "Alien", year: 1979, boxOfficeM: 106, budgetM: 11, rating: 8.5, runtimeMin: 117 },
-  { id: "aliens", title: "Aliens", year: 1986, boxOfficeM: 131, budgetM: 18, rating: 8.4, runtimeMin: 137 },
-  { id: "the-silence-of-the-lambs", title: "The Silence of the Lambs", year: 1991, boxOfficeM: 273, budgetM: 19, rating: 8.6, runtimeMin: 118 },
-  { id: "se7en", title: "Se7en", year: 1995, boxOfficeM: 328, budgetM: 33, rating: 8.6, runtimeMin: 127 },
-  { id: "the-sixth-sense", title: "The Sixth Sense", year: 1999, boxOfficeM: 673, budgetM: 40, rating: 8.1, runtimeMin: 107 },
-  { id: "gladiator", title: "Gladiator", year: 2000, boxOfficeM: 465, budgetM: 103, rating: 8.5, runtimeMin: 155 },
-  { id: "braveheart", title: "Braveheart", year: 1995, boxOfficeM: 213, budgetM: 72, rating: 8.3, runtimeMin: 178 },
-  { id: "saving-private-ryan", title: "Saving Private Ryan", year: 1998, boxOfficeM: 482, budgetM: 70, rating: 8.6, runtimeMin: 169 },
-  { id: "schindlers-list", title: "Schindler's List", year: 1993, boxOfficeM: 322, budgetM: 22, rating: 9.0, runtimeMin: 195 },
-  { id: "the-green-mile", title: "The Green Mile", year: 1999, boxOfficeM: 286, budgetM: 60, rating: 8.6, runtimeMin: 189 },
-  { id: "fargo", title: "Fargo", year: 1996, boxOfficeM: 61, budgetM: 7, rating: 8.1, runtimeMin: 98 },
-  { id: "no-country-for-old-men", title: "No Country for Old Men", year: 2007, boxOfficeM: 171, budgetM: 25, rating: 8.1, runtimeMin: 122 },
-  { id: "there-will-be-blood", title: "There Will Be Blood", year: 2007, boxOfficeM: 76, budgetM: 25, rating: 8.2, runtimeMin: 158 },
-  { id: "the-departed", title: "The Departed", year: 2006, boxOfficeM: 291, budgetM: 90, rating: 8.5, runtimeMin: 151 },
-  { id: "django-unchained", title: "Django Unchained", year: 2012, boxOfficeM: 426, budgetM: 100, rating: 8.4, runtimeMin: 165 },
-  { id: "inglourious-basterds", title: "Inglourious Basterds", year: 2009, boxOfficeM: 321, budgetM: 70, rating: 8.4, runtimeMin: 153 },
-  { id: "once-upon-a-time-in-hollywood", title: "Once Upon a Time in Hollywood", year: 2019, boxOfficeM: 377, budgetM: 90, rating: 7.6, runtimeMin: 161 },
-  { id: "the-revenant", title: "The Revenant", year: 2015, boxOfficeM: 533, budgetM: 135, rating: 8.0, runtimeMin: 156 },
-  { id: "mad-max-fury-road", title: "Mad Max: Fury Road", year: 2015, boxOfficeM: 380, budgetM: 185, rating: 8.1, runtimeMin: 120 },
-  { id: "dune", title: "Dune", year: 2021, boxOfficeM: 434, budgetM: 165, rating: 8.0, runtimeMin: 155 },
-  { id: "dune-part-two", title: "Dune: Part Two", year: 2024, boxOfficeM: 714, budgetM: 190, rating: 8.5, runtimeMin: 166 },
-  { id: "blade-runner-2049", title: "Blade Runner 2049", year: 2017, boxOfficeM: 267, budgetM: 150, rating: 8.0, runtimeMin: 164 },
-  { id: "the-martian", title: "The Martian", year: 2015, boxOfficeM: 631, budgetM: 108, rating: 8.0, runtimeMin: 144 },
-  { id: "gravity", title: "Gravity", year: 2013, boxOfficeM: 723, budgetM: 100, rating: 7.7, runtimeMin: 91 },
-  { id: "arrival", title: "Arrival", year: 2016, boxOfficeM: 203, budgetM: 47, rating: 7.9, runtimeMin: 116 },
-  { id: "her", title: "Her", year: 2013, boxOfficeM: 48, budgetM: 23, rating: 8.0, runtimeMin: 126 },
-  { id: "the-social-network", title: "The Social Network", year: 2010, boxOfficeM: 225, budgetM: 40, rating: 7.7, runtimeMin: 120 },
-  { id: "the-big-short", title: "The Big Short", year: 2015, boxOfficeM: 133, budgetM: 28, rating: 7.8, runtimeMin: 130 },
-  { id: "moneyball", title: "Moneyball", year: 2011, boxOfficeM: 111, budgetM: 50, rating: 7.6, runtimeMin: 133 },
-  { id: "the-truman-show", title: "The Truman Show", year: 1998, boxOfficeM: 264, budgetM: 60, rating: 8.2, runtimeMin: 103 },
-  { id: "eternal-sunshine", title: "Eternal Sunshine of the Spotless Mind", year: 2004, boxOfficeM: 74, budgetM: 20, rating: 8.3, runtimeMin: 108 },
-  { id: "up-in-the-air", title: "Up in the Air", year: 2009, boxOfficeM: 164, budgetM: 25, rating: 7.4, runtimeMin: 109 },
-  { id: "little-miss-sunshine", title: "Little Miss Sunshine", year: 2006, boxOfficeM: 101, budgetM: 8, rating: 7.8, runtimeMin: 101 },
-  { id: "juno", title: "Juno", year: 2007, boxOfficeM: 231, budgetM: 7.5, rating: 7.4, runtimeMin: 96 },
-  { id: "the-notebook", title: "The Notebook", year: 2004, boxOfficeM: 116, budgetM: 29, rating: 7.8, runtimeMin: 123 },
-  { id: "titanic-3d-2012", title: "The Devil Wears Prada", year: 2006, boxOfficeM: 326, budgetM: 35, rating: 6.9, runtimeMin: 109 },
-  { id: "legally-blonde", title: "Legally Blonde", year: 2001, boxOfficeM: 142, budgetM: 18, rating: 6.4, runtimeMin: 96 },
-  { id: "mean-girls", title: "Mean Girls", year: 2004, boxOfficeM: 130, budgetM: 17, rating: 7.1, runtimeMin: 97 },
-  { id: "bridesmaids", title: "Bridesmaids", year: 2011, boxOfficeM: 306, budgetM: 32.5, rating: 6.8, runtimeMin: 125 },
-  { id: "the-hangover", title: "The Hangover", year: 2009, boxOfficeM: 469, budgetM: 35, rating: 7.7, runtimeMin: 100 },
-  { id: "superbad", title: "Superbad", year: 2007, boxOfficeM: 170, budgetM: 20, rating: 7.6, runtimeMin: 113 },
-  { id: "anchorman", title: "Anchorman: The Legend of Ron Burgundy", year: 2004, boxOfficeM: 90, budgetM: 26, rating: 7.2, runtimeMin: 94 },
-  { id: "step-brothers", title: "Step Brothers", year: 2008, boxOfficeM: 128, budgetM: 65, rating: 6.9, runtimeMin: 98 },
-  { id: "knives-out", title: "Knives Out", year: 2019, boxOfficeM: 313, budgetM: 40, rating: 7.9, runtimeMin: 130 },
-  { id: "glass-onion", title: "Glass Onion: A Knives Out Mystery", year: 2022, boxOfficeM: 15, budgetM: 40, rating: 7.1, runtimeMin: 139 },
-  { id: "the-grand-budapest-hotel", title: "The Grand Budapest Hotel", year: 2014, boxOfficeM: 174, budgetM: 25, rating: 8.1, runtimeMin: 99 },
-  { id: "moonlight", title: "Moonlight", year: 2016, boxOfficeM: 65, budgetM: 1.5, rating: 7.4, runtimeMin: 111 },
-  { id: "spotlight", title: "Spotlight", year: 2015, boxOfficeM: 98, budgetM: 20, rating: 8.1, runtimeMin: 129 },
-  { id: "the-shape-of-water", title: "The Shape of Water", year: 2017, boxOfficeM: 195, budgetM: 19.5, rating: 7.3, runtimeMin: 123 },
-  { id: "birdman", title: "Birdman", year: 2014, boxOfficeM: 103, budgetM: 18, rating: 7.7, runtimeMin: 119 },
-  { id: "the-artist", title: "The Artist", year: 2011, boxOfficeM: 133, budgetM: 15, rating: 7.9, runtimeMin: 100 },
-  { id: "slumdog-millionaire", title: "Slumdog Millionaire", year: 2008, boxOfficeM: 378, budgetM: 15, rating: 8.0, runtimeMin: 120 },
-  { id: "the-king-speech", title: "The King's Speech", year: 2010, boxOfficeM: 427, budgetM: 15, rating: 8.0, runtimeMin: 118 },
-  { id: "black-swan", title: "Black Swan", year: 2010, boxOfficeM: 329, budgetM: 13, rating: 8.0, runtimeMin: 108 },
-  { id: "the-wolf-of-wall-street-2", title: "American Hustle", year: 2013, boxOfficeM: 251, budgetM: 40, rating: 7.2, runtimeMin: 138 },
-  { id: "argo", title: "Argo", year: 2012, boxOfficeM: 232, budgetM: 44.5, rating: 7.7, runtimeMin: 120 },
-  { id: "12-years-a-slave", title: "12 Years a Slave", year: 2013, boxOfficeM: 188, budgetM: 22, rating: 8.1, runtimeMin: 134 },
-  { id: "green-book", title: "Green Book", year: 2018, boxOfficeM: 322, budgetM: 23, rating: 8.2, runtimeMin: 130 },
-  { id: "coco", title: "Coco", year: 2017, boxOfficeM: 807, budgetM: 175, rating: 8.4, runtimeMin: 105 },
-  { id: "inside-out", title: "Inside Out", year: 2015, boxOfficeM: 858, budgetM: 175, rating: 8.1, runtimeMin: 95 },
-  { id: "inside-out-2", title: "Inside Out 2", year: 2024, boxOfficeM: 1699, budgetM: 200, rating: 7.6, runtimeMin: 96 },
-  { id: "wall-e", title: "WALL-E", year: 2008, boxOfficeM: 521, budgetM: 180, rating: 8.4, runtimeMin: 98 },
-  { id: "ratatouille", title: "Ratatouille", year: 2007, boxOfficeM: 623, budgetM: 150, rating: 8.1, runtimeMin: 111 },
-  { id: "monsters-inc", title: "Monsters, Inc.", year: 2001, boxOfficeM: 579, budgetM: 115, rating: 8.1, runtimeMin: 92 },
-  { id: "monsters-university", title: "Monsters University", year: 2013, boxOfficeM: 744, budgetM: 200, rating: 7.2, runtimeMin: 104 },
-  { id: "moana", title: "Moana", year: 2016, boxOfficeM: 690, budgetM: 150, rating: 7.6, runtimeMin: 107 },
-  { id: "tangled", title: "Tangled", year: 2010, boxOfficeM: 592, budgetM: 260, rating: 7.7, runtimeMin: 100 },
-  { id: "zootopia", title: "Zootopia", year: 2016, boxOfficeM: 1024, budgetM: 150, rating: 8.0, runtimeMin: 108 },
-  { id: "aladdin-2019", title: "Aladdin", year: 2019, boxOfficeM: 1051, budgetM: 183, rating: 6.9, runtimeMin: 128 },
-  { id: "beauty-and-the-beast-2017", title: "Beauty and the Beast", year: 2017, boxOfficeM: 1266, budgetM: 160, rating: 7.1, runtimeMin: 129 },
-  { id: "the-jungle-book-2016", title: "The Jungle Book", year: 2016, boxOfficeM: 966, budgetM: 175, rating: 7.4, runtimeMin: 106 },
-  { id: "maleficent", title: "Maleficent", year: 2014, boxOfficeM: 759, budgetM: 180, rating: 6.9, runtimeMin: 97 },
-  { id: "cinderella-2015", title: "Cinderella", year: 2015, boxOfficeM: 543, budgetM: 95, rating: 6.9, runtimeMin: 105 },
-  { id: "the-wizard-of-oz", title: "The Wizard of Oz", year: 1939, boxOfficeM: 46, budgetM: 3, rating: 8.1, runtimeMin: 102 },
-  { id: "gone-with-the-wind", title: "Gone with the Wind", year: 1939, boxOfficeM: 402, budgetM: 4, rating: 8.2, runtimeMin: 238 },
-  { id: "the-sound-of-music", title: "The Sound of Music", year: 1965, boxOfficeM: 286, budgetM: 8.2, rating: 8.1, runtimeMin: 172 },
-  { id: "2001-a-space-odyssey", title: "2001: A Space Odyssey", year: 1968, boxOfficeM: 146, budgetM: 12, rating: 8.3, runtimeMin: 149 },
-  { id: "the-good-bad-ugly", title: "The Good, the Bad and the Ugly", year: 1966, boxOfficeM: 25, budgetM: 1.2, rating: 8.8, runtimeMin: 178 },
-  { id: "one-flew-over", title: "One Flew Over the Cuckoo's Nest", year: 1975, boxOfficeM: 109, budgetM: 3, rating: 8.7, runtimeMin: 133 },
-  { id: "rocky", title: "Rocky", year: 1976, boxOfficeM: 225, budgetM: 1, rating: 8.1, runtimeMin: 120 },
-  { id: "apocalypse-now", title: "Apocalypse Now", year: 1979, boxOfficeM: 105, budgetM: 31.5, rating: 8.4, runtimeMin: 147 },
-  { id: "raiders-of-the-lost-ark", title: "Raiders of the Lost Ark", year: 1981, boxOfficeM: 390, budgetM: 18, rating: 8.4, runtimeMin: 115 },
-  { id: "indiana-jones-last-crusade", title: "Indiana Jones and the Last Crusade", year: 1989, boxOfficeM: 474, budgetM: 48, rating: 8.2, runtimeMin: 127 },
-  { id: "ghostbusters", title: "Ghostbusters", year: 1984, boxOfficeM: 295, budgetM: 30, rating: 7.8, runtimeMin: 105 },
-  { id: "die-hard", title: "Die Hard", year: 1988, boxOfficeM: 141, budgetM: 28, rating: 8.2, runtimeMin: 132 },
-  { id: "top-gun", title: "Top Gun", year: 1986, boxOfficeM: 357, budgetM: 15, rating: 6.9, runtimeMin: 110 },
-  { id: "top-gun-maverick", title: "Top Gun: Maverick", year: 2022, boxOfficeM: 1496, budgetM: 170, rating: 8.2, runtimeMin: 130 },
-  { id: "the-terminator", title: "The Terminator", year: 1984, boxOfficeM: 78, budgetM: 6.4, rating: 8.1, runtimeMin: 107 },
-  { id: "robocop", title: "RoboCop", year: 1987, boxOfficeM: 53, budgetM: 13, rating: 7.5, runtimeMin: 102 },
-  { id: "pretty-woman", title: "Pretty Woman", year: 1990, boxOfficeM: 463, budgetM: 14, rating: 7.0, runtimeMin: 119 },
-  { id: "home-alone", title: "Home Alone", year: 1990, boxOfficeM: 477, budgetM: 18, rating: 7.7, runtimeMin: 103 },
-  { id: "the-lord-of-the-rings-fellowship", title: "The Lord of the Rings: The Fellowship of the Ring", year: 2001, boxOfficeM: 888, budgetM: 93, rating: 8.9, runtimeMin: 178 },
-  { id: "the-lord-of-the-rings-two-towers", title: "The Lord of the Rings: The Two Towers", year: 2002, boxOfficeM: 947, budgetM: 94, rating: 8.8, runtimeMin: 179 },
-  { id: "the-lord-of-the-rings-return-of-the-king", title: "The Lord of the Rings: The Return of the King", year: 2003, boxOfficeM: 1146, budgetM: 94, rating: 9.0, runtimeMin: 201 },
-  { id: "the-hobbit-unexpected-journey", title: "The Hobbit: An Unexpected Journey", year: 2012, boxOfficeM: 1017, budgetM: 180, rating: 7.8, runtimeMin: 169 },
-  { id: "harry-potter-sorcerers-stone", title: "Harry Potter and the Sorcerer's Stone", year: 2001, boxOfficeM: 1027, budgetM: 125, rating: 7.6, runtimeMin: 152 },
-  { id: "harry-potter-goblet-of-fire", title: "Harry Potter and the Goblet of Fire", year: 2005, boxOfficeM: 896, budgetM: 150, rating: 7.7, runtimeMin: 157 },
-  { id: "harry-potter-prisoner-of-azkaban", title: "Harry Potter and the Prisoner of Azkaban", year: 2004, boxOfficeM: 796, budgetM: 130, rating: 7.9, runtimeMin: 142 },
-  { id: "fantastic-beasts", title: "Fantastic Beasts and Where to Find Them", year: 2016, boxOfficeM: 814, budgetM: 180, rating: 7.2, runtimeMin: 133 },
-  { id: "the-chronicles-of-narnia", title: "The Chronicles of Narnia: The Lion, the Witch and the Wardrobe", year: 2005, boxOfficeM: 745, budgetM: 180, rating: 6.9, runtimeMin: 143 },
-  { id: "the-polar-express", title: "The Polar Express", year: 2004, boxOfficeM: 314, budgetM: 165, rating: 6.6, runtimeMin: 100 },
-  { id: "night-at-the-museum", title: "Night at the Museum", year: 2006, boxOfficeM: 574, budgetM: 110, rating: 6.4, runtimeMin: 108 },
-  { id: "men-in-black", title: "Men in Black", year: 1997, boxOfficeM: 589, budgetM: 90, rating: 7.3, runtimeMin: 98 },
-  { id: "mrs-doubtfire", title: "Mrs. Doubtfire", year: 1993, boxOfficeM: 441, budgetM: 25, rating: 7.1, runtimeMin: 125 },
-  { id: "the-truman-show-2", title: "Dead Poets Society", year: 1989, boxOfficeM: 236, budgetM: 16.4, rating: 8.1, runtimeMin: 128 },
-  { id: "good-will-hunting", title: "Good Will Hunting", year: 1997, boxOfficeM: 226, budgetM: 10, rating: 8.3, runtimeMin: 126 },
-  { id: "a-beautiful-mind", title: "A Beautiful Mind", year: 2001, boxOfficeM: 313, budgetM: 58, rating: 8.2, runtimeMin: 135 },
-  { id: "the-departed-2", title: "Catch Me If You Can", year: 2002, boxOfficeM: 352, budgetM: 52, rating: 8.1, runtimeMin: 141 },
-  { id: "gladiator-2", title: "Gladiator II", year: 2024, boxOfficeM: 465, budgetM: 250, rating: 6.5, runtimeMin: 148 },
-  { id: "wicked", title: "Wicked", year: 2024, boxOfficeM: 756, budgetM: 150, rating: 7.6, runtimeMin: 160 },
-];
+const CURRENT_YEAR = new Date().getUTCFullYear();
+
+/** A record is only playable when its shared fields are sane. */
+function isUsable(movie: Movie): boolean {
+  if (!movie.id || !movie.title.trim()) return false;
+  // Raw Wikidata QIDs occasionally leak through the snapshot join.
+  if (/^Q\d+$/.test(movie.title)) return false;
+  if (!Number.isFinite(movie.year) || movie.year < 1900 || movie.year > CURRENT_YEAR + 1) return false;
+  if (!Number.isFinite(movie.runtimeMin) || movie.runtimeMin < 40 || movie.runtimeMin > 300) return false;
+  return true;
+}
+
+function dedupe(movies: Movie[]): Movie[] {
+  const byId = new Set<string>();
+  const byTitleYear = new Set<string>();
+  const out: Movie[] = [];
+  for (const movie of movies) {
+    const titleYear = `${movie.title.toLowerCase()}|${movie.year}`;
+    if (byId.has(movie.id) || byTitleYear.has(titleYear)) continue;
+    byId.add(movie.id);
+    byTitleYear.add(titleYear);
+    out.push(movie);
+  }
+  return out;
+}
+
+/** Validated catalogue. */
+export const MOVIES: Movie[] = dedupe(GENERATED_MOVIES.filter(isUsable));
+
+/** True when this film has a usable value for the given metric. */
+export function hasMetric(movie: Movie, metric: Metric): boolean {
+  const value = metricValue(movie, metric);
+  if (!Number.isFinite(value)) return false;
+  if (metric === "boxOffice" || metric === "budget") return value > 0;
+  return true;
+}
+
+const POOLS = new Map<Metric, Movie[]>();
+
+/** Films eligible to be compared under the given metric. */
+export function moviesForMetric(metric: Metric): Movie[] {
+  let pool = POOLS.get(metric);
+  if (!pool) {
+    pool = MOVIES.filter((m) => hasMetric(m, metric));
+    POOLS.set(metric, pool);
+  }
+  return pool;
+}

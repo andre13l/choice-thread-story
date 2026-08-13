@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { SITE } from "@/config/site";
 import { TEST_MODE } from "@/games/hollywood/config";
 import { PRESETS } from "@/games/hollywood/director/dev";
 import { AwardsScreen } from "@/games/hollywood/director/screens/AwardsScreen";
@@ -19,20 +18,22 @@ import { useDirectorGame } from "@/games/hollywood/director/useDirectorGame";
 export const Route = createFileRoute("/hollywood")({
   head: () => ({
     meta: [
-      { title: `HOLLYWOOD — Direct your own films | ${SITE.name}` },
+      { title: "Hollywood Director Game — Build a Movie Career | Nircosi" },
       {
         name: "description",
         content:
           "Direct your way through Hollywood. Choose the project, cast it, spend the budget, then watch the premiere fill — or empty. A short, endlessly replayable career simulation.",
       },
-      { property: "og:title", content: `HOLLYWOOD — Direct your own films | ${SITE.name}` },
+      { property: "og:title", content: "Hollywood Director Game — Build a Movie Career | Nircosi" },
       {
         property: "og:description",
         content: "Pick the film. Cast it. Spend the money. Then watch the room fill.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://nircosi.com/hollywood" },
     ],
+    links: [{ rel: "canonical", href: "https://nircosi.com/hollywood" }],
   }),
   component: HollywoodPage,
 });
