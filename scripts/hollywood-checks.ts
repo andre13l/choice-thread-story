@@ -82,14 +82,8 @@ for (let run = 0; run < RUNS; run++) {
     terminal++;
     ages.push(career.age);
     filmCounts.push(career.films.length);
-    const key =
-      career.money < -3_000_000
-        ? "financial ruin"
-        : accessScore(career) < 14
-          ? "no more offers"
-          : career.age >= DIRECTOR_PACING.softEndAge
-            ? "aged out"
-            : "industry moved on";
+    const key = career.fate ?? "(none)";
+    if (!career.fate) throw new Error("terminal career without a fate line");
     fates.set(key, (fates.get(key) ?? 0) + 1);
   } else {
     escaped++;
