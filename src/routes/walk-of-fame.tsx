@@ -54,7 +54,7 @@ function WalkOfFamePage() {
   }, []);
 
   return (
-    <main className="stage flex flex-1 flex-col items-center px-6 py-16 sm:py-24">
+    <div className="stage flex flex-1 flex-col items-center px-6 py-16 sm:py-24">
       <div className="anim-fade-up w-full max-w-3xl text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
           {SITE.name}
