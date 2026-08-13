@@ -1,5 +1,5 @@
 /**
- * PATHS — HOLLYWOOD content pack, part 2: the working actor.
+ * NIRCOSI — HOLLYWOOD content pack, part 2: the working actor.
  * TV, supporting roles, indies, blockbusters, fame management.
  */
 

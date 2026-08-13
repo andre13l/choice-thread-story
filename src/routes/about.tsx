@@ -8,12 +8,12 @@ export const Route = createFileRoute("/about")({
       { title: `About — ${SITE.name}` },
       {
         name: "description",
-        content: "What PATHS is: a collection of short, replayable cinema and pop-culture games where every decision changes the path.",
+        content: "What NIRCOSI is: a collection of short, replayable cinema and pop-culture games where every decision changes the path.",
       },
       { property: "og:title", content: `About — ${SITE.name}` },
       {
         property: "og:description",
-        content: "What PATHS is: a collection of short, replayable cinema and pop-culture games where every decision changes the path.",
+        content: "What NIRCOSI is: a collection of short, replayable cinema and pop-culture games where every decision changes the path.",
       },
       { property: "og:type", content: "website" },
     ],

@@ -1,5 +1,5 @@
 /**
- * PATHS — local persistence.
+ * NIRCOSI — local persistence.
  *
  * localStorage today; the shape mirrors what Supabase will later store
  * globally (career verification, leaderboards, hall of fame, anti-cheat).

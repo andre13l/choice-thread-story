@@ -8,12 +8,12 @@ export const Route = createFileRoute("/privacy")({
       { title: `Privacy — ${SITE.name}` },
       {
         name: "description",
-        content: "How PATHS handles your data: your games live on your own device. No accounts, no trackers.",
+        content: "How NIRCOSI handles your data: your games live on your own device. No accounts, no trackers.",
       },
       { property: "og:title", content: `Privacy — ${SITE.name}` },
       {
         property: "og:description",
-        content: "How PATHS handles your data: your games live on your own device. No accounts, no trackers.",
+        content: "How NIRCOSI handles your data: your games live on your own device. No accounts, no trackers.",
       },
       { property: "og:type", content: "website" },
     ],

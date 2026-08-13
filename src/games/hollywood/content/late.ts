@@ -1,5 +1,5 @@
 /**
- * PATHS — HOLLYWOOD content pack, part 3: the top of the mountain.
+ * NIRCOSI — HOLLYWOOD content pack, part 3: the top of the mountain.
  * Power, production companies, catastrophic risk, collapse chains,
  * late-career memory — and the hidden final events, which read as
  * ordinary (if strange) career situations.

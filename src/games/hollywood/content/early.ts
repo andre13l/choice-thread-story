@@ -1,5 +1,5 @@
 /**
- * PATHS — HOLLYWOOD content pack, part 1: the early years.
+ * NIRCOSI — HOLLYWOOD content pack, part 1: the early years.
  * Unknown actor → extra → commercials → low-budget anything.
  */
 

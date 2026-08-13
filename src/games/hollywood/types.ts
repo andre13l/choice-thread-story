@@ -1,5 +1,5 @@
 /**
- * PATHS — core game types.
+ * NIRCOSI — core game types.
  *
  * The event engine is data-driven and path-agnostic: Hollywood is just the
  * first content pack. Music, Football, Business and Racing will reuse the

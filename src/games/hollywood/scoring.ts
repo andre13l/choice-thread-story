@@ -1,5 +1,5 @@
 /**
- * PATHS — career scoring, percentile simulation, archetypes, share text.
+ * NIRCOSI — career scoring, percentile simulation, archetypes, share text.
  *
  * The percentile is a local simulation against a modeled population of
  * careers. When global statistics exist (backend), this module is the swap
