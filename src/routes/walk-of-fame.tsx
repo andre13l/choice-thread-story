@@ -21,6 +21,22 @@ export const Route = createFileRoute("/walk-of-fame")({
           "Every path ends. Almost all of them are forgotten. The Walk of Fame is where the rarest careers are written down — permanently.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://nircosi.com/walk-of-fame" },
+    ],
+    links: [{ rel: "canonical", href: "https://nircosi.com/walk-of-fame" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: `Walk of Fame — ${SITE.name}`,
+          url: "https://nircosi.com/walk-of-fame",
+          description:
+            "A record of the rarest Hollywood careers — the only ones that escaped the usual ending.",
+          isPartOf: { "@id": "https://nircosi.com/#website" },
+        }),
+      },
     ],
   }),
   component: WalkOfFamePage,
