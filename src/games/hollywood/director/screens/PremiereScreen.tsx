@@ -23,6 +23,7 @@ export function PremiereScreen({
 }) {
   const [step, setStep] = useState(0);
   const reactions = useMemo(() => reactionsFor(film), [film]);
+  const tailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (step >= STEP_MS.length) return;
@@ -30,8 +31,22 @@ export function PremiereScreen({
     return () => clearTimeout(t);
   }, [step]);
 
+  /**
+   * Follow the reveal without ever parking the viewport in empty space:
+   * the sentinel sits directly under the last revealed panel and only
+   * scrolls the minimum needed to keep it in view. (Scrolling to
+   * document.body.scrollHeight used to leave a blank screen, because the
+   * page is min-h-screen tall long before the panels have rendered.)
+   */
   useEffect(() => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    if (step === 0) {
+      window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+      return;
+    }
+    const id = requestAnimationFrame(() => {
+      tailRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    return () => cancelAnimationFrame(id);
   }, [step]);
 
   const done = step >= STEP_MS.length;
@@ -43,6 +58,7 @@ export function PremiereScreen({
       onClick={() => !done && setStep((s) => Math.min(STEP_MS.length, s + 1))}
     >
       <div className="w-full max-w-2xl">
+
         {/* Poster */}
         <div className="anim-fade-up border border-border/70 bg-card/40 px-6 py-10 text-center">
           <p className="text-[10px] uppercase tracking-[0.3em] text-gold/80">
