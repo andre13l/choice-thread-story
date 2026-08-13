@@ -7,6 +7,8 @@
  */
 
 import { RAW_FILMS, type RawFilm } from "./data/films";
+import { challengePool, pickWeighted, type StarRating } from "./popularity";
+
 
 export interface Person {
   id: string;
