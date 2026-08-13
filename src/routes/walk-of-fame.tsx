@@ -94,9 +94,9 @@ function WalkOfFamePage() {
                 </div>
               ))}
             </div>
-            <p className="mt-10 text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground/70">
+            <h2 className="mt-10 text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground/70">
               The pavement is still empty
-            </p>
+            </h2>
             <p className="mt-3 text-[13px] text-muted-foreground/60">
               No name has earned it yet. Yours would be the first.
             </p>
@@ -104,7 +104,11 @@ function WalkOfFamePage() {
         )}
 
         {legends && legends.length > 0 && (
-          <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="mt-16">
+            <h2 className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground/70">
+              Verified legends
+            </h2>
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {legends.map((legend) => (
               <div
                 key={legend.careerId}
