@@ -4,6 +4,7 @@ import type { CycleEffects } from "../career";
 import { reactionsFor } from "../reactions";
 import { VERDICT_LABEL } from "../resolve";
 import type { FilmResult } from "../types";
+import { splitLabel, studioRentals } from "../finance";
 import { useCountUp } from "./useCountUp";
 
 const STEP_MS = [1700, 2600, 2200, 2100, 1900, 2200];
@@ -259,9 +260,12 @@ function GrossPanel({ film, theatrical }: { film: FilmResult; theatrical: boolea
         <span>Budget {formatMoney(film.budget)}</span>
         <span className={profit ? "text-foreground/80" : "text-danger"}>
           {profit ? "+" : ""}
-          {formatMoney(film.studioResult)} to the studio
+          {formatMoney(film.studioResult)} studio net
         </span>
       </div>
+      <p className="mt-2 text-[9px] uppercase tracking-[0.16em] text-muted-foreground/70">
+        {splitLabel(theatrical)} returns to the studio ({formatMoney(studioRentals(film.worldwide, theatrical))}), minus the {formatMoney(film.budget)} budget
+      </p>
     </div>
   );
 }
