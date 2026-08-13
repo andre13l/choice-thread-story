@@ -10,7 +10,7 @@ export function CharacterIntro({ game, onContinue }: { game: GameState; onContin
         <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
           Los Angeles
         </p>
-        <h2 className="mt-6 font-display text-6xl text-foreground">You are 18.</h2>
+        <h1 className="mt-6 font-display text-6xl text-foreground">You are 18.</h1>
         <p className="mt-6 font-display text-lg italic leading-relaxed text-muted-foreground">
           {characterFlavor(s)}
         </p>

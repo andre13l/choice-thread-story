@@ -3,15 +3,18 @@ import { StaticPage } from "@/components/site/StaticPage";
 import { SITE } from "@/config/site";
 
 export const Route = createFileRoute("/contact")({
-  head: () => ({
-    meta: [
-      { title: `Contact — ${SITE.name}` },
-      { name: "description", content: `Get in touch with the ${SITE.name} team.` },
-      { property: "og:title", content: `Contact — ${SITE.name}` },
-      { property: "og:description", content: `Get in touch with the ${SITE.name} team.` },
-      { property: "og:type", content: "website" },
-    ],
-  }),
+  head: () => {
+    const description = `Get in touch with the ${SITE.name} team about the movie games — feedback, bug reports, press questions and ideas for future cinema games.`;
+    return {
+      meta: [
+        { title: `Contact — ${SITE.name}` },
+        { name: "description", content: description },
+        { property: "og:title", content: `Contact — ${SITE.name}` },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+      ],
+    };
+  },
   component: ContactPage,
 });
 
