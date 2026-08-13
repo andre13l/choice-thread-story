@@ -149,10 +149,13 @@ export function HigherLowerGame() {
 }
 
 function ModeSelect({ onSelect }: { onSelect: (metric: Metric) => void }) {
-  const bests = useMemo(() => {
+  // Personal bests live in localStorage, so they can only be read after
+  // hydration — reading during render makes SSR and client markup disagree.
+  const [bests, setBests] = useState<Map<Metric, number>>(() => new Map());
+  useEffect(() => {
     const map = new Map<Metric, number>();
     for (const m of ALL_METRICS) map.set(m, loadBest(m));
-    return map;
+    setBests(map);
   }, []);
 
   const cardMeta: Record<Metric, { title: string; hint: string }> = {
