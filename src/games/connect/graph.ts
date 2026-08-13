@@ -7,6 +7,8 @@
  */
 
 import { RAW_FILMS, type RawFilm } from "./data/films";
+import { cachedChallengePool, pickWeighted, type StarRating } from "./popularity";
+
 
 export interface Person {
   id: string;
@@ -147,6 +149,11 @@ export interface ChallengeOptions {
   /** Pair keys ("a|b") to avoid repeating. */
   avoid?: Set<string>;
   random?: () => number;
+  /**
+   * Recognizability-weighted endpoint pool. Endpoints are drawn from here;
+   * the full graph is still used for traversal, so paths stay rich.
+   */
+  endpointPool?: StarRating[];
 }
 
 export const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
@@ -162,15 +169,21 @@ export function generateChallenge(graph: Graph, options: ChallengeOptions = {}):
     minCredits = 3,
     avoid = new Set<string>(),
     random = Math.random,
+    endpointPool,
   } = options;
 
-  const pool = graph.personIds.filter((id) => (graph.peopleById[id]?.movieIds.length ?? 0) >= minCredits);
-  const source = pool.length >= 2 ? pool : graph.personIds;
+  const pool = endpointPool?.length ? endpointPool : cachedChallengePool(graph);
+  const fallbackIds = graph.personIds.filter(
+    (id) => (graph.peopleById[id]?.movieIds.length ?? 0) >= minCredits,
+  );
+  const source = fallbackIds.length >= 2 ? fallbackIds : graph.personIds;
+  const draw = (): string =>
+    pool.length >= 2 ? pickWeighted(pool, random) : source[Math.floor(random() * source.length)]!;
 
   let fallback: Challenge | null = null;
   for (let attempt = 0; attempt < 600; attempt++) {
-    const a = source[Math.floor(random() * source.length)]!;
-    const b = source[Math.floor(random() * source.length)]!;
+    const a = draw();
+    const b = draw();
     if (a === b) continue;
     if (avoid.has(pairKey(a, b))) continue;
     if (areCoStars(graph, a, b)) continue;
@@ -191,3 +204,4 @@ export function generateChallenge(graph: Graph, options: ChallengeOptions = {}):
   }
   throw new Error("connect: no valid challenge pair in graph");
 }
+
