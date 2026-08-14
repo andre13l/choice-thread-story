@@ -11,6 +11,7 @@ import { DIRECTOR_DECLINE, DIRECTOR_LEGEND, DIRECTOR_PACING } from "./config";
 import { hashString } from "./names";
 import { accessScore, directorTier } from "./offers";
 import { ageOf, gapMonths, makeTimeJump, passMonths, yearOf, type TimeJump } from "./pacing";
+import type { AwardsRun } from "./awards";
 import type { CareerSnapshot, DirectorCareer, FilmResult, Genre, ShareFilm } from "./types";
 
 function clamp(v: number, lo = 0, hi = 100): number {
@@ -147,11 +148,19 @@ export function applyAwards(c: DirectorCareer, awards: AwardsRun): DirectorCaree
     films,
     nominations: c.nominations + awards.nominations.length,
     oscars: c.oscars + awards.oscars,
-    prestige: clamp(c.prestige + awards.nominations.length * 2 + awards.oscars * 7),
-    reputation: clamp(c.reputation + awards.oscars * 4 + (awards.bestDirectorNominated ? 2 : 0)),
-    recognition: clamp(c.recognition + awards.oscars * 3),
-    studioTrust: clamp(c.studioTrust + awards.oscars * 3),
-    momentum: clamp(c.momentum + awards.oscars * 12, -100, 100),
+    prestige: clamp(
+      c.prestige +
+        awards.nominations.length * 1.2 +
+        awards.academyNominations * 2.5 +
+        awards.minorWins * 1.6 +
+        awards.oscars * 7,
+    ),
+    reputation: clamp(
+      c.reputation + awards.oscars * 4 + awards.minorWins * 1.2 + (awards.bestDirectorNominated ? 2 : 0),
+    ),
+    recognition: clamp(c.recognition + awards.oscars * 3 + awards.academyNominations * 0.8),
+    studioTrust: clamp(c.studioTrust + awards.oscars * 3 + awards.minorWins),
+    momentum: clamp(c.momentum + awards.oscars * 12 + awards.minorWins * 3, -100, 100),
   };
 }
 
