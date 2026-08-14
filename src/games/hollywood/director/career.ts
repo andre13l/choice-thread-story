@@ -11,6 +11,7 @@ import { DIRECTOR_DECLINE, DIRECTOR_LEGEND, DIRECTOR_PACING } from "./config";
 import { hashString } from "./names";
 import { accessScore, directorTier } from "./offers";
 import { ageOf, gapMonths, makeTimeJump, passMonths, yearOf, type TimeJump } from "./pacing";
+import type { AwardsRun } from "./awards";
 import type { CareerSnapshot, DirectorCareer, FilmResult, Genre, ShareFilm } from "./types";
 
 function clamp(v: number, lo = 0, hi = 100): number {
@@ -42,61 +43,10 @@ export function newCareer(careerId: number): DirectorCareer {
   };
 }
 
-/** Awards season payload, when a film earns one. */
-export interface AwardsRun {
-  filmId: string;
-  filmTitle: string;
-  nominations: string[];
-  bestDirectorNominated: boolean;
-  bestPictureNominated: boolean;
-  wins: string[];
-  oscars: number;
-  bestDirectorWin: boolean;
-}
+/** The awards ladder lives in its own module. */
+export { runAwards } from "./awards";
+export type { AwardEntry, AwardsRun } from "./awards";
 
-const CATEGORIES = [
-  "Best Cinematography",
-  "Best Original Screenplay",
-  "Best Supporting Actor",
-  "Best Lead Performance",
-  "Best Editing",
-  "Best Original Score",
-] as const;
-
-export function runAwards(film: FilmResult, c: DirectorCareer): AwardsRun | null {
-  const heat = film.awardsHeat;
-  if (heat < 58) return null;
-  const r = createRng((hashString(`awards:${film.id}`) ^ c.seed) >>> 0);
-  if (r() > clamp((heat - 52) / 45, 0, 1)) return null;
-
-  const noms: string[] = [];
-  const craftCount = Math.min(CATEGORIES.length, Math.max(1, Math.round((heat - 45) / 12)));
-  const shuffled = [...CATEGORIES].sort(() => r() - 0.5);
-  for (let i = 0; i < craftCount; i++) noms.push(shuffled[i]!);
-
-  const bestDirectorNominated = r() < clamp((heat - 60) / 40, 0, 0.92) + c.prestige / 400;
-  const bestPictureNominated = r() < clamp((heat - 64) / 42, 0, 0.9);
-  if (bestDirectorNominated) noms.unshift("Best Director");
-  if (bestPictureNominated) noms.unshift("Best Picture");
-
-  const wins: string[] = [];
-  for (const n of noms) {
-    const base = n === "Best Director" || n === "Best Picture" ? 0.2 : 0.3;
-    const p = clamp(base + (heat - 70) / 190 + c.prestige / 600, 0.04, 0.72);
-    if (r() < p) wins.push(n);
-  }
-  const bestDirectorWin = wins.includes("Best Director");
-  return {
-    filmId: film.id,
-    filmTitle: film.title,
-    nominations: noms,
-    bestDirectorNominated,
-    bestPictureNominated,
-    wins,
-    oscars: wins.length,
-    bestDirectorWin,
-  };
-}
 
 export interface CycleEffects {
   moneyDelta: number;
@@ -198,11 +148,19 @@ export function applyAwards(c: DirectorCareer, awards: AwardsRun): DirectorCaree
     films,
     nominations: c.nominations + awards.nominations.length,
     oscars: c.oscars + awards.oscars,
-    prestige: clamp(c.prestige + awards.nominations.length * 2 + awards.oscars * 7),
-    reputation: clamp(c.reputation + awards.oscars * 4 + (awards.bestDirectorNominated ? 2 : 0)),
-    recognition: clamp(c.recognition + awards.oscars * 3),
-    studioTrust: clamp(c.studioTrust + awards.oscars * 3),
-    momentum: clamp(c.momentum + awards.oscars * 12, -100, 100),
+    prestige: clamp(
+      c.prestige +
+        awards.nominations.length * 1.2 +
+        awards.academyNominations * 2.5 +
+        awards.minorWins * 1.6 +
+        awards.oscars * 7,
+    ),
+    reputation: clamp(
+      c.reputation + awards.oscars * 4 + awards.minorWins * 1.2 + (awards.bestDirectorNominated ? 2 : 0),
+    ),
+    recognition: clamp(c.recognition + awards.oscars * 3 + awards.academyNominations * 0.8),
+    studioTrust: clamp(c.studioTrust + awards.oscars * 3 + awards.minorWins),
+    momentum: clamp(c.momentum + awards.oscars * 12 + awards.minorWins * 3, -100, 100),
   };
 }
 

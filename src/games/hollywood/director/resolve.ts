@@ -9,6 +9,7 @@
 import { createRng } from "../../core/rng";
 import { hashString, noise, range } from "./names";
 import { studioResultOf } from "./finance";
+import { majorAwardScore, technicalScore } from "./awards";
 import { productionMonths, yearOf } from "./pacing";
 import type { Actor, Allocation, DirectorCareer, FilmResult, Project, Verdict } from "./types";
 
@@ -105,24 +106,63 @@ export function resolveFilm(args: {
   let worldwide = 0;
 
   if (theatrical) {
-    const openMult = 0.14 + (appeal / 100) * 1.25;
-    opening = budget * openMult * range(r, 0.72, 1.32);
-    const legs = clamp(1.65 + (audience - 58) / 100 * 2.6 + (critics - 55) / 100 * 0.9, 1.05, 5.8);
-    worldwide = opening * legs * range(r, 0.85, 1.25);
+    /**
+     * The run is generated first, the opening weekend is carved out of it.
+     * Generating them independently is what used to allow an opening larger
+     * than the total gross.
+     *
+     * Expected gross is a multiple of the budget. Cheap films can multiply
+     * their cost many times over; very expensive films almost never do, which
+     * is where the real difficulty of a big career lives.
+     */
+    const scaleRef = Math.max(0.35, budget / 2_000_000);
+    let baseMultiple = 5.4 * Math.pow(scaleRef, -0.24);
+    if (budget >= 80_000_000) baseMultiple *= 0.85;
 
-    // Genuine long-tail outcomes. Rare, but they must actually happen.
-    if (audience >= 74 && budget <= 20_000_000 && r() < 0.14) worldwide *= range(r, 2.2, 5.5);
-    if (project.franchise && appeal >= 80 && r() < 0.18) worldwide *= range(r, 1.3, 1.9);
-    if (r() < project.risk / 420) worldwide *= range(r, 0.28, 0.55);
-    if (critics >= 85 && audience >= 85 && r() < 0.08) worldwide *= range(r, 1.4, 2.4);
+    const qualityFactor = clamp(
+      0.38 + appeal / 78 + (audience - 52) / 130 + (critics - 55) / 320,
+      0.2,
+      2.4,
+    );
+    let multiple = baseMultiple * qualityFactor * range(r, 0.84, 1.22);
+
+    // Trajectory. Results do not sit on a smooth curve; the same film can
+    // land anywhere from a bomb to a phenomenon.
+    const strong = qualityFactor >= 1.05;
+    const t = r();
+    if (t < 0.045 + project.risk / 1000) multiple *= range(r, 0.2, 0.5);
+    else if (t < 0.2) multiple *= range(r, 0.55, 0.82);
+    else if (t < 0.74) multiple *= range(r, 0.9, 1.12);
+    else if (t < 0.94) multiple *= range(r, 1.25, 1.75) * (strong ? 1.1 : 1);
+    else multiple *= range(r, 1.9, 3.4) * (strong ? 1.2 : 1);
+
+    if (project.franchise) multiple = Math.max(multiple, range(r, 1.05, 1.55));
+    // Word of mouth on a cheap crowd-pleaser: the classic sleeper.
+    if (audience >= 74 && budget <= 20_000_000 && r() < 0.16) multiple *= range(r, 1.6, 3.2);
+
+    worldwide = Math.max(budget * 0.04, budget * multiple);
+
+    // Opening weekend as a share of the eventual run. Front-loaded event
+    // films take a bigger slice; leggy word-of-mouth films a much smaller one.
+    const frontload = clamp(
+      0.3 +
+        (project.franchise ? 0.06 : 0) +
+        (appeal - 55) / 420 -
+        (audience - 55) / 260 -
+        (critics - 55) / 700,
+      0.08,
+      0.42,
+    );
+    opening = worldwide * frontload * range(r, 0.88, 1.12);
   } else {
     // Non-theatrical work: fees, sales and views, not tickets.
-    opening = budget * range(r, 0.2, 0.6);
-    worldwide = budget * range(r, 0.6, 2.4) * (0.6 + appeal / 160);
+    worldwide = budget * range(r, 0.6, 2.6) * (0.65 + appeal / 150);
+    opening = worldwide * range(r, 0.25, 0.6);
   }
 
-  opening = Math.round(opening);
   worldwide = Math.round(worldwide);
+  // Hard invariant: the first window can never exceed the whole run.
+  opening = Math.min(worldwide, Math.round(opening));
 
   const occupancy = Math.round(
     clamp(14 + appeal * 0.66 + (critics - 50) * 0.12 + noise(r) * 11, 4, 100),
@@ -142,13 +182,6 @@ export function resolveFilm(args: {
   const verdict = pickVerdict({ theatrical, profitRatio, critics, audience, worldwide, budget, studioResult });
 
   const cult = verdict === "cult" || (critics >= 68 && studioResult < 0 && audience >= 70);
-  const awardsHeat = Math.round(
-    clamp(
-      critics * 0.6 + project.prestige * 0.24 + talent * 0.16 - (theatrical ? 0 : 55) - (project.franchise ? 18 : 0),
-      0,
-      100,
-    ),
-  );
   const culturalImpact = Math.round(
     clamp(
       (Math.log10(Math.max(10, worldwide)) - 5) * 12 + (critics - 50) * 0.3 + (audience - 55) * 0.25 + (cult ? 10 : 0),
@@ -156,6 +189,25 @@ export function resolveFilm(args: {
       100,
     ),
   );
+  const awardsHeat = majorAwardScore({
+    critics,
+    culturalImpact,
+    talent,
+    genre: project.genre,
+    prestige: project.prestige,
+    budget,
+    theatrical,
+    franchise: !!project.franchise,
+  });
+  const techHeat = technicalScore({
+    budget,
+    genre: project.genre,
+    critics,
+    prodFactor,
+    franchise: !!project.franchise,
+    theatrical,
+  });
+
 
   return {
     id: project.id,
@@ -176,6 +228,7 @@ export function resolveFilm(args: {
     directorTake,
     verdict,
     awardsHeat,
+    techHeat,
     culturalImpact,
     nominations: 0,
     oscars: 0,

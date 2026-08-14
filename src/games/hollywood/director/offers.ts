@@ -307,11 +307,39 @@ export const ARCHETYPES: Archetype[] = [
   },
 ];
 
+/**
+ * Recent form, -1..1. Derived from the last few films only: the town reacts
+ * to what you just did, not to your lifetime average.
+ */
+export function recentForm(c: DirectorCareer): number {
+  const recent = c.films.slice(-3);
+  if (recent.length === 0) return 0;
+  let total = 0;
+  let weight = 0;
+  recent.forEach((f, i) => {
+    const w = i + 1; // most recent counts most
+    const ratio = f.worldwide / Math.max(1, f.budget);
+    let v: number;
+    if (f.verdict === "disaster") v = -1.6;
+    else if (f.studioResult < 0) v = ratio < 1.2 ? -1 : -0.5;
+    else if (ratio >= 3) v = 1.2;
+    else if (ratio >= 2) v = 0.8;
+    else v = 0.35;
+    if (f.oscars > 0) v += 0.5;
+    total += v * w;
+    weight += w;
+  });
+  return Math.max(-1, Math.min(1, total / (weight * 1.15)));
+}
+
 /** How much the industry will let you touch. 0-100. */
 export function accessScore(c: DirectorCareer): number {
   const base =
     c.studioTrust * 0.34 + c.recognition * 0.3 + c.reputation * 0.26 + c.prestige * 0.1;
-  return Math.max(0, Math.min(100, base + c.momentum * 0.12 - c.idleCycles * 3));
+  return Math.max(
+    0,
+    Math.min(100, base + c.momentum * 0.12 + recentForm(c) * 9 - c.idleCycles * 3),
+  );
 }
 
 export type Tier =
@@ -339,20 +367,24 @@ export function directorTier(c: DirectorCareer): Tier {
   return "Unknown";
 }
 
-function clampBudget(a: Archetype, access: number, r: () => number): number {
+function clampBudget(a: Archetype, access: number, r: () => number, form = 0): number {
   const [lo, hi] = a.budget;
   // Position inside the archetype's band scales with how far past its
   // entry gate the director stands.
   const span = Math.max(1, a.access[1] - a.access[0]);
   const t = Math.max(0, Math.min(1, (access - a.access[0]) / span));
   const centre = lo + (hi - lo) * (0.25 + t * 0.7);
-  const v = centre * range(r, 0.85, 1.18);
-  return Math.round(Math.max(lo, Math.min(hi, v)) / 10_000) * 10_000;
+  // Momentum money: two recent hits and the number on the table grows;
+  // a run of failures and the same archetype arrives smaller.
+  const formScale = 1 + form * 0.28;
+  const ceiling = hi * (form > 0.45 ? 1.2 : 1);
+  const v = centre * formScale * range(r, 0.85, 1.18);
+  return Math.round(Math.max(lo * (form < -0.3 ? 0.7 : 1), Math.min(ceiling, v)) / 10_000) * 10_000;
 }
 
 function buildProject(a: Archetype, c: DirectorCareer, r: () => number, i: number): Project {
   const access = accessScore(c);
-  const budget = clampBudget(a, access, r);
+  const budget = clampBudget(a, access, r, recentForm(c));
   const fee = Math.max(a.feeFloor ?? 0, Math.round(budget * range(r, a.feePct[0], a.feePct[1])));
   const genre = pick(r, a.genres);
   const stake = a.selfFinanced
