@@ -120,8 +120,10 @@ export interface FilmResult {
   verdict: Verdict;
   /** Months from green light to release. */
   productionMonths: number;
-  /** 0-100 internal awards heat. */
+  /** 0-100 internal awards heat (major categories). */
   awardsHeat: number;
+  /** 0-100 internal standing in craft/technical categories. */
+  techHeat?: number;
   culturalImpact: number;
   nominations: number;
   oscars: number;

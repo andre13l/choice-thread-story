@@ -9,6 +9,7 @@
 import { createRng } from "../../core/rng";
 import { hashString, noise, range } from "./names";
 import { studioResultOf } from "./finance";
+import { majorAwardScore, technicalScore } from "./awards";
 import { productionMonths, yearOf } from "./pacing";
 import type { Actor, Allocation, DirectorCareer, FilmResult, Project, Verdict } from "./types";
 
@@ -227,6 +228,7 @@ export function resolveFilm(args: {
     directorTake,
     verdict,
     awardsHeat,
+    techHeat,
     culturalImpact,
     nominations: 0,
     oscars: 0,
