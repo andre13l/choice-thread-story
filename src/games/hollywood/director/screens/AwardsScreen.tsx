@@ -22,6 +22,9 @@ export function AwardsScreen({ awards, onDone }: { awards: AwardsRun; onDone: ()
     <div className="anim-fade-up flex flex-1 flex-col items-center px-4 py-12 sm:px-6 sm:py-16">
       <div className="w-full max-w-lg text-center">
         <p className="text-[10px] uppercase tracking-[0.32em] text-gold">Awards season</p>
+        <p className="mt-2 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70">
+          {awards.headline}
+        </p>
         <h2 className="mt-5 font-display text-[clamp(1.8rem,6vw,2.6rem)] leading-tight text-foreground">
           {awards.filmTitle}
         </h2>
@@ -64,7 +67,11 @@ export function AwardsScreen({ awards, onDone }: { awards: AwardsRun; onDone: ()
               </>
             ) : (
               <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                {awards.bestDirectorNominated ? "The envelope went elsewhere" : "No director nod"}
+                {awards.bestDirectorNominated
+                  ? "The envelope went elsewhere"
+                  : awards.academyNominations > 0
+                    ? "Academy attention, no director nod"
+                    : "The season ends here"}
               </p>
             )}
 
