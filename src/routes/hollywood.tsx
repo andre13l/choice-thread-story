@@ -55,13 +55,9 @@ function HollywoodPage() {
 
   return (
     <main className="stage flex min-h-screen flex-col">
-      {state.phase === "intro" && (
-        <DirectorIntro onBegin={() => dispatch({ type: "begin" })} resumed={state.resumed} />
-      )}
+      {state.phase === "intro" && <DirectorIntro onBegin={() => dispatch({ type: "begin" })} resumed={state.resumed} />}
 
-      {inRun && (
-        <DirectorHeader career={state.career} onOpenFilmography={() => setFilmographyOpen(true)} />
-      )}
+      {inRun && <DirectorHeader career={state.career} onOpenFilmography={() => setFilmographyOpen(true)} />}
 
       {state.phase === "transition" && state.jump && (
         <TimeJumpScreen jump={state.jump} onDone={() => dispatch({ type: "transition_done" })} />
@@ -104,13 +100,11 @@ function HollywoodPage() {
       )}
 
       {state.phase === "awards" && state.pending?.awards && (
-        <AwardsScreen
-          awards={state.pending.awards}
-          onDone={() => dispatch({ type: "awards_done" })}
-        />
+        <AwardsScreen awards={state.pending.awards} onDone={() => dispatch({ type: "awards_done" })} />
       )}
 
-      {state.phase === "ending" && state.snapshot && (
+      {state.phase === "ending" && state.snapshot && !noStarSeen && <NoStarScreen onDone={() => setNoStarSeen(true)} />}
+      {state.phase === "ending" && state.snapshot && noStarSeen && (
         <CareerEndScreen snapshot={state.snapshot} onRestart={() => dispatch({ type: "restart" })} />
       )}
 
@@ -118,17 +112,13 @@ function HollywoodPage() {
         <DirectorLegend snapshot={state.snapshot} onRestart={() => dispatch({ type: "restart" })} />
       )}
 
-      {filmographyOpen && (
-        <FilmographySheet films={state.career.films} onClose={() => setFilmographyOpen(false)} />
-      )}
+      {filmographyOpen && <FilmographySheet films={state.career.films} onClose={() => setFilmographyOpen(false)} />}
 
       {/* TEST_MODE-only inspection controls: jump straight to a career tier,
           or force an ending. Never rendered in production. */}
       {TEST_MODE && inRun && (
         <div className="fixed bottom-3 left-3 z-40 flex max-w-[45vw] flex-wrap items-start gap-1">
-          <p className="w-full px-1 text-[8px] font-medium uppercase tracking-[0.24em] text-muted-foreground/40">
-            dev
-          </p>
+          <p className="w-full px-1 text-[8px] font-medium uppercase tracking-[0.24em] text-muted-foreground/40">dev</p>
           {PRESETS.map((p) => (
             <button
               key={p.id}
