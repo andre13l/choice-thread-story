@@ -86,8 +86,8 @@ export async function renderCareerCard(s: CareerSnapshot): Promise<HTMLCanvasEle
 
   // Warm pool of light behind the headline.
   const glow = ctx.createRadialGradient(CARD_W / 2, 330, 40, CARD_W / 2, 330, 700);
-  glow.addColorStop(0, "rgba(201,162,39,0.13)");
-  glow.addColorStop(1, "rgba(0,0,0,0)");
+  glow.addColorStop(0, "rgba(165,36,48,0.07)");
+  glow.addColorStop(1, "rgba(165,36,48,0)");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
