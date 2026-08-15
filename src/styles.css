@@ -43,6 +43,8 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
   --color-link: var(--link);
@@ -71,45 +73,51 @@
 
 :root {
   --radius: 0.1875rem;
-  --background: oklch(0.155 0.007 62);
-  --foreground: oklch(0.93 0.01 85);
-  --card: oklch(0.2 0.009 64);
-  --card-foreground: oklch(0.93 0.01 85);
-  --popover: oklch(0.2 0.009 64);
-  --popover-foreground: oklch(0.93 0.01 85);
-  --primary: oklch(0.93 0.01 85);
-  --primary-foreground: oklch(0.16 0.008 62);
-  --secondary: oklch(0.235 0.01 64);
-  --secondary-foreground: oklch(0.93 0.01 85);
-  --muted: oklch(0.235 0.01 64);
-  --muted-foreground: oklch(0.64 0.014 72);
-  --accent: oklch(0.27 0.012 66);
-  --accent-foreground: oklch(0.93 0.01 85);
-  --destructive: oklch(0.6 0.2 27);
-  --destructive-foreground: oklch(0.97 0.005 85);
-  --danger: oklch(0.65 0.19 27);
-  --danger-foreground: oklch(0.97 0.005 85);
-  --gold: oklch(0.8 0.105 82);
-  --gold-foreground: oklch(0.17 0.012 70);
-  /* CONNECT accent — cool signal colour, deliberately not Hollywood gold. */
-  --link: oklch(0.79 0.11 195);
-  --link-foreground: oklch(0.17 0.012 70);
-  --border: oklch(0.3 0.011 66);
-  --input: oklch(0.34 0.012 66);
-  --ring: oklch(0.72 0.03 78);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.18 0.008 62);
-  --sidebar-foreground: oklch(0.93 0.01 85);
-  --sidebar-primary: oklch(0.93 0.01 85);
-  --sidebar-primary-foreground: oklch(0.16 0.008 62);
-  --sidebar-accent: oklch(0.235 0.01 64);
-  --sidebar-accent-foreground: oklch(0.93 0.01 85);
-  --sidebar-border: oklch(0.3 0.011 66);
-  --sidebar-ring: oklch(0.72 0.03 78);
+  /* Warm paper */
+  --background: oklch(0.951 0.011 85);
+  --foreground: oklch(0.19 0.004 60);
+  --card: oklch(0.975 0.007 85);
+  --card-foreground: oklch(0.19 0.004 60);
+  --popover: oklch(0.985 0.005 85);
+  --popover-foreground: oklch(0.19 0.004 60);
+  /* Ink primary — buttons stay black-on-paper, not red */
+  --primary: oklch(0.19 0.004 60);
+  --primary-foreground: oklch(0.965 0.009 85);
+  --secondary: oklch(0.915 0.011 82);
+  --secondary-foreground: oklch(0.19 0.004 60);
+  --muted: oklch(0.915 0.011 82);
+  --muted-foreground: oklch(0.47 0.011 68);
+  --accent: oklch(0.895 0.013 80);
+  --accent-foreground: oklch(0.19 0.004 60);
+  /* Dark surface (#171717-ish) for inverted panels */
+  --ink: oklch(0.225 0.004 60);
+  --ink-foreground: oklch(0.955 0.009 85);
+  --destructive: oklch(0.46 0.163 24);
+  --destructive-foreground: oklch(0.97 0.006 85);
+  --danger: oklch(0.46 0.163 24);
+  --danger-foreground: oklch(0.97 0.006 85);
+  /* Deep cinema burgundy — the single brand accent (#A52430) */
+  --gold: oklch(0.452 0.155 21);
+  --gold-foreground: oklch(0.97 0.006 85);
+  /* CONNECT accent — restrained ink blue, deliberately not burgundy. */
+  --link: oklch(0.45 0.075 235);
+  --link-foreground: oklch(0.97 0.006 85);
+  --border: oklch(0.865 0.011 80);
+  --input: oklch(0.80 0.012 78);
+  --ring: oklch(0.452 0.155 21);
+  --chart-1: oklch(0.452 0.155 21);
+  --chart-2: oklch(0.55 0.05 70);
+  --chart-3: oklch(0.45 0.075 235);
+  --chart-4: oklch(0.68 0.09 60);
+  --chart-5: oklch(0.35 0.02 65);
+  --sidebar: oklch(0.935 0.011 84);
+  --sidebar-foreground: oklch(0.19 0.004 60);
+  --sidebar-primary: oklch(0.19 0.004 60);
+  --sidebar-primary-foreground: oklch(0.965 0.009 85);
+  --sidebar-accent: oklch(0.895 0.013 80);
+  --sidebar-accent-foreground: oklch(0.19 0.004 60);
+  --sidebar-border: oklch(0.865 0.011 80);
+  --sidebar-ring: oklch(0.452 0.155 21);
 }
 
 @layer base {
@@ -205,8 +213,8 @@
   isolation: isolate;
   background-color: var(--color-background);
   background-image:
-    radial-gradient(115% 85% at 50% -12%, oklch(0.29 0.022 74 / 0.5) 0%, transparent 58%),
-    radial-gradient(85% 65% at 50% 118%, oklch(0.22 0.016 66 / 0.4) 0%, transparent 62%);
+    radial-gradient(120% 90% at 50% -14%, oklch(0.995 0.008 88 / 0.9) 0%, transparent 60%),
+    radial-gradient(90% 70% at 50% 118%, oklch(0.88 0.014 78 / 0.55) 0%, transparent 64%);
 
   &::before {
     content: "";
@@ -214,7 +222,7 @@
     inset: 0;
     z-index: 60;
     pointer-events: none;
-    background: radial-gradient(135% 105% at 50% 42%, transparent 52%, oklch(0.07 0.005 62 / 0.6) 100%);
+    background: radial-gradient(135% 105% at 50% 42%, transparent 58%, oklch(0.55 0.02 70 / 0.14) 100%);
   }
 
   &::after {
@@ -223,8 +231,8 @@
     inset: 0;
     z-index: 61;
     pointer-events: none;
-    opacity: 0.07;
-    mix-blend-mode: overlay;
+    opacity: 0.035;
+    mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 }
