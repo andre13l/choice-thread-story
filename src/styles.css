@@ -7,9 +7,11 @@
 /*
  * NIRCOSI design system.
  *
- * Dark cinema. Near-black warm ink, projector-light haze, hairline
- * borders, brassy gold reserved for prestige, a single red for danger.
+ * Independent-cinema identity: warm off-white paper, near-black ink,
+ * hairline warm-grey rules, and a single deep burgundy reserved for
+ * meaningful moments (selection, premiere, prestige, danger).
  */
+
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
