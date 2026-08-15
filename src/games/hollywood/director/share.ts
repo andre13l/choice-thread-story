@@ -13,13 +13,13 @@ import type { CareerSnapshot } from "./types";
 export const CARD_W = 1080;
 export const CARD_H = 1350;
 
-const BG = "#0b0a09";
-const PANEL = "#141210";
-const LINE = "#2a2724";
-const FG = "#f4f1ec";
-const MUTED = "#8d8781";
-const GOLD = "#c9a227";
-const DANGER = "#c0392b";
+const BG = "#F4F1EA";
+const PANEL = "#EDE9E0";
+const LINE = "#D8D2C6";
+const FG = "#111111";
+const MUTED = "#6E675E";
+const GOLD = "#A52430";
+const DANGER = "#A52430";
 
 const DISPLAY = '"Chakra Petch", "Space Grotesk", system-ui, sans-serif';
 const UI = '"Space Grotesk", system-ui, sans-serif';
@@ -132,7 +132,7 @@ export async function renderCareerCard(s: CareerSnapshot): Promise<HTMLCanvasEle
 
   // Fate
   ctx.font = `italic 30px ${UI}`;
-  ctx.fillStyle = "#b9b2aa";
+  ctx.fillStyle = "#3A342D";
   let fy = head.length > 1 ? 520 : 470;
   for (const l of wrap(ctx, s.fate, CARD_W - 220, 2)) {
     ctx.fillText(l, cx, fy);
