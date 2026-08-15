@@ -41,6 +41,11 @@ export const Route = createFileRoute("/hollywood")({
 function HollywoodPage() {
   const { state, dispatch } = useDirectorGame();
   const [filmographyOpen, setFilmographyOpen] = useState(false);
+  const [noStarSeen, setNoStarSeen] = useState(false);
+
+  useEffect(() => {
+    if (state.phase !== "ending") setNoStarSeen(false);
+  }, [state.phase]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });

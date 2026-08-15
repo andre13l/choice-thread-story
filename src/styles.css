@@ -312,3 +312,38 @@
 .anim-call-glow {
   animation: paths-call-glow 1.7s ease-in-out infinite;
 }
+
+/* Engraving that starts, stutters, and never finishes. */
+@keyframes paths-engrave {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0.15;
+  }
+  45% {
+    clip-path: inset(0 45% 0 0);
+    opacity: 1;
+  }
+  60% {
+    clip-path: inset(0 45% 0 0);
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.35;
+  }
+  100% {
+    clip-path: inset(0 45% 0 0);
+    opacity: 0.12;
+  }
+}
+
+.anim-engrave {
+  animation: paths-engrave 2.4s ease-in-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-engrave {
+    animation: none;
+    clip-path: inset(0 45% 0 0);
+    opacity: 0.2;
+  }
+}
