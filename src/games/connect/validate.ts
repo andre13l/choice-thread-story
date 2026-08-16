@@ -100,6 +100,39 @@ export function validateGraph(graph: Graph): ValidationReport {
 }
 
 /**
+ * Mainstream credits a player would immediately notice as missing. These are
+ * assertions against the shipped snapshot, not aspirations.
+ */
+export const KNOWN_CREDITS: Array<[string, string[]]> = [
+  [
+    "Spider-Man: No Way Home",
+    ["Jamie Foxx", "Willem Dafoe", "Alfred Molina", "Andrew Garfield", "Tobey Maguire"],
+  ],
+  ["Django Unchained", ["Jamie Foxx"]],
+  ["Oppenheimer", ["Cillian Murphy"]],
+  ["Barbie", ["Margot Robbie"]],
+  ["The Wolf of Wall Street", ["Leonardo DiCaprio", "Margot Robbie"]],
+  ["Pulp Fiction", ["Samuel L. Jackson", "John Travolta"]],
+];
+
+/** Reports missing credits rather than silently passing. */
+export function validateKnownCredits(graph: Graph): string[] {
+  const errors: string[] = [];
+  for (const [title, actors] of KNOWN_CREDITS) {
+    const movie = Object.values(graph.moviesById).find((m) => m.title === title);
+    if (!movie) {
+      errors.push(`film not in catalogue: ${title}`);
+      continue;
+    }
+    const cast = new Set(movie.personIds.map((id) => graph.peopleById[id]!.name));
+    for (const actor of actors) {
+      if (!cast.has(actor)) errors.push(`${title}: missing ${actor}`);
+    }
+  }
+  return errors;
+}
+
+/**
  * Daily Connect contract: one pair per UTC date, identical on repeat calls,
  * different the next day, famous endpoints, reachable, never co-stars.
  */
@@ -138,6 +171,7 @@ if (typeof process !== "undefined" && process.argv?.[1]?.includes("validate")) {
     new Date(Date.UTC(2026, 7, 16) + i * 86_400_000).toISOString().slice(0, 10),
   );
   const dailyErrors = validateDaily(graph, dates);
-  console.log({ ...report, dailyErrors });
-  if (report.errors.length || dailyErrors.length) process.exit(1);
+  const creditErrors = validateKnownCredits(graph);
+  console.log({ ...report, dailyErrors, creditErrors });
+  if (report.errors.length || dailyErrors.length || creditErrors.length) process.exit(1);
 }
