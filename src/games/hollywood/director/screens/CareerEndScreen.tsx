@@ -22,6 +22,7 @@ export function CareerEndScreen({
 
   const rows: [string, string][] = [
     ["Films directed", String(snapshot.films)],
+    ["Profitable / lost money", `${snapshot.hits} / ${snapshot.flops}`],
     ["Career span", `${snapshot.startYear}–${snapshot.endYear}`],
     ["Total box office", formatMoney(snapshot.totalBoxOffice)],
     ["Avg critics", `${snapshot.avgCritics}`],
@@ -43,6 +44,7 @@ export function CareerEndScreen({
           ],
         ] as [string, string][])
       : []),
+    ["Legacy", snapshot.legacyTier],
     ["Peak net worth", formatMoneyFull(snapshot.peakMoney)],
     ["Final net worth", formatMoneyFull(snapshot.finalMoney)],
   ];
@@ -51,7 +53,7 @@ export function CareerEndScreen({
     <div className="stage anim-fade-up flex min-h-screen flex-col items-center justify-center px-6 py-16">
       <div className="w-full max-w-md text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
-          Every path ends
+          {snapshot.endingTitle ?? "Every path ends"}
         </p>
         <p className="mt-4 text-[12px] uppercase tracking-[0.2em] text-muted-foreground">
           Age {snapshot.age}

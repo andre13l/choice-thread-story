@@ -167,9 +167,19 @@ export interface DirectorCareer {
   };
   /** Cycles in a row without a released film. */
   idleCycles: number;
+  /** 0-100 tabloid/behaviour heat. Feeds the scandal pressure family. */
+  instability?: number;
+  /** Survivable disasters already weathered. */
+  crisesSurvived?: number;
+  /** Career-event ids already used, so nothing repeats within a run. */
+  seenEvents?: string[];
+  /** Lifetime living costs paid out of net worth. */
+  upkeepPaid?: number;
   legend: boolean;
   ended: boolean;
   fate?: string;
+  /** Short label for the ending that landed. */
+  endingTitle?: string;
 }
 
 export interface ShareFilm {
@@ -204,6 +214,10 @@ export interface CareerSnapshot {
   score: number;
   percentile: number;
   archetype: string;
+  hits: number;
+  flops: number;
+  legacyTier: string;
+  endingTitle?: string;
   legend: boolean;
   fate: string;
 }

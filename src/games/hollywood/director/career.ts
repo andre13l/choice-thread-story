@@ -7,7 +7,10 @@
 
 import { createRng } from "../../core/rng";
 import { formatMoney } from "../scoring";
-import { DIRECTOR_DECLINE, DIRECTOR_LEGEND, DIRECTOR_PACING } from "./config";
+import { DIRECTOR_LEGEND, DIRECTOR_PACING } from "./config";
+import { buildEnding, legacyTier, type Ending } from "./endings";
+import type { CareerEvent, EventChoice, EventEffects } from "./events";
+import { computePressure, dominantFamily, endingChance } from "./pressure";
 import { hashString } from "./names";
 import { accessScore, directorTier } from "./offers";
 import { ageOf, gapMonths, makeTimeJump, passMonths, yearOf, type TimeJump } from "./pacing";
@@ -38,9 +41,25 @@ export function newCareer(careerId: number): DirectorCareer {
     films: [],
     peak: { money: DIRECTOR_PACING.startMoney, recognition: 0, reputation: 4, worldwide: 0, budget: 0 },
     idleCycles: 0,
+    instability: 0,
+    crisesSurvived: 0,
+    seenEvents: [],
+    upkeepPaid: 0,
     legend: false,
     ended: false,
   };
+}
+
+/**
+ * MONEY MODEL — `career.money` is personal net worth and nothing else.
+ * It moves in exactly two ways: what a film pays the director
+ * (`FilmResult.directorTake`), and living costs for the months that pass.
+ * Studio profit/loss never touches it. Both movements are always shown.
+ */
+export function upkeepFor(c: DirectorCareer, months: number): number {
+  if (months <= 0) return 0;
+  const monthly = 4_000 + c.recognition * 700 + Math.max(0, c.money) * 0.0012;
+  return Math.round(monthly * months);
 }
 
 /** The awards ladder lives in its own module. */
@@ -49,7 +68,10 @@ export type { AwardEntry, AwardsRun } from "./awards";
 
 
 export interface CycleEffects {
+  /** What the film paid the director. */
   moneyDelta: number;
+  /** Living costs for the months this cycle consumed. Always >= 0. */
+  upkeep: number;
   reputation: number;
   recognition: number;
   studioTrust: number;
@@ -83,7 +105,6 @@ export function applyFilm(
   const mastery = { ...c.genreMastery } as Partial<Record<Genre, number>>;
   mastery[film.genre] = clamp((mastery[film.genre] ?? 0) + 8 + (film.critics - 50) * 0.16, 0, 100);
 
-  const money = c.money + film.directorTake;
 
   // Elastic time: the shoot itself, then whatever downtime the career earns.
   const startMonths = c.months ?? 0;
@@ -98,6 +119,9 @@ export function applyFilm(
         ? "down"
         : "flat";
   const jump = makeTimeJump(gap, afterRelease, tone, r);
+  const elapsed = months - startMonths;
+  const upkeep = upkeepFor(c, elapsed);
+  const money = c.money + film.directorTake - upkeep;
 
   const career: DirectorCareer = {
     ...c,
@@ -114,6 +138,15 @@ export function applyFilm(
     genreMastery: mastery,
     films: [...c.films, film],
     idleCycles: 0,
+    instability: clamp(
+      (c.instability ?? 0) +
+        (film.verdict === "disaster" ? 7 : 0) +
+        (film.franchise ? 2 : 0) +
+        (c.recognition >= 50 ? 3 : 0) +
+        (c.money >= 30_000_000 ? 2 : 0) -
+        2,
+    ),
+    upkeepPaid: (c.upkeepPaid ?? 0) + upkeep,
     peak: {
       money: Math.max(c.peak.money, money),
       recognition: Math.max(c.peak.recognition, clamp(c.recognition + recDelta)),
@@ -128,6 +161,7 @@ export function applyFilm(
     jump,
     effects: {
       moneyDelta: film.directorTake,
+      upkeep,
       reputation: Math.round(repDelta),
       recognition: Math.round(recDelta),
       studioTrust: Math.round(trustDelta),
@@ -180,7 +214,8 @@ export function applyPass(c: DirectorCareer): { career: DirectorCareer; jump: Ti
     recognition: clamp(c.recognition - 4),
     studioTrust: clamp(c.studioTrust - 3),
     momentum: clamp(c.momentum - 12, -100, 100),
-    money: c.money - Math.max(20_000, Math.abs(c.money) * 0.03),
+    money: c.money - upkeepFor(c, gap),
+    upkeepPaid: (c.upkeepPaid ?? 0) + upkeepFor(c, gap),
   };
   return { career, jump: makeTimeJump(gap, startMonths, "down", r) };
 }
@@ -203,19 +238,61 @@ export function checkLegend(c: DirectorCareer, rand: number): boolean {
   return rand < DIRECTOR_LEGEND.triggerPerCycle;
 }
 
-/** Probability the career ends this cycle. Never a fixed clock. */
-export function endingChance(c: DirectorCareer): number {
-  if (c.films.length < DIRECTOR_DECLINE.minFilms && c.money > DIRECTOR_DECLINE.ruinMoney) return 0;
-  let p = DIRECTOR_DECLINE.baseChance;
-  const access = accessScore(c);
-  if (access < 14) p += 0.09;
-  if (c.money < DIRECTOR_DECLINE.ruinMoney) p += 0.16;
-  if (c.idleCycles >= 2) p += 0.08 * c.idleCycles;
-  if (c.age >= DIRECTOR_DECLINE.ageRampStart) p += (c.age - DIRECTOR_DECLINE.ageRampStart) * DIRECTOR_DECLINE.ageRampPerYear;
-  if (c.age >= DIRECTOR_PACING.hardEndAge) return 1;
-  if (c.momentum > 40) p *= 0.5;
-  return Math.min(DIRECTOR_DECLINE.maxChance, p);
+/** Probability the career ends this cycle. Pressure, never a fixed clock. */
+export { endingChance };
+
+/* ------------------------------------------------------------------ */
+/* Career events                                                        */
+/* ------------------------------------------------------------------ */
+
+export interface EventOutcome {
+  career: DirectorCareer;
+  text: string;
+  failed: boolean;
+  effects: EventEffects;
 }
+
+/** Resolve a chosen branch of a career event. */
+export function applyEventChoice(
+  c: DirectorCareer,
+  event: CareerEvent,
+  choice: EventChoice,
+  rand: number,
+): EventOutcome {
+  const failed = choice.risk != null && rand < choice.risk;
+  const e: EventEffects = (failed ? choice.failEffects : choice.effects) ?? choice.effects;
+  const text = (failed ? choice.failOutcome : choice.outcome) ?? choice.outcome;
+
+  const pctTake = Math.round(Math.max(0, c.money) * (e.moneyPct ?? 0));
+  const months = (c.months ?? 0) + (e.months ?? 0);
+  const upkeep = upkeepFor(c, e.months ?? 0);
+  const career: DirectorCareer = {
+    ...c,
+    months,
+    year: yearOf(months),
+    age: ageOf(months),
+    money: c.money + (e.money ?? 0) - pctTake - upkeep,
+    reputation: clamp(c.reputation + (e.reputation ?? 0)),
+    recognition: clamp(c.recognition + (e.recognition ?? 0)),
+    studioTrust: clamp(c.studioTrust + (e.studioTrust ?? 0)),
+    prestige: clamp(c.prestige + (e.prestige ?? 0)),
+    momentum: clamp(c.momentum + (e.momentum ?? 0), -100, 100),
+    instability: clamp((c.instability ?? 0) + (e.instability ?? 0)),
+    crisesSurvived: (c.crisesSurvived ?? 0) + (event.kind === "crisis" ? 1 : 0),
+    seenEvents: [...(c.seenEvents ?? []), event.id],
+    upkeepPaid: (c.upkeepPaid ?? 0) + upkeep,
+  };
+  career.peak = { ...c.peak, money: Math.max(c.peak.money, career.money) };
+  return { career, text, failed, effects: { ...e, money: (e.money ?? 0) - pctTake - upkeep } };
+}
+
+/** Close the career: pick the family that won and write the ending. */
+export function endCareer(c: DirectorCareer, rand: number): DirectorCareer {
+  const ending = buildEnding(c, dominantFamily(computePressure(c)), rand);
+  return { ...c, ended: true, fate: ending.fate, endingTitle: ending.title };
+}
+
+export type { Ending };
 
 export function careerArchetype(c: DirectorCareer): string {
   const t = directorTier(c);
@@ -236,41 +313,10 @@ export function careerArchetype(c: DirectorCareer): string {
   return "Working Director";
 }
 
-const FATES: { test: (c: DirectorCareer) => boolean; lines: string[] }[] = [
-  {
-    test: (c) => c.money < DIRECTOR_DECLINE.ruinMoney,
-    lines: [
-      "The last film took the house with it. Nobody returns the calls now.",
-      "The debt outlived the reviews.",
-    ],
-  },
-  {
-    test: (c) => accessScore(c) < 14 && c.peak.budget >= 60_000_000,
-    lines: [
-      "The offers got smaller until they stopped arriving.",
-      "The last meeting was a courtesy, and everyone in the room knew it.",
-    ],
-  },
-  {
-    test: (c) => c.age >= DIRECTOR_PACING.softEndAge,
-    lines: [
-      "The films kept getting made. Then, quietly, they didn't.",
-      "A retrospective, a panel, and no green light.",
-    ],
-  },
-  {
-    test: () => true,
-    lines: [
-      "The industry moved on to the next name on the list.",
-      "There was always going to be one last film. This was it.",
-    ],
-  },
-];
-
 export function careerFate(c: DirectorCareer): string {
+  if (c.fate) return c.fate;
   const r = createRng((c.seed ^ hashString("fate")) >>> 0);
-  const entry = FATES.find((f) => f.test(c))!;
-  return entry.lines[Math.floor(r() * entry.lines.length)]!;
+  return buildEnding(c, dominantFamily(computePressure(c)), r()).fate;
 }
 
 export function careerScore(c: DirectorCareer): number {
@@ -347,6 +393,10 @@ export function snapshot(c: DirectorCareer): CareerSnapshot {
     score,
     percentile: percentileFor(score),
     archetype: careerArchetype(c),
+    hits: films.filter((f) => f.studioResult > 0).length,
+    flops: films.filter((f) => f.studioResult < 0).length,
+    legacyTier: legacyTier(c),
+    ...(c.endingTitle ? { endingTitle: c.endingTitle } : {}),
     legend: c.legend,
     fate: c.fate ?? careerFate(c),
   };

@@ -12,15 +12,20 @@ import {
   applyAwards,
   applyFilm,
   applyPass,
+  applyEventChoice,
   careerFate,
   checkLegend,
+  endCareer,
   endingChance,
   newCareer,
   runAwards,
   snapshot,
   type AwardsRun,
   type CycleEffects,
+  type EventOutcome,
 } from "./career";
+import { pickEvent, type CareerEvent, type EventChoice } from "./events";
+import { computePressure, eventChance } from "./pressure";
 import { generateCast } from "./casting";
 import { presetCareer, type PresetId } from "./dev";
 import { hashString } from "./names";
@@ -38,6 +43,7 @@ export type Phase =
   | "premiere"
   | "awards"
   | "transition"
+  | "event"
   | "ending"
   | "legend";
 
@@ -61,6 +67,10 @@ export interface State {
   snapshot: CareerSnapshot | null;
   resumed: boolean;
   jump: TimeJump | null;
+  /** A career event waiting between films. */
+  event: CareerEvent | null;
+  /** Resolution of the chosen branch, shown before returning to offers. */
+  eventOutcome: EventOutcome | null;
 }
 
 export type Action =
@@ -74,6 +84,8 @@ export type Action =
   | { type: "premiere_done" }
   | { type: "awards_done" }
   | { type: "transition_done" }
+  | { type: "choose_event"; choice: EventChoice }
+  | { type: "event_done" }
   | { type: "restart" }
   | { type: "dev_preset"; preset: PresetId }
   | { type: "dev_end" }
@@ -96,7 +108,23 @@ function startCycle(career: DirectorCareer): State {
     snapshot: null,
     resumed: false,
     jump: null,
+    event: null,
+    eventOutcome: null,
   };
+}
+
+/**
+ * Between films: bank the state, then decide whether a career event
+ * interrupts before the next slate of offers.
+ */
+function afterCycle(state: State, career: DirectorCareer, jump: TimeJump | null): State {
+  saveCareer(career);
+  const r = createRng((career.seed ^ hashString(`event:${career.cycle}`)) >>> 0);
+  const event = r() < eventChance(career) ? pickEvent(career, computePressure(career), r()) : null;
+  const next = { ...startCycle(career), event };
+  if (jump) return { ...next, phase: "transition" as const, jump };
+  if (event) return { ...next, phase: "event" as const };
+  return next;
 }
 
 function finalize(state: State): State {
@@ -113,15 +141,13 @@ function finalize(state: State): State {
     return { ...state, career, phase: "legend", snapshot: snap, pending: null };
   }
   if (r() < endingChance(career)) {
-    career = { ...career, ended: true, fate: careerFate(career) };
+    career = endCareer(career, r());
     const snap = snapshot(career);
     recordCareer(snap);
     saveCareer(null);
     return { ...state, career, phase: "ending", snapshot: snap, pending: null };
   }
-  saveCareer(career);
-  const next = startCycle(career);
-  return pending.jump ? { ...next, phase: "transition", jump: pending.jump } : next;
+  return afterCycle(state, career, pending.jump);
 }
 
 function reducer(state: State, action: Action): State {
@@ -143,15 +169,13 @@ function reducer(state: State, action: Action): State {
       const { career, jump } = applyPass(state.career);
       const r = createRng((career.seed ^ hashString(`passend:${career.cycle}`)) >>> 0);
       if (r() < endingChance(career)) {
-        const ended = { ...career, ended: true, fate: careerFate(career) };
+        const ended = endCareer(career, r());
         const snap = snapshot(ended);
         recordCareer(snap);
         saveCareer(null);
         return { ...state, career: ended, phase: "ending", snapshot: snap };
       }
-      saveCareer(career);
-      const next = startCycle(career);
-      return jump ? { ...next, phase: "transition" as const, jump } : next;
+      return afterCycle(state, career, jump);
     }
     case "back_to_offers":
       return { ...state, phase: "offers", project: null, pool: [], cast: [] };
@@ -172,7 +196,16 @@ function reducer(state: State, action: Action): State {
     case "awards_done":
       return finalize(state);
     case "transition_done":
-      return { ...state, phase: "offers", jump: null };
+      return { ...state, phase: state.event ? "event" : "offers", jump: null };
+    case "choose_event": {
+      const event = state.event!;
+      const r = createRng((state.career.seed ^ hashString(`ev:${event.id}:${state.career.cycle}`)) >>> 0);
+      const outcome = applyEventChoice(state.career, event, action.choice, r());
+      saveCareer(outcome.career);
+      return { ...state, career: outcome.career, eventOutcome: outcome };
+    }
+    case "event_done":
+      return { ...startCycle(state.career), phase: "offers" };
     case "restart": {
       const career = newCareer(freshId());
       saveCareer(career);
@@ -184,7 +217,7 @@ function reducer(state: State, action: Action): State {
       return startCycle(career);
     }
     case "dev_end": {
-      const career = { ...state.career, ended: true, fate: careerFate(state.career) };
+      const career = endCareer(state.career, 0.5);
       const snap = snapshot(career);
       saveCareer(null);
       return { ...state, career, phase: "ending", snapshot: snap };
@@ -212,6 +245,8 @@ const INITIAL: State = {
   snapshot: null,
   resumed: false,
   jump: null,
+  event: null,
+  eventOutcome: null,
 };
 
 export function useDirectorGame() {
