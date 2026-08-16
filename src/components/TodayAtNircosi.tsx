@@ -108,9 +108,9 @@ function Endpoint({
   accent?: boolean;
 }) {
   return (
-    <span className="flex min-w-0 items-center gap-3">
+    <span className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center sm:flex-row sm:text-left">
       <Portrait person={{ name, image: imageFile ?? "" }} size="md" accent={accent ?? false} />
-      <span className="truncate font-display text-[15px] font-semibold tracking-[0.03em] text-foreground">
+      <span className="w-full truncate font-display text-[13px] font-semibold leading-tight tracking-[0.03em] text-foreground sm:text-[15px]">
         {name}
       </span>
     </span>
