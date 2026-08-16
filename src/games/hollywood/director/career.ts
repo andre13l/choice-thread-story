@@ -138,7 +138,14 @@ export function applyFilm(
     genreMastery: mastery,
     films: [...c.films, film],
     idleCycles: 0,
-    instability: clamp((c.instability ?? 0) + (film.verdict === "disaster" ? 6 : 0) + (film.franchise ? 2 : 0) - 3),
+    instability: clamp(
+      (c.instability ?? 0) +
+        (film.verdict === "disaster" ? 7 : 0) +
+        (film.franchise ? 2 : 0) +
+        (c.recognition >= 50 ? 3 : 0) +
+        (c.money >= 30_000_000 ? 2 : 0) -
+        2,
+    ),
     upkeepPaid: (c.upkeepPaid ?? 0) + upkeep,
     peak: {
       money: Math.max(c.peak.money, money),
