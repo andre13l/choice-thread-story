@@ -19,6 +19,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WalkOfFameRouteImport } from './routes/walk-of-fame'
+import { Route as ConnectDailyRouteImport } from './routes/connect.daily'
 import { Route as ApiPublicConnectImportRouteImport } from './routes/api/public/connect-import'
 import { Route as ApiPublicDailyConnectPublishRouteImport } from './routes/api/public/daily-connect-publish'
 
@@ -72,6 +73,11 @@ const WalkOfFameRoute = WalkOfFameRouteImport.update({
   path: '/walk-of-fame',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConnectDailyRoute = ConnectDailyRouteImport.update({
+  id: '/daily',
+  path: '/daily',
+  getParentRoute: () => ConnectRoute,
+} as any)
 const ApiPublicConnectImportRoute = ApiPublicConnectImportRouteImport.update({
   id: '/api/public/connect-import',
   path: '/api/public/connect-import',
@@ -87,7 +93,7 @@ const ApiPublicDailyConnectPublishRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/connect': typeof ConnectRoute
+  '/connect': typeof ConnectRouteWithChildren
   '/contact': typeof ContactRoute
   '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
@@ -95,13 +101,14 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
+  '/connect/daily': typeof ConnectDailyRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
   '/api/public/daily-connect-publish': typeof ApiPublicDailyConnectPublishRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/connect': typeof ConnectRoute
+  '/connect': typeof ConnectRouteWithChildren
   '/contact': typeof ContactRoute
   '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
+  '/connect/daily': typeof ConnectDailyRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
   '/api/public/daily-connect-publish': typeof ApiPublicDailyConnectPublishRoute
 }
@@ -116,7 +124,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/connect': typeof ConnectRoute
+  '/connect': typeof ConnectRouteWithChildren
   '/contact': typeof ContactRoute
   '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
+  '/connect/daily': typeof ConnectDailyRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
   '/api/public/daily-connect-publish': typeof ApiPublicDailyConnectPublishRoute
 }
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
+    | '/connect/daily'
     | '/api/public/connect-import'
     | '/api/public/daily-connect-publish'
   fileRoutesByTo: FileRoutesByTo
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
+    | '/connect/daily'
     | '/api/public/connect-import'
     | '/api/public/daily-connect-publish'
   id:
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
+    | '/connect/daily'
     | '/api/public/connect-import'
     | '/api/public/daily-connect-publish'
   fileRoutesById: FileRoutesById
@@ -175,7 +187,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  ConnectRoute: typeof ConnectRoute
+  ConnectRoute: typeof ConnectRouteWithChildren
   ContactRoute: typeof ContactRoute
   HigherLowerRoute: typeof HigherLowerRoute
   HollywoodRoute: typeof HollywoodRoute
@@ -259,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalkOfFameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/connect/daily': {
+      id: '/connect/daily'
+      path: '/daily'
+      fullPath: '/connect/daily'
+      preLoaderRoute: typeof ConnectDailyRouteImport
+      parentRoute: typeof ConnectRoute
+    }
     '/api/public/connect-import': {
       id: '/api/public/connect-import'
       path: '/api/public/connect-import'
@@ -276,10 +295,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ConnectRouteChildren {
+  ConnectDailyRoute: typeof ConnectDailyRoute
+}
+
+const ConnectRouteChildren: ConnectRouteChildren = {
+  ConnectDailyRoute: ConnectDailyRoute,
+}
+
+const ConnectRouteWithChildren =
+  ConnectRoute._addFileChildren(ConnectRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  ConnectRoute: ConnectRoute,
+  ConnectRoute: ConnectRouteWithChildren,
   ContactRoute: ContactRoute,
   HigherLowerRoute: HigherLowerRoute,
   HollywoodRoute: HollywoodRoute,

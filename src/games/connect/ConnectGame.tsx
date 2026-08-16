@@ -430,7 +430,7 @@ function ActorPlaque({
         {label}
       </p>
       <div className="mt-3 flex justify-center">
-        <Portrait person={person} size="lg" accent={accent} showAttribution />
+        <Portrait person={person} size="lg" accent={accent ?? false} showAttribution />
       </div>
       <p className="mt-3 font-display text-[15px] font-semibold leading-snug tracking-[0.03em] text-foreground">
         {person.name}
