@@ -50,12 +50,20 @@ export const getCatalogCounts = createServerFn({ method: "GET" }).handler(
   },
 );
 
+export interface DailyEndpoint {
+  id: string;
+  name: string;
+  imageFile: string | null;
+}
+
 export interface DailyConnectPayload {
   date: string;
   number: number;
   startPersonId: string;
   targetPersonId: string;
   optimalClicks: number;
+  start: DailyEndpoint | null;
+  target: DailyEndpoint | null;
 }
 
 /**
@@ -77,11 +85,25 @@ export const getDailyConnect = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (error || !row) return null;
+
+    const { data: people } = await supabasePublic
+      .from("connect_people")
+      .select("id, name, image_file")
+      .in("id", [row.start_person_id, row.target_person_id]);
+
+    const find = (id: string): DailyEndpoint | null => {
+      const person = people?.find((p) => p.id === id);
+      return person ? { id, name: person.name, imageFile: person.image_file } : null;
+    };
+
     return {
       date: row.date,
       number: row.number,
       startPersonId: row.start_person_id,
       targetPersonId: row.target_person_id,
       optimalClicks: row.optimal_clicks,
+      start: find(row.start_person_id),
+      target: find(row.target_person_id),
     };
   });
+
