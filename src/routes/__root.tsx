@@ -1,29 +1,8 @@
-import {
-  createRootRoute,
-  HeadContent,
-  Scripts,
-  useRouterState,
-} from "@tanstack/react-router";
+import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { SiteFooter } from "@/components/site/SiteFooter";
-import { SiteHeader } from "@/components/site/SiteHeader";
-import { GAMES } from "@/config/games";
+import { AppShell } from "@/components/site/AppShell";
 import appCss from "../styles.css?url";
 
-/**
- * HOLLYWOOD renders without site chrome: it is a full-screen cinematic
- * experience with its own career HUD, and a second sticky header would
- * compete with it. Every other game keeps the platform header and is
- * framed inside a centered game surface.
- */
-const CHROMELESS_ROUTES = new Set(
-  GAMES.filter((g) => g.status === "playable" && g.to && g.id === "hollywood").map(
-    (g) => g.to as string,
-  ),
-);
-
-/** Route prefixes that render inside the centered game surface. */
-const SURFACE_PREFIXES = ["/daily", "/connect", "/higher-lower"];
 
 
 export const Route = createRootRoute({
