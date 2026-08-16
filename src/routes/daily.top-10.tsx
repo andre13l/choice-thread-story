@@ -253,8 +253,8 @@ function DailyTop10Page() {
     ].join("\n");
 
     return (
-      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-16">
-        <div className="w-full max-w-2xl text-center">
+      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-8 sm:py-14">
+        <ResultSurface className="text-center" label="Daily Top 10 result">
           <DailyHeader label={`Daily Top 10 #${result.number}`} date={date} accent="gold" />
           <h1 className="mt-8 font-display text-[clamp(2.2rem,8vw,3.6rem)] leading-none tracking-[0.06em] text-foreground">
             {score}/{result.total ?? 10}
