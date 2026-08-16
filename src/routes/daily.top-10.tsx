@@ -303,7 +303,6 @@ function DailyTop10Page() {
             Source: {prompt.source}
           </p>
 
-          <ShareButton text={shareText} accent="gold" />
           <NextDailyNote />
           <DailyFooterLinks
             extra={
