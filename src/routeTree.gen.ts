@@ -74,9 +74,9 @@ const ConnectIndexRoute = ConnectIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConnectDailyRoute = ConnectDailyRouteImport.update({
-  id: '/daily',
-  path: '/daily',
-  getParentRoute: () => ConnectRoute,
+  id: '/connect/daily',
+  path: '/connect/daily',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicConnectImportRoute = ApiPublicConnectImportRouteImport.update({
   id: '/api/public/connect-import',
@@ -194,6 +194,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   WalkOfFameRoute: typeof WalkOfFameRoute
+  ConnectDailyRoute: typeof ConnectDailyRoute
   ConnectIndexRoute: typeof ConnectIndexRoute
   ApiPublicConnectImportRoute: typeof ApiPublicConnectImportRoute
   ApiPublicDailyConnectPublishRoute: typeof ApiPublicDailyConnectPublishRoute
@@ -273,10 +274,10 @@ declare module '@tanstack/react-router' {
     }
     '/connect/daily': {
       id: '/connect/daily'
-      path: '/daily'
+      path: '/connect/daily'
       fullPath: '/connect/daily'
       preLoaderRoute: typeof ConnectDailyRouteImport
-      parentRoute: typeof ConnectRoute
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/connect-import': {
       id: '/api/public/connect-import'
@@ -305,6 +306,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   WalkOfFameRoute: WalkOfFameRoute,
+  ConnectDailyRoute: ConnectDailyRoute,
   ConnectIndexRoute: ConnectIndexRoute,
   ApiPublicConnectImportRoute: ApiPublicConnectImportRoute,
   ApiPublicDailyConnectPublishRoute: ApiPublicDailyConnectPublishRoute,
