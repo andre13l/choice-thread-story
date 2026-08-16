@@ -258,7 +258,7 @@ function DailyConnectPage() {
               All games
             </Link>
           </div>
-        </div>
+        </ResultSurface>
         {dialog}
       </div>
     );
