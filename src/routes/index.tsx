@@ -112,7 +112,7 @@ function Index() {
                 </p>
               )}
             </div>
-            <div className="relative min-h-36 order-first sm:order-none">
+            <div className="relative order-first h-28 sm:order-none sm:h-auto sm:min-h-40">
               <img
                 src={heroImage}
                 alt=""
@@ -121,7 +121,7 @@ function Index() {
                 height={912}
                 className="h-full w-full object-cover opacity-90 transition-opacity duration-500 group-hover:opacity-100"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-card via-card/40 to-transparent sm:block" />
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent sm:bg-gradient-to-r sm:via-card/40" />
             </div>
           </Link>
         </section>
