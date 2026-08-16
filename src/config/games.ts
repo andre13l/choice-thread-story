@@ -47,7 +47,8 @@ export const GAMES: GameSlot[] = [
   {
     id: "daily",
     name: "DAILY",
-    tagline: "One new challenge, every day.",
-    status: "soon",
+    tagline: "Three film puzzles. One a day each.",
+    status: "playable",
+    to: "/daily",
   },
 ];
