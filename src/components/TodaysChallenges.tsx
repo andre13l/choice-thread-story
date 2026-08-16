@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Check } from "lucide-react";
+import { Check, ListOrdered, Share2, UserRound } from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { getDailyConnect, type DailyConnectPayload } from "@/lib/connect.functions";
 import { getTop10Today } from "@/lib/top10.functions";
@@ -11,10 +12,10 @@ import type { Top10Prompt } from "@/games/top10/types";
 
 type Accent = "connect" | "top10" | "person";
 
-const RULE: Record<Accent, string> = {
-  connect: "bg-connect",
-  top10: "bg-top10",
-  person: "bg-person",
+const TINT: Record<Accent, string> = {
+  connect: "bg-connect/10 text-connect",
+  top10: "bg-top10/10 text-top10",
+  person: "bg-person/10 text-person",
 };
 
 const LABEL: Record<Accent, string> = {
@@ -24,8 +25,8 @@ const LABEL: Record<Accent, string> = {
 };
 
 /**
- * The three live dailies. Only real local state is shown: a finished puzzle
- * reports its actual result instead of another Play button.
+ * The three live dailies as a compact dashboard row. Only real local state is
+ * shown: a finished puzzle reports its actual result instead of a fake replay.
  */
 export function TodaysChallenges() {
   const fetchDaily = useServerFn(getDailyConnect);
@@ -70,64 +71,68 @@ export function TodaysChallenges() {
 
   return (
     <section aria-labelledby="todays-challenges" className="w-full">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-4">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="min-w-0">
           <h2
             id="todays-challenges"
-            className="font-display text-[13px] font-semibold uppercase tracking-[0.28em] text-foreground"
+            className="text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground"
           >
             Today&apos;s challenges
           </h2>
-          <p className="mt-2 text-[12px] text-muted-foreground">{prettyDate(today)}</p>
+          <p className="mt-1 truncate font-display text-[clamp(1.25rem,5vw,1.75rem)] font-semibold uppercase tracking-[0.06em] text-foreground">
+            {prettyDate(today)}
+          </p>
         </div>
-        <span className="shrink-0 rounded-sm border border-border px-2.5 py-1 text-[11px] font-medium tabular-nums text-muted-foreground">
-          {played}/3
+        <span className="shrink-0 rounded-full border border-border px-3 py-1 text-[11px] font-medium tabular-nums text-muted-foreground">
+          {played}/3 completed
         </span>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <ChallengeCard
           to="/connect/daily"
           accent="connect"
-          name={`Daily Connect${connect ? ` #${connect.number}` : ""}`}
+          icon={<Share2 className="h-4 w-4" />}
+          name={`Connect${connect ? ` #${connect.number}` : ""}`}
           headline={
             connect?.start && connect.target
               ? `${connect.start.name} → ${connect.target.name}`
               : "Link two actors through their films."
           }
-          blurb="Hop through movies and casts in as few clicks as you can."
           done={done.connect}
           resultText={
             results.connect
               ? results.connect.gaveUp
                 ? "Gave up"
-                : `${results.connect.clicks} connections`
+                : `Best: ${results.connect.clicks} connections`
               : null
           }
         />
         <ChallengeCard
           to="/daily/top-10"
           accent="top10"
-          name={`Daily Top 10${top10 ? ` #${top10.number}` : ""}`}
+          icon={<ListOrdered className="h-4 w-4" />}
+          name={`Top 10${top10 ? ` #${top10.number}` : ""}`}
           headline={top10?.title ?? "One ranked list. Ten blanks."}
-          blurb="Name every entry. No multiple choice."
           done={done.top10}
           resultText={
-            results.top10 ? `${results.top10.score ?? 0}/${results.top10.total ?? 10} named` : null
+            results.top10
+              ? `Score: ${results.top10.score ?? 0}/${results.top10.total ?? 10}`
+              : null
           }
         />
         <ChallengeCard
           to="/daily/person"
           accent="person"
-          name="Daily Person"
-          headline="Six clues, worst first."
-          blurb="Deduce the hidden actor before the face appears."
+          icon={<UserRound className="h-4 w-4" />}
+          name="Person"
+          headline="Can you guess the actor today?"
           done={done.person}
           resultText={
             results.person
               ? results.person.gaveUp
                 ? "Gave up"
-                : `${results.person.clues ?? 0} clues used`
+                : `Solved in: ${results.person.clues ?? 0} clues`
               : null
           }
         />
@@ -139,57 +144,50 @@ export function TodaysChallenges() {
 function ChallengeCard({
   to,
   accent,
+  icon,
   name,
   headline,
-  blurb,
   done,
   resultText,
 }: {
   to: "/connect/daily" | "/daily/top-10" | "/daily/person";
   accent: Accent;
+  icon: ReactNode;
   name: string;
   headline: string;
-  blurb: string;
   done: boolean;
   resultText: string | null;
 }) {
   return (
     <Link
       to={to}
-      className="group flex flex-col rounded-sm border border-border bg-card p-6 transition-colors duration-200 hover:border-foreground/35"
+      className="group flex flex-col rounded-md border border-border bg-card p-4 transition-colors duration-200 hover:border-foreground/30"
     >
-      <span className={`h-0.5 w-8 ${RULE[accent]}`} aria-hidden />
-      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+      <div className="flex items-center gap-2.5">
         <span
-          className={`min-w-0 text-[10px] font-medium uppercase tracking-[0.24em] ${LABEL[accent]}`}
+          aria-hidden
+          className={`grid h-8 w-8 shrink-0 place-items-center rounded-md ${TINT[accent]}`}
+        >
+          {icon}
+        </span>
+        <span
+          className={`min-w-0 flex-1 truncate text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground`}
         >
           {name}
         </span>
         {done && (
-          <span className="flex shrink-0 items-center gap-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            <Check className="h-3.5 w-3.5" aria-hidden />
-            Done
-          </span>
+          <Check className="h-4 w-4 shrink-0 text-top10" aria-hidden />
         )}
       </div>
 
-      <p className="mt-3 text-[15px] leading-snug text-foreground">{headline}</p>
-      <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">{blurb}</p>
+      <p className="mt-3 line-clamp-2 text-[13px] leading-snug text-foreground">{headline}</p>
 
-      <span className="mt-6 flex items-center justify-between gap-3 border-t border-border/70 pt-4 text-[10px] font-medium uppercase tracking-[0.22em]">
-        {done ? (
-          <>
-            <span className="text-foreground">{resultText ?? "Completed"}</span>
-            <span className="text-muted-foreground transition-colors group-hover:text-foreground">
-              Review
-            </span>
-          </>
-        ) : (
-          <>
-            <span className="text-muted-foreground">Not played</span>
-            <span className="text-foreground">Play →</span>
-          </>
-        )}
+      <p className={`mt-2 text-[12px] ${done ? LABEL[accent] : "text-muted-foreground"}`}>
+        {done ? (resultText ?? "Completed") : "Not played yet"}
+      </p>
+
+      <span className="mt-3 inline-flex w-fit items-center rounded-full bg-foreground px-4 py-1.5 text-[11px] font-medium text-background transition-opacity group-hover:opacity-85">
+        {done ? "Review" : "Play"}
       </span>
     </Link>
   );

@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Lock, Share2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, Lock, Share2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import heroImage from "@/assets/hollywood-hero.jpg";
 import { GAMES } from "@/config/games";
 import { SITE } from "@/config/site";
-import { StreakStrip } from "@/components/StreakStrip";
+import { RecentActivity, StreakStrip } from "@/components/StreakStrip";
 import { TodaysChallenges } from "@/components/TodaysChallenges";
 import { loadBest, loadCount, loadCurrentCareer } from "@/games/hollywood/storage";
 
@@ -67,107 +67,102 @@ function Index() {
   const upcoming = GAMES.filter((g) => g.status === "soon");
 
   return (
-    <div className="anim-fade-up mx-auto w-full max-w-5xl px-5 py-10 sm:px-8 sm:py-16">
+    <div className="anim-fade-up mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <h1 className="sr-only">{SITE.name} — free daily movie games</h1>
 
       <TodaysChallenges />
 
-      <div className="mt-8">
+      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
         <StreakStrip />
+        <RecentActivity />
       </div>
 
       {/* Hollywood editorial hero */}
       {flagship?.to && (
-        <section aria-labelledby="hollywood-hero" className="mt-16 sm:mt-24">
+        <section aria-labelledby="hollywood-hero" className="mt-8">
           <Link
             to={flagship.to}
-            className="group block overflow-hidden rounded-sm border border-border bg-ink text-ink-foreground"
+            className="group grid overflow-hidden rounded-md border border-border bg-card sm:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]"
           >
-            <div className="relative">
+            <div className="p-5 sm:p-7">
+              <span className="text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
+                Hollywood
+              </span>
+              <h2
+                id="hollywood-hero"
+                className="mt-3 font-display text-[clamp(1.35rem,4vw,2rem)] font-semibold leading-[1.15] tracking-[0.02em] text-foreground"
+              >
+                Build your legacy.
+                <br />
+                Or watch it crumble.
+              </h2>
+              <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
+                Make movies, manage studios, chase awards and survive Hollywood.
+              </p>
+              <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-[11px] font-medium text-background transition-opacity group-hover:opacity-85">
+                Play {flagship.name}
+              </span>
+              {(best !== null || hasOngoing) && (
+                <p className="mt-3 text-[11px] text-muted-foreground">
+                  {hasOngoing ? "A career is already in progress" : null}
+                  {hasOngoing && best !== null ? " · " : null}
+                  {best !== null
+                    ? `Personal best ${best.toLocaleString("en-US")}${lived > 1 ? ` · ${lived} careers` : ""}`
+                    : null}
+                </p>
+              )}
+            </div>
+            <div className="relative order-first h-28 sm:order-none sm:h-auto sm:min-h-40">
               <img
                 src={heroImage}
                 alt=""
                 loading="lazy"
                 width={1600}
                 height={912}
-                className="h-56 w-full object-cover opacity-70 transition-opacity duration-500 group-hover:opacity-85 sm:h-80"
+                className="h-full w-full object-cover opacity-90 transition-opacity duration-500 group-hover:opacity-100"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/10" />
-              <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
-                <span className="text-[10px] font-medium uppercase tracking-[0.28em] text-ink-foreground/70">
-                  Flagship · Career simulator
-                </span>
-                <h2
-                  id="hollywood-hero"
-                  className="mt-4 font-display text-[clamp(2rem,6vw,3.4rem)] font-semibold leading-[1.05] tracking-[0.04em]"
-                >
-                  Build your legacy.
-                  <br />
-                  Or watch it crumble.
-                </h2>
-                <p className="mt-4 max-w-md text-[13px] leading-relaxed text-ink-foreground/75">
-                  Direct film after film: pick the project, cast it, spend the money, then watch the
-                  premiere fill — or empty.
-                </p>
-                <span className="mt-6 inline-flex items-center gap-2 border border-ink-foreground/50 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.24em] transition-colors group-hover:bg-ink-foreground group-hover:text-ink">
-                  Play {flagship.name}
-                  <span aria-hidden>→</span>
-                </span>
-                {(best !== null || hasOngoing) && (
-                  <p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-ink-foreground/60">
-                    {hasOngoing ? "A career is already in progress" : null}
-                    {hasOngoing && best !== null ? " · " : null}
-                    {best !== null
-                      ? `Personal best ${best.toLocaleString("en-US")}${lived > 1 ? ` · ${lived} careers` : ""}`
-                      : null}
-                  </p>
-                )}
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent sm:bg-gradient-to-r sm:via-card/40" />
             </div>
           </Link>
         </section>
       )}
 
       {/* More games */}
-      <section aria-labelledby="more-games" className="mt-16 sm:mt-24">
+      <section aria-labelledby="more-games" className="mt-8">
         <h2
           id="more-games"
-          className="font-display text-[13px] font-semibold uppercase tracking-[0.28em] text-foreground"
+          className="text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground"
         >
           More games
         </h2>
-        <p className="mt-2 text-[12px] text-muted-foreground">
-          Play as many rounds as you like — no daily limit.
-        </p>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {playable.map((game) => {
             const meta = TILE_META[game.id] ?? { label: "Play", icon: null };
             return (
               <Link
                 key={game.id}
                 to={game.to!}
-                className="group flex flex-col justify-between rounded-sm border border-border bg-card px-6 py-6 transition-colors duration-200 hover:border-foreground/35"
+                className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-md border border-border bg-card px-4 py-3.5 transition-colors duration-200 hover:border-foreground/30"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <span aria-hidden className="flex items-center gap-0.5 text-muted-foreground">
-                    {meta.icon}
-                  </span>
-                  <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
-                    {meta.label}
-                  </span>
-                </div>
-                <div className="mt-6">
-                  <span className="font-display text-xl font-semibold tracking-[0.05em] text-foreground">
+                <span
+                  aria-hidden
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-accent text-muted-foreground"
+                >
+                  {meta.icon}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground">
                     {game.name}
                   </span>
-                  <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
+                  <span className="mt-0.5 block truncate text-[12px] text-muted-foreground">
                     {game.tagline}
-                  </p>
-                </div>
-                <span className="mt-6 border-t border-border/70 pt-4 text-[10px] font-medium uppercase tracking-[0.22em] text-foreground">
-                  Play →
+                  </span>
                 </span>
+                <ChevronRight
+                  className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
               </Link>
             );
           })}
@@ -175,20 +170,25 @@ function Index() {
           {upcoming.map((game) => (
             <div
               key={game.id}
-              className="flex flex-col justify-between rounded-sm border border-dashed border-border px-6 py-6"
+              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-md border border-dashed border-border px-4 py-3.5"
             >
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-display text-lg font-semibold tracking-[0.06em] text-muted-foreground">
+              <span
+                aria-hidden
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground/70"
+              >
+                <Lock className="h-3.5 w-3.5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   {game.name}
                 </span>
-                <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/70">
-                  <Lock className="h-3 w-3" />
-                  Soon
+                <span className="mt-0.5 block truncate text-[12px] text-muted-foreground/80">
+                  {game.tagline}
                 </span>
-              </div>
-              <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground/80">
-                {game.tagline}
-              </p>
+              </span>
+              <span className="shrink-0 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">
+                Soon
+              </span>
             </div>
           ))}
         </div>
@@ -196,3 +196,4 @@ function Index() {
     </div>
   );
 }
+
