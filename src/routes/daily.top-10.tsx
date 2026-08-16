@@ -11,6 +11,10 @@ import {
   accentButton,
   formatTime,
 } from "@/games/core/components/DailyChrome";
+import {
+  AutocompleteInput,
+  type Suggestion,
+} from "@/games/core/components/AutocompleteInput";
 import { loadProgress, saveProgress } from "@/games/core/dailyProgress";
 import {
   currentStreak,
@@ -22,7 +26,7 @@ import {
   type DailyStats,
 } from "@/games/core/dailyStats";
 import { TOP10_GAME_ID, type Top10Hit, type Top10Prompt } from "@/games/top10/types";
-import { getTop10Today, guessTop10, revealTop10 } from "@/lib/top10.functions";
+import { getTop10Today, guessTop10, revealTop10, searchTop10 } from "@/lib/top10.functions";
 
 export const Route = createFileRoute("/daily/top-10")({
   component: DailyTop10Page,
@@ -62,6 +66,7 @@ function DailyTop10Page() {
   const fetchToday = useServerFn(getTop10Today);
   const submitGuess = useServerFn(guessTop10);
   const reveal = useServerFn(revealTop10);
+  const runSearch = useServerFn(searchTop10);
 
   const [prompt, setPrompt] = useState<Top10Prompt | null>(null);
   const [failed, setFailed] = useState(false);
@@ -203,6 +208,13 @@ function DailyTop10Page() {
       finish(found.length, true, time, []);
     }
   }, [prompt, reveal, date, found.length, startedAt, elapsed, finish]);
+
+  const answerType = prompt?.answerType ?? "film";
+  const searchCatalog = useCallback(
+    async (query: string): Promise<Suggestion[]> =>
+      runSearch({ data: { kind: answerType, q: query } }),
+    [runSearch, answerType],
+  );
 
   if (failed) {
     return (
