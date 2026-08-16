@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.connect_reports_rate_limit() FROM PUBLIC, anon, authenticated;
