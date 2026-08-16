@@ -9,8 +9,6 @@ const NAV_KEY = `${SITE.storagePrefix}.nav.open`;
 
 /** Routes rendered inside the centered game sheet. */
 const SURFACE_PREFIXES = ["/daily", "/connect", "/higher-lower"];
-/** Full-bleed cinematic route — keeps the shell, drops the sheet frame. */
-const FULL_BLEED_PREFIXES = ["/hollywood"];
 
 /**
  * Platform shell shared by every route: header, navigation (a pushing rail
