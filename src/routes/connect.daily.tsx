@@ -241,13 +241,7 @@ function DailyConnectPage() {
             </div>
           )}
 
-          <button
-            onClick={share}
-            className="mt-12 border border-link bg-link px-10 py-3 text-[11px] font-medium uppercase tracking-[0.26em] text-link-foreground transition-colors hover:bg-transparent hover:text-link"
-          >
-            {copied ? "Copied" : "Share result"}
-          </button>
-          <p className="mt-6 text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">
+          <p className="mt-10 text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">
             Next daily at midnight UTC
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-5">
