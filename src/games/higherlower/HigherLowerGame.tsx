@@ -421,14 +421,15 @@ function GameOver({
         >
           Change mode
         </button>
-      </div>
+        </div>
 
-      <Link
-        to="/"
-        className="mt-10 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
-      >
-        All games
-      </Link>
+        <Link
+          to="/"
+          className="mt-10 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+        >
+          All games
+        </Link>
+      </ResultSurface>
     </div>
   );
 }
