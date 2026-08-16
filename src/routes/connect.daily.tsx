@@ -62,7 +62,7 @@ function DailyConnectPage() {
   const [stats, setStats] = useState<DailyStats | null>(null);
   const [report, setReport] = useState<ReportContext | null>(null);
   const [confirmQuit, setConfirmQuit] = useState(false);
-  const [copied, setCopied] = useState(false);
+  
   const recorded = useRef(false);
 
   useEffect(() => {
