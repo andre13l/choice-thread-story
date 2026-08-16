@@ -197,6 +197,62 @@ export type Database = {
           },
         ]
       }
+      daily_person: {
+        Row: {
+          created_at: string
+          date: string
+          number: number
+          person_id: string
+          published: boolean
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          number: number
+          person_id: string
+          published?: boolean
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          number?: number
+          person_id?: string
+          published?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_person_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "connect_people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_top10: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          date: string
+          number: number
+          published: boolean
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          date: string
+          number: number
+          published?: boolean
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          date?: string
+          number?: number
+          published?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       connect_catalog_counts: {

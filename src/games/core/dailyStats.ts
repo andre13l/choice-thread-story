@@ -14,9 +14,18 @@ export interface DailyResult {
   date: string;
   /** Puzzle number for that date. */
   number: number;
+  /** Connect: clicks used. Other dailies write 0 and use the fields below. */
   clicks: number;
   timeMs: number;
   gaveUp: boolean;
+  /** Daily Top 10: answers named. */
+  score?: number;
+  /** Daily Top 10: list length (always 10 today). */
+  total?: number;
+  /** Daily Person: clues revealed. */
+  clues?: number;
+  /** Daily Person: guesses made. */
+  guesses?: number;
 }
 
 export interface DailyStats {
