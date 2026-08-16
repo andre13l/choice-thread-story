@@ -3,12 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CONNECT } from "@/config/connect";
 import {
   generateChallenge,
-  GRAPH,
   pairKey,
   shortestPath,
   type Challenge,
   type GraphNode,
 } from "./graph";
+import { loadGraph, type Graph } from "./data/dataset";
 import { PathTrail } from "./screens/PathTrail";
 import { loadStats, recordCompletion, type ConnectStats } from "./storage";
 
@@ -29,6 +29,7 @@ function formatTime(ms: number): string {
 type Phase = "intro" | "playing" | "done";
 
 export function ConnectGame() {
+  const [graph, setGraph] = useState<Graph | null>(null);
   const [phase, setPhase] = useState<Phase>("intro");
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [path, setPath] = useState<GraphNode[]>([]);
@@ -42,11 +43,19 @@ export function ConnectGame() {
   const seen = useRef<Set<string>>(new Set());
 
   useEffect(() => {
+    let cancelled = false;
     setStats(loadStats());
-    startChallenge();
-    // Challenge generation is client-only; run once on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    void loadGraph().then((loaded) => {
+      if (!cancelled) setGraph(loaded);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    if (graph && !challenge) startChallenge();
+  }, [graph, challenge, startChallenge]);
 
   useEffect(() => {
     if (phase !== "playing" || startedAt === null) return;
@@ -55,7 +64,8 @@ export function ConnectGame() {
   }, [phase, startedAt]);
 
   const startChallenge = useCallback(() => {
-    const next = generateChallenge(GRAPH, {
+    if (!graph) return;
+    const next = generateChallenge(graph, {
       minClicks: CONNECT.minClicks,
       maxClicks: CONNECT.maxClicks,
       avoid: seen.current,
@@ -67,7 +77,7 @@ export function ConnectGame() {
     setStartedAt(null);
     setElapsed(0);
     setPhase("intro");
-  }, []);
+  }, [graph]);
 
   const restart = useCallback(() => {
     if (!challenge) return;
@@ -115,10 +125,18 @@ export function ConnectGame() {
     [phase, challenge, graph],
   );
 
-  if (!challenge || !current) return null;
+  if (!graph || !challenge || !current) {
+    return (
+      <div className="stage flex min-h-screen items-center justify-center px-5">
+        <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+          Loading the film graph…
+        </p>
+      </div>
+    );
+  }
 
-  const start = GRAPH.peopleById[challenge.startId]!;
-  const target = GRAPH.peopleById[challenge.targetId]!;
+  const start = graph.peopleById[challenge.startId]!;
+  const target = graph.peopleById[challenge.targetId]!;
 
   if (phase === "intro") {
     return (
@@ -189,7 +207,7 @@ export function ConnectGame() {
             Your path
           </p>
           <div className="mt-3">
-            <PathTrail path={path} />
+            <PathTrail graph={graph} path={path} />
           </div>
 
           {bestPath && clicks > challenge.best && (
@@ -198,7 +216,7 @@ export function ConnectGame() {
                 One shortest route
               </p>
               <div className="mt-3 opacity-70">
-                <PathTrail path={bestPath} />
+                <PathTrail graph={graph} path={bestPath} />
               </div>
             </>
           )}
@@ -252,16 +270,16 @@ export function ConnectGame() {
             </div>
           </div>
           <div className="mt-2.5">
-            <PathTrail path={path} onJump={jumpTo} />
+            <PathTrail graph={graph} path={path} onJump={jumpTo} />
           </div>
         </div>
       </header>
 
       <div className="mx-auto w-full max-w-3xl flex-1 px-5 py-8">
         {current.kind === "person" ? (
-          <PersonPage personId={current.id} onPick={(id) => step({ kind: "movie", id })} />
+          <PersonPage graph={graph} personId={current.id} onPick={(id) => step({ kind: "movie", id })} />
         ) : (
-          <MoviePage movieId={current.id} onPick={(id) => step({ kind: "person", id })} />
+          <MoviePage graph={graph} movieId={current.id} onPick={(id) => step({ kind: "person", id })} />
         )}
       </div>
 
@@ -294,8 +312,16 @@ export function ConnectGame() {
   );
 }
 
-function PersonPage({ personId, onPick }: { personId: string; onPick: (movieId: string) => void }) {
-  const person = GRAPH.peopleById[personId]!;
+function PersonPage({
+  graph,
+  personId,
+  onPick,
+}: {
+  graph: Graph;
+  personId: string;
+  onPick: (movieId: string) => void;
+}) {
+  const person = graph.peopleById[personId]!;
   return (
     <div key={personId} className="anim-fade-up">
       <div className="flex items-center gap-4">
@@ -315,8 +341,8 @@ function PersonPage({ personId, onPick }: { personId: string; onPick: (movieId: 
         {person.movieIds.length} {person.movieIds.length === 1 ? "film" : "films"}
       </p>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {person.movieIds.map((id) => {
-          const movie = GRAPH.moviesById[id]!;
+        {person.movieIds.map((id: string) => {
+          const movie = graph.moviesById[id]!;
           return (
             <button
               key={id}
@@ -337,8 +363,16 @@ function PersonPage({ personId, onPick }: { personId: string; onPick: (movieId: 
   );
 }
 
-function MoviePage({ movieId, onPick }: { movieId: string; onPick: (personId: string) => void }) {
-  const movie = GRAPH.moviesById[movieId]!;
+function MoviePage({
+  graph,
+  movieId,
+  onPick,
+}: {
+  graph: Graph;
+  movieId: string;
+  onPick: (personId: string) => void;
+}) {
+  const movie = graph.moviesById[movieId]!;
   return (
     <div key={movieId} className="anim-fade-up">
       <p className="text-[9px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
@@ -351,8 +385,8 @@ function MoviePage({ movieId, onPick }: { movieId: string; onPick: (personId: st
         Credited cast
       </p>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {movie.personIds.map((id) => {
-          const person = GRAPH.peopleById[id]!;
+        {movie.personIds.map((id: string) => {
+          const person = graph.peopleById[id]!;
           return (
             <button
               key={id}

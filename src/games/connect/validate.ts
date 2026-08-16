@@ -5,13 +5,12 @@
 
 import {
   areCoStars,
-  buildGraph,
   generateChallenge,
-  GRAPH,
   shortestClicks,
   shortestPath,
   type Graph,
 } from "./graph";
+import { buildGraph, loadGraph } from "./data/dataset";
 
 export interface ValidationReport {
   people: number;
@@ -48,7 +47,7 @@ function largestComponent(graph: Graph): number {
   return biggest;
 }
 
-export function validateGraph(graph: Graph = GRAPH): ValidationReport {
+export function validateGraph(graph: Graph = (await loadGraph())): ValidationReport {
   const errors: string[] = [];
   let credits = 0;
 
