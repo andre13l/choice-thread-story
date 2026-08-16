@@ -7,6 +7,7 @@ import { GraphStats } from "./components/GraphStats";
 import { Portrait } from "./components/Portrait";
 import { ReportDialog, type ReportContext } from "./components/ReportDialog";
 import { useGraph } from "./useGraph";
+import { ResultSurface, ShareButton } from "@/games/core/components/DailyChrome";
 import { PathTrail } from "./screens/PathTrail";
 import { loadStats, recordCompletion, type ConnectStats } from "./storage";
 import type { Person } from "./data/dataset";
