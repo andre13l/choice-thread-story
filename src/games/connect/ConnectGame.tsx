@@ -300,7 +300,7 @@ export function ConnectGame() {
             onPick={(id) => step({ kind: "movie", id })}
             onReport={() =>
               setReport({
-                kind: "actor_missing",
+                kind: "movie_missing",
                 personId: current.id,
                 subject: graph.peopleById[current.id]!.name,
               })
