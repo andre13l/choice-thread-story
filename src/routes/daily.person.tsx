@@ -298,7 +298,7 @@ function DailyPersonPage() {
             <Stat label="Streak" value={String(streak)} />
           </div>
 
-          <ShareButton text={shareText} accent="ink" />
+          <ShareButton text={shareText} accent="ink" className="mt-8 w-full sm:w-auto" />
           <NextDailyNote />
           <DailyFooterLinks
             extra={
