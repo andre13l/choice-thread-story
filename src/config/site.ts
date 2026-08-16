@@ -23,9 +23,12 @@ export const SITE = {
    */
   contactEmail: "",
   /**
-   * Social profiles for the footer. An empty url means the profile is not
-   * live yet; the footer only renders profiles with a configured url.
-   * No placeholders are shown for accounts that don't exist.
+   * Social profiles for the footer. An empty url means the account exists as
+   * a plan, not a page — the footer shows the label as "soon" and never
+   * renders a dead link. Fill the url in once the profile is live.
    */
-  socials: [] as { label: string; url: string }[],
+  socials: [
+    { label: "Instagram", url: "" },
+    { label: "TikTok", url: "" },
+  ] as { label: string; url: string }[],
 } as const;
