@@ -14,7 +14,7 @@ import { shiftDate, todayUTC } from "@/games/core/dailyStats";
 
 const HORIZON = 7;
 
-async function publish(origin: string) {
+async function publish(origin: string, force: boolean) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const graph = await loadGraph(origin);
   const today = todayUTC();
@@ -33,9 +33,10 @@ async function publish(origin: string) {
     });
   }
 
+  // `force` only ever rewrites future/today rows — never a played past day.
   const { error } = await supabaseAdmin
     .from("daily_connect")
-    .upsert(rows, { onConflict: "date", ignoreDuplicates: true });
+    .upsert(rows, { onConflict: "date", ignoreDuplicates: !force });
   if (error) throw new Error(error.message);
 
   return rows.map((r) => ({ date: r.date, number: r.number, optimal: r.optimal_clicks }));
@@ -46,7 +47,8 @@ export const Route = createFileRoute("/api/public/daily-connect-publish")({
     handlers: {
       POST: async ({ request }) => {
         try {
-          const published = await publish(new URL(request.url).origin);
+          const url = new URL(request.url);
+          const published = await publish(url.origin, url.searchParams.get("force") === "1");
           return Response.json({ ok: true, published });
         } catch (error) {
           return Response.json(
