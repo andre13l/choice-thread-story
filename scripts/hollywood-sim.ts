@@ -29,7 +29,19 @@ import { computePressure, dominantFamily, eventChance } from "../src/games/holly
 import { generateOffers } from "../src/games/hollywood/director/offers";
 import { resolveFilm } from "../src/games/hollywood/director/resolve";
 import { studioResultOf } from "../src/games/hollywood/director/finance";
+import { DIRECTOR_LEGEND } from "../src/games/hollywood/director/config";
 import type { DirectorCareer, FilmResult, Verdict } from "../src/games/hollywood/director/types";
+
+/** True when the career clears every LEGEND gate except the final roll. */
+function legendEligible(c: DirectorCareer): boolean {
+  const e = DIRECTOR_LEGEND.eligibility;
+  if (c.films.length < e.films || c.oscars < e.oscars) return false;
+  if (c.reputation < e.reputation || c.recognition < e.recognition) return false;
+  if (c.prestige < e.prestige || c.age < e.minAge) return false;
+  if (c.peak.worldwide < e.peakWorldwide) return false;
+  const avg = c.films.reduce((a, f) => a + f.critics, 0) / c.films.length;
+  return avg >= e.avgCritics;
+}
 
 const RUNS = Number(process.argv[2] ?? 2000);
 const MAX_CYCLES = 200;
@@ -49,13 +61,18 @@ let anyAwardCareers = 0;
 let moneyBreaks = 0;
 let openingBreaks = 0;
 let financeBreaks = 0;
+let legendEligibleCareers = 0;
+const byPolicy = new Map<string, { runs: number; oscars: number; films: number; eligible: number }>();
 
 function good(f: FilmResult): boolean {
   return f.studioResult > 0;
 }
 
 for (let run = 0; run < RUNS; run++) {
+  /** Two archetypal players: a commercial operator and a prestige chaser. */
+  const policy = run % 2 === 0 ? "commercial" : "prestige";
   let c: DirectorCareer = newCareer(run * 7919 + 13);
+  let sawEligible = false;
   const rng = createRng((run * 2654435761) >>> 0);
   let ended = false;
   let turnCount = 0;
@@ -63,12 +80,17 @@ for (let run = 0; run < RUNS; run++) {
   for (let cycle = 0; cycle < MAX_CYCLES && !ended; cycle++) {
     /* --- filmmaking turn: a decent player takes the strongest offer --- */
     const offers = generateOffers(c);
-    const project = [...offers].sort(
-      (a, b) =>
-        b.commercial + b.prestige - b.risk * 0.5 - (a.commercial + a.prestige - a.risk * 0.5),
-    )[0]!;
+    const score = (p: (typeof offers)[number]) =>
+      policy === "prestige" ? p.prestige * 1.6 + p.commercial * 0.3 : p.commercial * 1.4 + p.prestige * 0.4;
+    const project = [...offers].sort((a, b) => score(b) - score(a))[0]!;
     const pool = generateCast(project, c);
-    const cast = [...pool].sort((a, b) => b.draw + b.talent - (a.draw + a.talent)).slice(0, 2);
+    const cast = [...pool]
+      .sort((a, b) =>
+        policy === "prestige"
+          ? b.talent * 1.4 + b.fit - (a.talent * 1.4 + a.fit)
+          : b.draw + b.talent - (a.draw + a.talent),
+      )
+      .slice(0, 2);
     const alloc = { cast: 35, production: 45, marketing: 20 };
     const film = resolveFilm({ project, cast, alloc, career: c });
     turnCount++;
@@ -93,6 +115,7 @@ for (let run = 0; run < RUNS; run++) {
     }
 
     /* --- ending check --- */
+    if (legendEligible(c)) sawEligible = true;
     const r = createRng((c.seed ^ (cycle * 2654435761)) >>> 0);
     if (checkLegend(c, r())) {
       legends++;
@@ -127,7 +150,14 @@ for (let run = 0; run < RUNS; run++) {
   filmsPerCareer.push(c.films.length);
   ages.push(c.age);
   turns.push(turnCount);
+  if (sawEligible) legendEligibleCareers++;
   if (c.oscars > 0) oscarCareers++;
+  const b = byPolicy.get(policy) ?? { runs: 0, oscars: 0, films: 0, eligible: 0 };
+  b.runs++;
+  b.films += c.films.length;
+  if (c.oscars > 0) b.oscars++;
+  if (sawEligible) b.eligible++;
+  byPolicy.set(policy, b);
   if (c.nominations > 0) anyAwardCareers++;
 }
 
@@ -150,6 +180,12 @@ console.log(`age at end         ${stats(ages)}`);
 console.log(`\nfirst two films profitable   ${pct(firstTwoGood, firstTwoTotal)}`);
 console.log(`careers with any nomination  ${pct(anyAwardCareers, RUNS)}`);
 console.log(`careers with an Oscar        ${pct(oscarCareers, RUNS)}`);
+console.log(`legend-eligible careers      ${pct(legendEligibleCareers, RUNS)} (${legendEligibleCareers})`);
+for (const [name, b] of byPolicy) {
+  console.log(
+    `  ${name.padEnd(11)} films ${(b.films / b.runs).toFixed(1)} · oscar careers ${pct(b.oscars, b.runs)} · legend-eligible ${pct(b.eligible, b.runs)}`,
+  );
+}
 console.log(`LEGEND                       ${pct(legends, RUNS)} (${legends})`);
 console.log(`\nfilm outcomes (${totalFilms} films)`);
 for (const [v, n] of [...verdicts.entries()].sort((a, b) => b[1] - a[1])) {

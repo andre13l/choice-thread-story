@@ -130,7 +130,7 @@ export function resolveFilm(args: {
      * easily than anything later: hope early, expectations later. The bonus
      * decays to nothing by the fourth film.
      */
-    const discovery = career.films.length <= 2 ? 1.18 - career.films.length * 0.05 : 1;
+    const discovery = career.films.length <= 2 ? 1.13 - career.films.length * 0.04 : 1;
     baseMultiple *= discovery;
 
     const qualityFactor = clamp(
