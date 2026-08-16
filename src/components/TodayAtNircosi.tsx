@@ -101,7 +101,7 @@ function Endpoint({
 }) {
   return (
     <span className="flex min-w-0 items-center gap-3">
-      <Portrait person={{ name, image: imageFile }} size="md" accent={accent ?? false} />
+      <Portrait person={{ name, image: imageFile ?? "" }} size="md" accent={accent ?? false} />
       <span className="truncate font-display text-[15px] font-semibold tracking-[0.03em] text-foreground">
         {name}
       </span>
