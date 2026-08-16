@@ -76,37 +76,10 @@ function RootDocument({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <RootChrome>{children}</RootChrome>
+        <AppShell>{children}</AppShell>
         <Scripts />
       </body>
     </html>
   );
 }
 
-/**
- * Platform shell. Browsable pages flow full width; gameplay routes are
- * framed as a centered, contained surface so the active game reads as the
- * hero of the page on both desktop and mobile.
- */
-function RootChrome({ children }: { children: ReactNode }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  if (CHROMELESS_ROUTES.has(pathname)) return <>{children}</>;
-  const framed = SURFACE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-  return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader />
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1">
-        <main className="flex min-w-0 flex-1 flex-col">
-          {framed ? (
-            <div className="mx-auto w-full max-w-3xl px-3 py-5 sm:px-6 sm:py-10">
-              <div className="game-surface">{children}</div>
-            </div>
-          ) : (
-            children
-          )}
-        </main>
-      </div>
-      <SiteFooter />
-    </div>
-  );
-}
