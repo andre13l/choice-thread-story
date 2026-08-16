@@ -314,7 +314,7 @@ function DailyTop10Page() {
               </Link>
             }
           />
-        </div>
+        </ResultSurface>
       </div>
     );
   }
