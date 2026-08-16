@@ -19,6 +19,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WalkOfFameRouteImport } from './routes/walk-of-fame'
+import { Route as ApiPublicConnectImportRouteImport } from './routes/api/public/connect-import'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,11 @@ const WalkOfFameRoute = WalkOfFameRouteImport.update({
   path: '/walk-of-fame',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicConnectImportRoute = ApiPublicConnectImportRouteImport.update({
+  id: '/api/public/connect-import',
+  path: '/api/public/connect-import',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
+  '/api/public/connect-import': typeof ApiPublicConnectImportRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
+  '/api/public/connect-import': typeof ApiPublicConnectImportRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
+  '/api/public/connect-import': typeof ApiPublicConnectImportRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
+    | '/api/public/connect-import'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
+    | '/api/public/connect-import'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
+    | '/api/public/connect-import'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   WalkOfFameRoute: typeof WalkOfFameRoute
+  ApiPublicConnectImportRoute: typeof ApiPublicConnectImportRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalkOfFameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/connect-import': {
+      id: '/api/public/connect-import'
+      path: '/api/public/connect-import'
+      fullPath: '/api/public/connect-import'
+      preLoaderRoute: typeof ApiPublicConnectImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   WalkOfFameRoute: WalkOfFameRoute,
+  ApiPublicConnectImportRoute: ApiPublicConnectImportRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

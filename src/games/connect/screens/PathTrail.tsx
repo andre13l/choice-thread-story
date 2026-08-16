@@ -1,14 +1,17 @@
 import { useEffect, useRef } from "react";
-import { GRAPH, type GraphNode } from "../graph";
+import type { Graph } from "../data/dataset";
+import type { GraphNode } from "../graph";
 
 /**
  * Breadcrumb of the route so far. Horizontally scrollable on mobile and
  * kept pinned to the newest step.
  */
 export function PathTrail({
+  graph,
   path,
   onJump,
 }: {
+  graph: Graph;
   path: GraphNode[];
   onJump?: (index: number) => void;
 }) {
@@ -23,13 +26,12 @@ export function PathTrail({
       ref={scroller}
       className="-mx-5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-
       <div className="flex w-max items-center gap-2 py-1">
         {path.map((node, i) => {
           const label =
             node.kind === "person"
-              ? GRAPH.peopleById[node.id]!.name
-              : GRAPH.moviesById[node.id]!.title;
+              ? (graph.peopleById[node.id]?.name ?? "—")
+              : (graph.moviesById[node.id]?.title ?? "—");
           const last = i === path.length - 1;
           return (
             <div key={`${node.kind}-${node.id}-${i}`} className="flex items-center gap-2">

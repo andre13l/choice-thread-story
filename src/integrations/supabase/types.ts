@@ -14,10 +14,155 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      connect_cast: {
+        Row: {
+          billing: number | null
+          character_name: string | null
+          movie_id: string
+          person_id: string
+        }
+        Insert: {
+          billing?: number | null
+          character_name?: string | null
+          movie_id: string
+          person_id: string
+        }
+        Update: {
+          billing?: number | null
+          character_name?: string | null
+          movie_id?: string
+          person_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connect_cast_movie_id_fkey"
+            columns: ["movie_id"]
+            isOneToOne: false
+            referencedRelation: "connect_movies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_cast_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "connect_people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connect_movies: {
+        Row: {
+          created_at: string
+          id: string
+          notability: number
+          source: string
+          title: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          notability?: number
+          source?: string
+          title: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notability?: number
+          source?: string
+          title?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      connect_people: {
+        Row: {
+          birth_year: number | null
+          challenge_eligible: boolean
+          created_at: string
+          id: string
+          image_attribution_url: string | null
+          image_file: string | null
+          image_source: string
+          name: string
+          notability: number
+          source: string
+        }
+        Insert: {
+          birth_year?: number | null
+          challenge_eligible?: boolean
+          created_at?: string
+          id: string
+          image_attribution_url?: string | null
+          image_file?: string | null
+          image_source?: string
+          name: string
+          notability?: number
+          source?: string
+        }
+        Update: {
+          birth_year?: number | null
+          challenge_eligible?: boolean
+          created_at?: string
+          id?: string
+          image_attribution_url?: string | null
+          image_file?: string | null
+          image_source?: string
+          name?: string
+          notability?: number
+          source?: string
+        }
+        Relationships: []
+      }
+      connect_reports: {
+        Row: {
+          context: Json
+          created_at: string
+          id: string
+          kind: string
+          message: string
+          movie_id: string | null
+          person_id: string | null
+          status: string
+          visitor_key: string | null
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          id?: string
+          kind: string
+          message: string
+          movie_id?: string | null
+          person_id?: string | null
+          status?: string
+          visitor_key?: string | null
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string
+          movie_id?: string | null
+          person_id?: string | null
+          status?: string
+          visitor_key?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      connect_catalog_counts: {
+        Row: {
+          challenge_actors: number | null
+          connections: number | null
+          films: number | null
+          people: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
