@@ -267,6 +267,8 @@ function DailyTop10Page() {
             <Stat label="Streak" value={String(streak)} />
           </div>
 
+          <ShareButton text={shareText} accent="gold" className="mt-8 w-full sm:w-auto" />
+
           <ol className="mt-10 border border-border/70 text-left">
             {Array.from({ length: prompt.total }, (_, i) => {
               const position = i + 1;
