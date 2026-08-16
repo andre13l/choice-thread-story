@@ -63,7 +63,7 @@ export function resolveFilm(args: {
   const mktFactor = clamp(marketingSpend / Math.max(1, idealMkt), 0.1, 1.5);
 
   const mastery = career.genreMastery[project.genre] ?? 0;
-  const craft = clamp(22 + career.reputation * 0.42 + mastery * 0.3 + career.films.length * 0.6, 10, 100);
+  const craft = clamp(28 + career.reputation * 0.5 + mastery * 0.32 + career.films.length * 0.7, 10, 100);
 
   let quality =
     0.3 * craft +
@@ -75,7 +75,7 @@ export function resolveFilm(args: {
   quality = clamp(quality + noise(r) * (4 + project.risk * 0.12), 2, 100);
 
   const critics = Math.round(
-    clamp(quality * 0.82 + (project.prestige - 42) * 0.26 + noise(r) * (7 + project.risk * 0.2), 2, 99),
+    clamp(quality * 0.92 + (project.prestige - 42) * 0.3 - 4 + noise(r) * (7 + project.risk * 0.2), 2, 99),
   );
   const audience = Math.round(
     clamp(
