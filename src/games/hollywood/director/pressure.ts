@@ -78,8 +78,9 @@ export function computePressure(c: DirectorCareer): PressureMap {
     (c.recognition < 20 && films >= 5 ? 12 : 0);
 
   const scandal =
-    (c.instability ?? 0) * 0.9 +
-    (c.recognition >= 70 ? 10 : 0) +
+    (c.instability ?? 0) * 1.3 +
+    (c.recognition >= 60 ? 12 : 0) +
+    (c.recognition >= 80 ? 14 : 0) +
     (c.momentum < -50 ? 8 : 0);
 
   const excess =
