@@ -10,6 +10,7 @@ import { DirectorHeader } from "@/games/hollywood/director/screens/DirectorHeade
 import { DirectorIntro } from "@/games/hollywood/director/screens/DirectorIntro";
 import { DirectorLegend } from "@/games/hollywood/director/screens/DirectorLegend";
 import { FilmographySheet } from "@/games/hollywood/director/screens/FilmographySheet";
+import { NoStarScreen } from "@/games/hollywood/director/screens/NoStarScreen";
 import { OffersScreen } from "@/games/hollywood/director/screens/OffersScreen";
 import { PremiereScreen } from "@/games/hollywood/director/screens/PremiereScreen";
 import { TimeJumpScreen } from "@/games/hollywood/director/screens/TimeJumpScreen";
