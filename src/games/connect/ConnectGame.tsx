@@ -212,6 +212,13 @@ export function ConnectGame() {
             <Stat label="Time" value={formatTime(elapsed)} />
           </div>
 
+          <div className="mt-8 flex justify-center">
+            <ShareButton text={shareText} accent="link" className="mt-0 w-full sm:w-auto">
+              Challenge a friend
+            </ShareButton>
+          </div>
+
+
           {!gaveUp && (
             <>
               <p className="mt-10 text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
