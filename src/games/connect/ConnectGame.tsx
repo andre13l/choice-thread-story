@@ -54,10 +54,6 @@ export function ConnectGame() {
   }, []);
 
   useEffect(() => {
-    if (graph && !challenge) startChallenge();
-  }, [graph, challenge, startChallenge]);
-
-  useEffect(() => {
     if (phase !== "playing" || startedAt === null) return;
     const id = window.setInterval(() => setElapsed(Date.now() - startedAt), 500);
     return () => window.clearInterval(id);
@@ -78,6 +74,10 @@ export function ConnectGame() {
     setElapsed(0);
     setPhase("intro");
   }, [graph]);
+
+  useEffect(() => {
+    if (graph && !challenge) startChallenge();
+  }, [graph, challenge, startChallenge]);
 
   const restart = useCallback(() => {
     if (!challenge) return;

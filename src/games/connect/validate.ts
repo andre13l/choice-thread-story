@@ -10,7 +10,7 @@ import {
   shortestPath,
   type Graph,
 } from "./graph";
-import { buildGraph, loadGraph } from "./data/dataset";
+import { loadGraph } from "./data/dataset";
 
 export interface ValidationReport {
   people: number;
@@ -47,7 +47,7 @@ function largestComponent(graph: Graph): number {
   return biggest;
 }
 
-export function validateGraph(graph: Graph = (await loadGraph())): ValidationReport {
+export function validateGraph(graph: Graph): ValidationReport {
   const errors: string[] = [];
   let credits = 0;
 
@@ -99,7 +99,7 @@ export function validateGraph(graph: Graph = (await loadGraph())): ValidationRep
 }
 
 if (typeof process !== "undefined" && process.argv?.[1]?.includes("validate")) {
-  const report = validateGraph(buildGraph());
+  const report = validateGraph(await loadGraph());
   console.log(report);
   if (report.errors.length) process.exit(1);
 }
