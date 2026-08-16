@@ -99,9 +99,12 @@ export function buildGraph(data: RawDataset): Graph {
 
 let cached: Promise<Graph> | null = null;
 
-/** Fetches and builds the graph once per session. */
-export function loadGraph(): Promise<Graph> {
-  cached ??= fetch("/data/connect-graph.json")
+/**
+ * Fetches and builds the graph once per session. `origin` is only needed on
+ * the server, where a relative URL cannot be resolved.
+ */
+export function loadGraph(origin?: string): Promise<Graph> {
+  cached ??= fetch(`${origin ?? ""}/data/connect-graph.json`)
     .then((res) => {
       if (!res.ok) throw new Error(`connect: dataset ${res.status}`);
       return res.json() as Promise<RawDataset>;
