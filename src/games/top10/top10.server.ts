@@ -61,6 +61,7 @@ export function promptFor(date: string, challenge: Top10Challenge): Top10Prompt 
     source: challenge.source,
     ...(challenge.sourceUrl ? { sourceUrl: challenge.sourceUrl } : {}),
     total: challenge.answers.length,
+    answerType: challenge.answerType ?? "film",
   };
 }
 
