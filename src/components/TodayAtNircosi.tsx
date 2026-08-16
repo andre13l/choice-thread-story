@@ -1,9 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Lock } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getDailyConnect } from "@/lib/connect.functions";
+import { getDailyConnect, type DailyConnectPayload } from "@/lib/connect.functions";
 import { Portrait } from "@/games/connect/components/Portrait";
 import { DAILY_GAME_ID } from "@/games/connect/daily";
 import {
@@ -23,17 +22,26 @@ export function TodayAtNircosi() {
   const [today] = useState(() => todayUTC());
   const [result, setResult] = useState<DailyResult | null>(null);
   const [streak, setStreak] = useState(0);
+  const [data, setData] = useState<DailyConnectPayload | null>(null);
 
   useEffect(() => {
     setResult(resultFor(DAILY_GAME_ID, today));
     setStreak(currentStreak(loadDailyStats(DAILY_GAME_ID), today));
   }, [today]);
 
-  const { data } = useQuery({
-    queryKey: ["daily-connect", today],
-    queryFn: () => fetchDaily({ data: { date: today } }),
-    staleTime: 10 * 60 * 1000,
-  });
+  useEffect(() => {
+    let cancelled = false;
+    void fetchDaily({ data: { date: today } })
+      .then((payload) => {
+        if (!cancelled) setData(payload);
+      })
+      .catch(() => {
+        // The card degrades to generic copy when the backend is unreachable.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchDaily, today]);
 
   return (
     <section className="mt-14 w-full text-left">
