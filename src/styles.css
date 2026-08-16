@@ -49,6 +49,9 @@
   --color-gold-foreground: var(--gold-foreground);
   --color-link: var(--link);
   --color-link-foreground: var(--link-foreground);
+  --color-connect: var(--connect);
+  --color-top10: var(--top10);
+  --color-person: var(--person);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -73,50 +76,54 @@
 
 :root {
   --radius: 0.1875rem;
-  /* Warm paper */
-  --background: oklch(0.951 0.011 85);
-  --foreground: oklch(0.19 0.004 60);
-  --card: oklch(0.975 0.007 85);
-  --card-foreground: oklch(0.19 0.004 60);
-  --popover: oklch(0.985 0.005 85);
-  --popover-foreground: oklch(0.19 0.004 60);
+  /* Near-white editorial paper */
+  --background: oklch(0.986 0.004 85);
+  --foreground: oklch(0.17 0.004 60);
+  --card: oklch(0.998 0.002 85);
+  --card-foreground: oklch(0.17 0.004 60);
+  --popover: oklch(0.998 0.002 85);
+  --popover-foreground: oklch(0.17 0.004 60);
   /* Ink primary — buttons stay black-on-paper, not red */
-  --primary: oklch(0.19 0.004 60);
-  --primary-foreground: oklch(0.965 0.009 85);
-  --secondary: oklch(0.915 0.011 82);
-  --secondary-foreground: oklch(0.19 0.004 60);
-  --muted: oklch(0.915 0.011 82);
-  --muted-foreground: oklch(0.47 0.011 68);
-  --accent: oklch(0.895 0.013 80);
-  --accent-foreground: oklch(0.19 0.004 60);
-  /* Dark surface (#171717-ish) for inverted panels */
-  --ink: oklch(0.225 0.004 60);
-  --ink-foreground: oklch(0.955 0.009 85);
+  --primary: oklch(0.17 0.004 60);
+  --primary-foreground: oklch(0.99 0.003 85);
+  --secondary: oklch(0.955 0.006 82);
+  --secondary-foreground: oklch(0.17 0.004 60);
+  --muted: oklch(0.955 0.006 82);
+  --muted-foreground: oklch(0.505 0.009 68);
+  --accent: oklch(0.945 0.007 80);
+  --accent-foreground: oklch(0.17 0.004 60);
+  /* Dark surface for inverted panels */
+  --ink: oklch(0.19 0.004 60);
+  --ink-foreground: oklch(0.975 0.004 85);
   --destructive: oklch(0.46 0.163 24);
-  --destructive-foreground: oklch(0.97 0.006 85);
+  --destructive-foreground: oklch(0.98 0.003 85);
   --danger: oklch(0.46 0.163 24);
-  --danger-foreground: oklch(0.97 0.006 85);
+  --danger-foreground: oklch(0.98 0.003 85);
   /* Deep cinema burgundy — the single brand accent (#A52430) */
   --gold: oklch(0.452 0.155 21);
-  --gold-foreground: oklch(0.97 0.006 85);
+  --gold-foreground: oklch(0.98 0.003 85);
   /* CONNECT accent — restrained ink blue, deliberately not burgundy. */
   --link: oklch(0.45 0.075 235);
-  --link-foreground: oklch(0.97 0.006 85);
-  --border: oklch(0.865 0.011 80);
-  --input: oklch(0.80 0.012 78);
+  --link-foreground: oklch(0.98 0.003 85);
+  /* Per-daily identity accents. Used as hairlines, labels and dots only. */
+  --connect: oklch(0.47 0.115 278);
+  --top10: oklch(0.46 0.085 152);
+  --person: oklch(0.54 0.125 55);
+  --border: oklch(0.905 0.007 80);
+  --input: oklch(0.855 0.008 78);
   --ring: oklch(0.452 0.155 21);
   --chart-1: oklch(0.452 0.155 21);
   --chart-2: oklch(0.55 0.05 70);
   --chart-3: oklch(0.45 0.075 235);
   --chart-4: oklch(0.68 0.09 60);
   --chart-5: oklch(0.35 0.02 65);
-  --sidebar: oklch(0.935 0.011 84);
-  --sidebar-foreground: oklch(0.19 0.004 60);
-  --sidebar-primary: oklch(0.19 0.004 60);
-  --sidebar-primary-foreground: oklch(0.965 0.009 85);
-  --sidebar-accent: oklch(0.895 0.013 80);
-  --sidebar-accent-foreground: oklch(0.19 0.004 60);
-  --sidebar-border: oklch(0.865 0.011 80);
+  --sidebar: oklch(0.978 0.004 84);
+  --sidebar-foreground: oklch(0.17 0.004 60);
+  --sidebar-primary: oklch(0.17 0.004 60);
+  --sidebar-primary-foreground: oklch(0.99 0.003 85);
+  --sidebar-accent: oklch(0.945 0.007 80);
+  --sidebar-accent-foreground: oklch(0.17 0.004 60);
+  --sidebar-border: oklch(0.905 0.007 80);
   --sidebar-ring: oklch(0.452 0.155 21);
 }
 
@@ -213,8 +220,8 @@
   isolation: isolate;
   background-color: var(--color-background);
   background-image:
-    radial-gradient(120% 90% at 50% -14%, oklch(0.995 0.008 88 / 0.9) 0%, transparent 60%),
-    radial-gradient(90% 70% at 50% 118%, oklch(0.88 0.014 78 / 0.55) 0%, transparent 64%);
+    radial-gradient(120% 90% at 50% -14%, oklch(1 0 0 / 0.9) 0%, transparent 60%),
+    radial-gradient(90% 70% at 50% 118%, oklch(0.94 0.006 78 / 0.5) 0%, transparent 64%);
 
   &::before {
     content: "";
@@ -222,7 +229,7 @@
     inset: 0;
     z-index: 60;
     pointer-events: none;
-    background: radial-gradient(135% 105% at 50% 42%, transparent 58%, oklch(0.55 0.02 70 / 0.14) 100%);
+    background: radial-gradient(135% 105% at 50% 42%, transparent 62%, oklch(0.6 0.012 70 / 0.07) 100%);
   }
 
   &::after {
@@ -231,7 +238,7 @@
     inset: 0;
     z-index: 61;
     pointer-events: none;
-    opacity: 0.035;
+    opacity: 0.018;
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
   }
