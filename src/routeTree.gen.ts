@@ -20,6 +20,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WalkOfFameRouteImport } from './routes/walk-of-fame'
 import { Route as ApiPublicConnectImportRouteImport } from './routes/api/public/connect-import'
+import { Route as ApiPublicDailyConnectPublishRouteImport } from './routes/api/public/daily-connect-publish'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -76,6 +77,12 @@ const ApiPublicConnectImportRoute = ApiPublicConnectImportRouteImport.update({
   path: '/api/public/connect-import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDailyConnectPublishRoute =
+  ApiPublicDailyConnectPublishRouteImport.update({
+    id: '/api/public/daily-connect-publish',
+    path: '/api/public/daily-connect-publish',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
+  '/api/public/daily-connect-publish': typeof ApiPublicDailyConnectPublishRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +110,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
+  '/api/public/daily-connect-publish': typeof ApiPublicDailyConnectPublishRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +125,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
+  '/api/public/daily-connect-publish': typeof ApiPublicDailyConnectPublishRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/walk-of-fame'
     | '/api/public/connect-import'
+    | '/api/public/daily-connect-publish'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/walk-of-fame'
     | '/api/public/connect-import'
+    | '/api/public/daily-connect-publish'
   id:
     | '__root__'
     | '/'
@@ -157,6 +169,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/walk-of-fame'
     | '/api/public/connect-import'
+    | '/api/public/daily-connect-publish'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,6 +184,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   WalkOfFameRoute: typeof WalkOfFameRoute
   ApiPublicConnectImportRoute: typeof ApiPublicConnectImportRoute
+  ApiPublicDailyConnectPublishRoute: typeof ApiPublicDailyConnectPublishRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -252,6 +266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicConnectImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/daily-connect-publish': {
+      id: '/api/public/daily-connect-publish'
+      path: '/api/public/daily-connect-publish'
+      fullPath: '/api/public/daily-connect-publish'
+      preLoaderRoute: typeof ApiPublicDailyConnectPublishRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -267,6 +288,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   WalkOfFameRoute: WalkOfFameRoute,
   ApiPublicConnectImportRoute: ApiPublicConnectImportRoute,
+  ApiPublicDailyConnectPublishRoute: ApiPublicDailyConnectPublishRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
