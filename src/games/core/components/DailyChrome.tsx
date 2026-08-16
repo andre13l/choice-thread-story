@@ -1,6 +1,6 @@
 /** Shared chrome for every NIRCOSI daily: header, stat blocks, share button. */
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 type Accent = "link" | "gold" | "ink";
 
