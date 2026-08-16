@@ -189,9 +189,15 @@ export function ConnectGame() {
 
   if (phase === "done" || phase === "gaveup") {
     const gaveUp = phase === "gaveup";
+    const shareText = [
+      `NIRCOSI CONNECT`,
+      `${start.name} → ${target.name}`,
+      gaveUp ? "❌ gave up" : `🔗 ${clicks} connection${clicks === 1 ? "" : "s"} (best ${challenge.best})`,
+      "Beat my path: nircosi.com/connect",
+    ].join("\n");
     return (
-      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-16">
-        <div className="w-full max-w-2xl">
+      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-8 sm:py-14">
+        <ResultSurface label="Connect result">
           <p
             className={`text-center text-[11px] font-medium uppercase tracking-[0.3em] ${gaveUp ? "text-muted-foreground" : "text-link"}`}
           >
