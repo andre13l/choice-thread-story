@@ -141,28 +141,39 @@ export function ShareButton({
   text,
   accent = "link",
   children,
+  className = "mt-10",
 }: {
   text: string;
   accent?: Accent;
   children?: ReactNode;
+  className?: string;
 }) {
   const [copied, setCopied] = useState(false);
-  const share = async () => {
+  const copy = async () => {
     try {
-      if (navigator.share) await navigator.share({ text });
-      else {
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 2000);
-      }
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Cancelled — nothing to do.
+      // Clipboard blocked — nothing else to offer.
     }
+  };
+  const share = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch (err) {
+        // User dismissed the sheet: leave it at that.
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
+    }
+    await copy();
   };
   return (
     <button
       onClick={share}
-      className={`mt-10 border px-10 py-3 text-[11px] font-medium uppercase tracking-[0.26em] transition-colors ${ACCENT_BUTTON[accent]}`}
+      className={`border px-10 py-3 text-[11px] font-medium uppercase tracking-[0.26em] transition-colors ${ACCENT_BUTTON[accent]} ${className}`}
     >
       {copied ? "Copied" : (children ?? "Share result")}
     </button>
