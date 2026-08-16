@@ -267,8 +267,8 @@ function DailyPersonPage() {
     ].join("\n");
 
     return (
-      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-16">
-        <div className="w-full max-w-2xl text-center">
+      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-8 sm:py-14">
+        <ResultSurface className="text-center" label="Daily Person result">
           <DailyHeader label={`Daily Person #${result.number}`} date={date} accent="ink" />
           <h1 className="mt-8 font-display text-[clamp(2rem,7vw,3.2rem)] leading-none tracking-[0.06em] text-foreground">
             {solved ? `CLUE ${cluesUsed}` : "NOT TODAY"}
