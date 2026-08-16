@@ -7,6 +7,7 @@ import { SITE } from "@/config/site";
  */
 const NAV = [
   { label: "Games", to: "/", exact: true },
+  { label: "Daily", to: "/daily", exact: false },
   { label: "Walk of Fame", to: "/walk-of-fame", exact: false },
   { label: "About", to: "/about", exact: false },
 ] as const;

@@ -44,6 +44,12 @@ export function SiteFooter() {
                 Platform
               </span>
               <Link
+                to="/daily"
+                className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Daily puzzles
+              </Link>
+              <Link
                 to="/walk-of-fame"
                 className="text-[12px] text-muted-foreground transition-colors hover:text-foreground"
               >
