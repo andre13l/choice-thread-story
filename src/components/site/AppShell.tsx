@@ -92,12 +92,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="mx-auto w-full max-w-3xl px-3 py-5 sm:px-6 sm:py-10">
                 <div className="game-surface">{children}</div>
               </div>
-            ) : fullBleed ? (
-              children
             ) : (
               children
             )}
           </main>
+
           <SiteFooter />
         </div>
       </div>
