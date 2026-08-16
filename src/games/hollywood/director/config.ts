@@ -20,16 +20,16 @@ export const DIRECTOR_PACING = {
  * filmography; the trigger keeps it vanishingly rare in production.
  */
 export const DIRECTOR_LEGEND = {
-  triggerPerCycle: TEST_MODE ? 1 / 3 : 1 / 45_000,
+  triggerPerCycle: TEST_MODE ? 1 / 3 : 1 / 2_000,
   eligibility: {
-    films: 10,
-    oscars: 3,
-    reputation: 88,
-    recognition: 82,
-    prestige: 85,
-    avgCritics: 74,
-    peakWorldwide: 900_000_000,
-    minAge: 52,
+    films: 12,
+    oscars: 2,
+    reputation: 85,
+    recognition: 78,
+    prestige: 82,
+    avgCritics: 70,
+    peakWorldwide: 600_000_000,
+    minAge: 46,
   },
 } as const;
 

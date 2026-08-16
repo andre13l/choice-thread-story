@@ -158,6 +158,9 @@ export function endingChance(c: DirectorCareer): number {
   if (c.money < DIRECTOR_PRESSURE.ruinMoney) chance += 0.14;
   if (c.momentum > 45) chance *= 0.62;
   if (recentForm(c) > 0.6) chance *= 0.78;
+  // A career operating at the very top of the industry is harder to end —
+  // which is precisely how the rare escape stays reachable.
+  if (c.reputation >= 80 && c.prestige >= 75) chance *= 0.55;
   return Math.min(DIRECTOR_PRESSURE.maxChance, chance);
 }
 
