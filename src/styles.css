@@ -49,6 +49,9 @@
   --color-gold-foreground: var(--gold-foreground);
   --color-link: var(--link);
   --color-link-foreground: var(--link-foreground);
+  --color-connect: var(--connect);
+  --color-top10: var(--top10);
+  --color-person: var(--person);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
