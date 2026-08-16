@@ -151,7 +151,10 @@ function fill(line: string, c: DirectorCareer): string {
 export function buildEnding(c: DirectorCareer, family: PressureFamily, rand: number): Ending {
   const templates = BANK[family];
   const t = templates[Math.floor(rand * templates.length) % templates.length]!;
-  const line = t.lines[Math.floor(rand * 977) % t.lines.length]!;
+  // Only talk about debt when there is real debt to talk about.
+  const usable = t.lines.filter((l) => !l.includes("{debt}") || c.money <= -250_000);
+  const lines = usable.length ? usable : t.lines;
+  const line = lines[Math.floor(rand * 977) % lines.length]!;
   return { title: t.title, fate: fill(line, c), family };
 }
 
