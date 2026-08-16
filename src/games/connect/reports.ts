@@ -40,7 +40,7 @@ export interface ReportInput {
   message: string;
   movieId?: string | null;
   personId?: string | null;
-  context?: Record<string, unknown>;
+  context?: Record<string, string | number | null>;
 }
 
 export async function submitReport(input: ReportInput): Promise<{ ok: boolean; error?: string }> {
@@ -52,7 +52,7 @@ export async function submitReport(input: ReportInput): Promise<{ ok: boolean; e
     message,
     movie_id: input.movieId ?? null,
     person_id: input.personId ?? null,
-    context: input.context ?? {},
+    context: (input.context ?? {}) as never,
     visitor_key: visitorKey(),
   });
 
