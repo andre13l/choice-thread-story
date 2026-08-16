@@ -108,8 +108,11 @@ export function ConnectGame() {
   }, []);
 
   const bestPath = useMemo(
-    () => (phase === "done" && challenge ? shortestPath(GRAPH, challenge.startId, challenge.targetId) : null),
-    [phase, challenge],
+    () =>
+      phase === "done" && challenge && graph
+        ? shortestPath(graph, challenge.startId, challenge.targetId)
+        : null,
+    [phase, challenge, graph],
   );
 
   if (!challenge || !current) return null;
