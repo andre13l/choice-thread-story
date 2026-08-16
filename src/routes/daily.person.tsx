@@ -7,6 +7,7 @@ import {
   DailyFooterLinks,
   DailyHeader,
   NextDailyNote,
+  ResultSurface,
   ShareButton,
   Stat,
   accentButton,
