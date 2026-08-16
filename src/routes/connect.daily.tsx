@@ -199,22 +199,9 @@ function DailyConnectPage() {
       "nircosi.com/connect/daily",
     ].join("\n");
 
-    const share = async () => {
-      try {
-        if (navigator.share) await navigator.share({ text: shareText });
-        else {
-          await navigator.clipboard.writeText(shareText);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 2000);
-        }
-      } catch {
-        // Cancelled — nothing to do.
-      }
-    };
-
     return (
-      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-16">
-        <div className="w-full max-w-2xl text-center">
+      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-8 sm:py-14">
+        <ResultSurface className="text-center" label="Daily Connect result">
           {header}
           <h1 className="mt-8 font-display text-[clamp(2.2rem,8vw,3.6rem)] leading-none tracking-[0.06em] text-foreground">
             {result.gaveUp ? "GAVE UP" : `${result.clicks} CLICK${result.clicks === 1 ? "" : "S"}`}
