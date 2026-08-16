@@ -51,9 +51,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   const framed = SURFACE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-  const fullBleed = FULL_BLEED_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`),
-  );
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
