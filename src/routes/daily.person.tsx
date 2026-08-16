@@ -310,7 +310,7 @@ function DailyPersonPage() {
               </Link>
             }
           />
-        </div>
+        </ResultSurface>
       </div>
     );
   }
