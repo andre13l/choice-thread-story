@@ -24,7 +24,7 @@ function Group({
 }: {
   title: string;
   items: typeof NAV_ITEMS;
-  onNavigate?: () => void;
+  onNavigate?: (() => void) | undefined;
 }) {
   return (
     <div className="flex flex-col gap-1">
