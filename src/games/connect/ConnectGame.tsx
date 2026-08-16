@@ -272,7 +272,7 @@ export function ConnectGame() {
               All games
             </Link>
           </div>
-        </div>
+        </ResultSurface>
         {dialog}
       </div>
     );
