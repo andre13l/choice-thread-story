@@ -15,6 +15,7 @@ import { ReportDialog, type ReportContext } from "@/games/connect/components/Rep
 import { useGraph } from "@/games/connect/useGraph";
 import { PathTrail } from "@/games/connect/screens/PathTrail";
 import { Meter, QuitDialog, Stat, formatTime } from "@/games/connect/ConnectGame";
+import { ResultSurface, ShareButton } from "@/games/core/components/DailyChrome";
 import {
   currentStreak,
   loadDailyStats,
@@ -61,7 +62,7 @@ function DailyConnectPage() {
   const [stats, setStats] = useState<DailyStats | null>(null);
   const [report, setReport] = useState<ReportContext | null>(null);
   const [confirmQuit, setConfirmQuit] = useState(false);
-  const [copied, setCopied] = useState(false);
+  
   const recorded = useRef(false);
 
   useEffect(() => {
@@ -199,22 +200,9 @@ function DailyConnectPage() {
       "nircosi.com/connect/daily",
     ].join("\n");
 
-    const share = async () => {
-      try {
-        if (navigator.share) await navigator.share({ text: shareText });
-        else {
-          await navigator.clipboard.writeText(shareText);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 2000);
-        }
-      } catch {
-        // Cancelled — nothing to do.
-      }
-    };
-
     return (
-      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-16">
-        <div className="w-full max-w-2xl text-center">
+      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-8 sm:py-14">
+        <ResultSurface className="text-center" label="Daily Connect result">
           {header}
           <h1 className="mt-8 font-display text-[clamp(2.2rem,8vw,3.6rem)] leading-none tracking-[0.06em] text-foreground">
             {result.gaveUp ? "GAVE UP" : `${result.clicks} CLICK${result.clicks === 1 ? "" : "S"}`}
@@ -229,6 +217,9 @@ function DailyConnectPage() {
               {stats.played} days played · best streak {stats.bestStreak}
             </p>
           )}
+
+          <ShareButton text={shareText} accent="link" className="mt-8 w-full sm:w-auto" />
+
 
           {!result.gaveUp && path.length > 1 && (
             <div className="mt-10 text-left">
@@ -251,13 +242,7 @@ function DailyConnectPage() {
             </div>
           )}
 
-          <button
-            onClick={share}
-            className="mt-12 border border-link bg-link px-10 py-3 text-[11px] font-medium uppercase tracking-[0.26em] text-link-foreground transition-colors hover:bg-transparent hover:text-link"
-          >
-            {copied ? "Copied" : "Share result"}
-          </button>
-          <p className="mt-6 text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">
+          <p className="mt-10 text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">
             Next daily at midnight UTC
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-5">
@@ -274,7 +259,7 @@ function DailyConnectPage() {
               All games
             </Link>
           </div>
-        </div>
+        </ResultSurface>
         {dialog}
       </div>
     );

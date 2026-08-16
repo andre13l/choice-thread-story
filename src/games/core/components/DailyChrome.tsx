@@ -1,6 +1,6 @@
 /** Shared chrome for every NIRCOSI daily: header, stat blocks, share button. */
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 type Accent = "link" | "gold" | "ink";
 
@@ -40,6 +40,54 @@ export function prettyDate(date: string): string {
     month: "long",
     year: "numeric",
   });
+}
+
+/**
+ * When a run ends the result view replaces the board, but the window keeps the
+ * scroll offset from gameplay — so the headline and share CTA can sit above the
+ * fold. Pull the page to the top of the result card once, on mount only, so it
+ * never interrupts an in-progress game.
+ */
+export function useResultFocus<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const raf = requestAnimationFrame(() => {
+      const reduce =
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const top = el.getBoundingClientRect().top + window.scrollY - 16;
+      window.scrollTo({ top: Math.max(0, top), behavior: reduce ? "auto" : "smooth" });
+      el.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return ref;
+}
+
+/** Centered, focusable container for any end-of-run result card. */
+export function ResultSurface({
+  children,
+  className = "",
+  label = "Result",
+}: {
+  children: ReactNode;
+  className?: string;
+  label?: string;
+}) {
+  const ref = useResultFocus<HTMLDivElement>();
+  return (
+    <div
+      ref={ref}
+      tabIndex={-1}
+      role="region"
+      aria-label={label}
+      className={`w-full max-w-2xl outline-none ${className}`}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function DailyHeader({
@@ -93,28 +141,39 @@ export function ShareButton({
   text,
   accent = "link",
   children,
+  className = "mt-10",
 }: {
   text: string;
   accent?: Accent;
   children?: ReactNode;
+  className?: string;
 }) {
   const [copied, setCopied] = useState(false);
-  const share = async () => {
+  const copy = async () => {
     try {
-      if (navigator.share) await navigator.share({ text });
-      else {
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 2000);
-      }
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Cancelled — nothing to do.
+      // Clipboard blocked — nothing else to offer.
     }
+  };
+  const share = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch (err) {
+        // User dismissed the sheet: leave it at that.
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
+    }
+    await copy();
   };
   return (
     <button
       onClick={share}
-      className={`mt-10 border px-10 py-3 text-[11px] font-medium uppercase tracking-[0.26em] transition-colors ${ACCENT_BUTTON[accent]}`}
+      className={`border px-10 py-3 text-[11px] font-medium uppercase tracking-[0.26em] transition-colors ${ACCENT_BUTTON[accent]} ${className}`}
     >
       {copied ? "Copied" : (children ?? "Share result")}
     </button>

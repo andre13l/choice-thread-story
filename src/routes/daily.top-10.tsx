@@ -6,6 +6,7 @@ import {
   DailyFooterLinks,
   DailyHeader,
   NextDailyNote,
+  ResultSurface,
   ShareButton,
   Stat,
   accentButton,
@@ -253,8 +254,8 @@ function DailyTop10Page() {
     ].join("\n");
 
     return (
-      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-16">
-        <div className="w-full max-w-2xl text-center">
+      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-8 sm:py-14">
+        <ResultSurface className="text-center" label="Daily Top 10 result">
           <DailyHeader label={`Daily Top 10 #${result.number}`} date={date} accent="gold" />
           <h1 className="mt-8 font-display text-[clamp(2.2rem,8vw,3.6rem)] leading-none tracking-[0.06em] text-foreground">
             {score}/{result.total ?? 10}
@@ -266,6 +267,8 @@ function DailyTop10Page() {
             <Stat label="Time" value={formatTime(result.timeMs)} />
             <Stat label="Streak" value={String(streak)} />
           </div>
+
+          <ShareButton text={shareText} accent="gold" className="mt-8 w-full sm:w-auto" />
 
           <ol className="mt-10 border border-border/70 text-left">
             {Array.from({ length: prompt.total }, (_, i) => {
@@ -301,7 +304,6 @@ function DailyTop10Page() {
             Source: {prompt.source}
           </p>
 
-          <ShareButton text={shareText} accent="gold" />
           <NextDailyNote />
           <DailyFooterLinks
             extra={
@@ -313,7 +315,7 @@ function DailyTop10Page() {
               </Link>
             }
           />
-        </div>
+        </ResultSurface>
       </div>
     );
   }

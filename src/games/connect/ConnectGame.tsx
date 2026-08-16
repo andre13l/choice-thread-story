@@ -7,6 +7,7 @@ import { GraphStats } from "./components/GraphStats";
 import { Portrait } from "./components/Portrait";
 import { ReportDialog, type ReportContext } from "./components/ReportDialog";
 import { useGraph } from "./useGraph";
+import { ResultSurface, ShareButton } from "@/games/core/components/DailyChrome";
 import { PathTrail } from "./screens/PathTrail";
 import { loadStats, recordCompletion, type ConnectStats } from "./storage";
 import type { Person } from "./data/dataset";
@@ -189,9 +190,15 @@ export function ConnectGame() {
 
   if (phase === "done" || phase === "gaveup") {
     const gaveUp = phase === "gaveup";
+    const shareText = [
+      `NIRCOSI CONNECT`,
+      `${start.name} → ${target.name}`,
+      gaveUp ? "❌ gave up" : `🔗 ${clicks} connection${clicks === 1 ? "" : "s"} (best ${challenge.best})`,
+      "Beat my path: nircosi.com/connect",
+    ].join("\n");
     return (
-      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-16">
-        <div className="w-full max-w-2xl">
+      <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-8 sm:py-14">
+        <ResultSurface label="Connect result">
           <p
             className={`text-center text-[11px] font-medium uppercase tracking-[0.3em] ${gaveUp ? "text-muted-foreground" : "text-link"}`}
           >
@@ -205,6 +212,13 @@ export function ConnectGame() {
             <Stat label="Your route" value={gaveUp ? "—" : String(clicks)} />
             <Stat label="Time" value={formatTime(elapsed)} />
           </div>
+
+          <div className="mt-8 flex justify-center">
+            <ShareButton text={shareText} accent="link" className="mt-0 w-full sm:w-auto">
+              Challenge a friend
+            </ShareButton>
+          </div>
+
 
           {!gaveUp && (
             <>
@@ -259,7 +273,7 @@ export function ConnectGame() {
               All games
             </Link>
           </div>
-        </div>
+        </ResultSurface>
         {dialog}
       </div>
     );
