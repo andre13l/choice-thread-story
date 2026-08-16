@@ -192,6 +192,8 @@ function DailyTop10Page() {
         setWrong((w) => ["Could not reach the backend — try again", ...w].slice(0, 12));
       } finally {
         setPending(false);
+        // Keep the field hot so the next entry can be typed immediately.
+        window.setTimeout(() => inputRef.current?.focus(), 0);
         window.setTimeout(() => setFlash(null), 900);
       }
     },
