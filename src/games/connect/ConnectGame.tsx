@@ -1,40 +1,32 @@
 import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CONNECT } from "@/config/connect";
-import {
-  generateChallenge,
-  pairKey,
-  shortestPath,
-  type Challenge,
-  type GraphNode,
-} from "./graph";
-import { loadGraph, type Graph } from "./data/dataset";
+import { generateChallenge, pairKey, shortestPath, type Challenge, type GraphNode } from "./graph";
+import { GraphError, GraphLoading, MoviePage, PersonPage } from "./components/Browse";
+import { GraphStats } from "./components/GraphStats";
+import { Portrait } from "./components/Portrait";
+import { ReportDialog, type ReportContext } from "./components/ReportDialog";
+import { useGraph } from "./useGraph";
 import { PathTrail } from "./screens/PathTrail";
 import { loadStats, recordCompletion, type ConnectStats } from "./storage";
+import type { Person } from "./data/dataset";
 
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]!.toUpperCase())
-    .join("");
-}
-
-function formatTime(ms: number): string {
+export function formatTime(ms: number): string {
   const total = Math.floor(ms / 1000);
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
 }
 
-type Phase = "intro" | "playing" | "done";
+type Phase = "intro" | "playing" | "done" | "gaveup";
 
 export function ConnectGame() {
-  const [graph, setGraph] = useState<Graph | null>(null);
+  const { graph, error, retry } = useGraph();
   const [phase, setPhase] = useState<Phase>("intro");
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [path, setPath] = useState<GraphNode[]>([]);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [report, setReport] = useState<ReportContext | null>(null);
+  const [confirmQuit, setConfirmQuit] = useState(false);
   const [stats, setStats] = useState<ConnectStats>({
     completed: 0,
     bestOverpar: null,
@@ -42,16 +34,7 @@ export function ConnectGame() {
   });
   const seen = useRef<Set<string>>(new Set());
 
-  useEffect(() => {
-    let cancelled = false;
-    setStats(loadStats());
-    void loadGraph().then((loaded) => {
-      if (!cancelled) setGraph(loaded);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  useEffect(() => setStats(loadStats()), []);
 
   useEffect(() => {
     if (phase !== "playing" || startedAt === null) return;
@@ -72,6 +55,7 @@ export function ConnectGame() {
     setPath([{ kind: "person", id: next.startId }]);
     setStartedAt(null);
     setElapsed(0);
+    setConfirmQuit(false);
     setPhase("intro");
   }, [graph]);
 
@@ -84,6 +68,7 @@ export function ConnectGame() {
     setPath([{ kind: "person", id: challenge.startId }]);
     setStartedAt(Date.now());
     setElapsed(0);
+    setConfirmQuit(false);
     setPhase("playing");
   }, [challenge]);
 
@@ -109,34 +94,30 @@ export function ConnectGame() {
     [challenge, path, startedAt],
   );
 
-  const undo = useCallback(() => {
-    setPath((p) => (p.length > 1 ? p.slice(0, -1) : p));
-  }, []);
-
-  const jumpTo = useCallback((index: number) => {
-    setPath((p) => p.slice(0, index + 1));
-  }, []);
+  const undo = useCallback(() => setPath((p) => (p.length > 1 ? p.slice(0, -1) : p)), []);
+  const jumpTo = useCallback((index: number) => setPath((p) => p.slice(0, index + 1)), []);
 
   const bestPath = useMemo(
     () =>
-      phase === "done" && challenge && graph
+      (phase === "done" || phase === "gaveup") && challenge && graph
         ? shortestPath(graph, challenge.startId, challenge.targetId)
         : null,
     [phase, challenge, graph],
   );
 
-  if (!graph || !challenge || !current) {
-    return (
-      <div className="stage flex min-h-screen items-center justify-center px-5">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-          Loading the film graph…
-        </p>
-      </div>
-    );
-  }
+  if (error) return <GraphError message={error} onRetry={retry} />;
+  if (!graph || !challenge || !current) return <GraphLoading />;
 
   const start = graph.peopleById[challenge.startId]!;
   const target = graph.peopleById[challenge.targetId]!;
+
+  const dialog = (
+    <ReportDialog
+      open={report !== null}
+      context={report ?? { kind: "other" }}
+      onClose={() => setReport(null)}
+    />
+  );
 
   if (phase === "intro") {
     return (
@@ -153,9 +134,9 @@ export function ConnectGame() {
         </p>
 
         <div className="mt-12 flex w-full max-w-lg items-stretch gap-3">
-          <ActorPlaque label="Start" name={start.name} />
+          <ActorPlaque label="Start" person={start} />
           <div className="flex items-center text-muted-foreground/50">→</div>
-          <ActorPlaque label="Target" name={target.name} accent />
+          <ActorPlaque label="Target" person={target} accent />
         </div>
 
         <button
@@ -170,6 +151,12 @@ export function ConnectGame() {
         >
           New challenge
         </button>
+        <Link
+          to="/connect/daily"
+          className="mt-5 text-[11px] uppercase tracking-[0.2em] text-link transition-opacity hover:opacity-70"
+        >
+          Play today's daily
+        </Link>
         {stats.completed > 0 && (
           <p className="mt-8 text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">
             {stats.completed} solved
@@ -177,40 +164,60 @@ export function ConnectGame() {
               ` · best ${stats.bestOverpar === 0 ? "perfect route" : `+${stats.bestOverpar} over`}`}
           </p>
         )}
+
+        <GraphStats graph={graph} />
+        <p className="mt-5 max-w-sm text-[12px] leading-relaxed text-muted-foreground/80">
+          Cinema is huge. Our graph isn't complete yet.{" "}
+          <button
+            onClick={() => setReport({ kind: "other", subject: "General feedback" })}
+            className="underline decoration-border underline-offset-4 transition-colors hover:text-link"
+          >
+            Spot something missing? Help us improve it.
+          </button>
+        </p>
+
         <Link
           to="/"
           className="mt-10 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
         >
           All games
         </Link>
+        {dialog}
       </div>
     );
   }
 
-  if (phase === "done") {
+  if (phase === "done" || phase === "gaveup") {
+    const gaveUp = phase === "gaveup";
     return (
       <div className="stage anim-fade-up flex min-h-screen flex-col items-center px-5 py-16">
         <div className="w-full max-w-2xl">
-          <p className="text-center text-[11px] font-medium uppercase tracking-[0.3em] text-link">
-            Connected
+          <p
+            className={`text-center text-[11px] font-medium uppercase tracking-[0.3em] ${gaveUp ? "text-muted-foreground" : "text-link"}`}
+          >
+            {gaveUp ? "Gave up" : "Connected"}
           </p>
           <h2 className="mt-6 text-center font-display text-[clamp(2.2rem,8vw,3.6rem)] leading-none tracking-[0.06em] text-foreground">
-            {clicks} CLICK{clicks === 1 ? "" : "S"}
+            {gaveUp ? target.name : `${clicks} CLICK${clicks === 1 ? "" : "S"}`}
           </h2>
           <div className="mt-8 grid grid-cols-3 border border-border/70">
             <Stat label="Best possible" value={String(challenge.best)} accent />
-            <Stat label="Your route" value={String(clicks)} />
+            <Stat label="Your route" value={gaveUp ? "—" : String(clicks)} />
             <Stat label="Time" value={formatTime(elapsed)} />
           </div>
 
-          <p className="mt-10 text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
-            Your path
-          </p>
-          <div className="mt-3">
-            <PathTrail graph={graph} path={path} />
-          </div>
+          {!gaveUp && (
+            <>
+              <p className="mt-10 text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
+                Your path
+              </p>
+              <div className="mt-3">
+                <PathTrail graph={graph} path={path} />
+              </div>
+            </>
+          )}
 
-          {bestPath && clicks > challenge.best && (
+          {bestPath && (gaveUp || clicks > challenge.best) && (
             <>
               <p className="mt-8 text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
                 One shortest route
@@ -238,7 +245,13 @@ export function ConnectGame() {
           <p className="mt-8 text-center text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">
             {stats.completed} solved
           </p>
-          <div className="mt-6 text-center">
+          <div className="mt-6 flex flex-wrap justify-center gap-5">
+            <Link
+              to="/connect/daily"
+              className="text-[11px] uppercase tracking-[0.2em] text-link transition-opacity hover:opacity-70"
+            >
+              Daily Connect
+            </Link>
             <Link
               to="/"
               className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
@@ -247,6 +260,7 @@ export function ConnectGame() {
             </Link>
           </div>
         </div>
+        {dialog}
       </div>
     );
   }
@@ -256,13 +270,16 @@ export function ConnectGame() {
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-md">
         <div className="mx-auto w-full max-w-3xl px-5 py-3">
           <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[9px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
-                Target
-              </p>
-              <p className="truncate font-display text-base font-semibold tracking-[0.05em] text-link">
-                {target.name}
-              </p>
+            <div className="flex min-w-0 items-center gap-3">
+              <Portrait person={target} size="sm" accent />
+              <div className="min-w-0">
+                <p className="text-[9px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
+                  Target
+                </p>
+                <p className="truncate font-display text-base font-semibold tracking-[0.05em] text-link">
+                  {target.name}
+                </p>
+              </div>
             </div>
             <div className="flex shrink-0 items-center gap-5">
               <Meter label="Clicks" value={String(clicks)} />
@@ -277,9 +294,31 @@ export function ConnectGame() {
 
       <div className="mx-auto w-full max-w-3xl flex-1 px-5 py-8">
         {current.kind === "person" ? (
-          <PersonPage graph={graph} personId={current.id} onPick={(id) => step({ kind: "movie", id })} />
+          <PersonPage
+            graph={graph}
+            personId={current.id}
+            onPick={(id) => step({ kind: "movie", id })}
+            onReport={() =>
+              setReport({
+                kind: "movie_missing",
+                personId: current.id,
+                subject: graph.peopleById[current.id]!.name,
+              })
+            }
+          />
         ) : (
-          <MoviePage graph={graph} movieId={current.id} onPick={(id) => step({ kind: "person", id })} />
+          <MoviePage
+            graph={graph}
+            movieId={current.id}
+            onPick={(id) => step({ kind: "person", id })}
+            onReport={() =>
+              setReport({
+                kind: "actor_missing_from_movie",
+                movieId: current.id,
+                subject: graph.moviesById[current.id]!.title,
+              })
+            }
+          />
         )}
       </div>
 
@@ -290,7 +329,7 @@ export function ConnectGame() {
             disabled={path.length < 2}
             className="border border-border px-5 py-2 text-[10px] font-medium uppercase tracking-[0.24em] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
           >
-            Undo
+            Back
           </button>
           <div className="flex gap-3">
             <button
@@ -300,119 +339,89 @@ export function ConnectGame() {
               Restart
             </button>
             <button
-              onClick={startChallenge}
-              className="px-3 py-2 text-[10px] font-medium uppercase tracking-[0.24em] text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setConfirmQuit(true)}
+              className="px-3 py-2 text-[10px] font-medium uppercase tracking-[0.24em] text-muted-foreground transition-colors hover:text-destructive"
             >
-              New
+              Give up
             </button>
           </div>
         </div>
       </div>
+
+      {confirmQuit && (
+        <QuitDialog
+          onCancel={() => setConfirmQuit(false)}
+          onGiveUp={() => {
+            setConfirmQuit(false);
+            setPhase("gaveup");
+          }}
+        />
+      )}
+      {dialog}
     </div>
   );
 }
 
-function PersonPage({
-  graph,
-  personId,
-  onPick,
+export function QuitDialog({
+  onCancel,
+  onGiveUp,
+  homeTo = "/",
 }: {
-  graph: Graph;
-  personId: string;
-  onPick: (movieId: string) => void;
+  onCancel: () => void;
+  onGiveUp: () => void;
+  homeTo?: string;
 }) {
-  const person = graph.peopleById[personId]!;
   return (
-    <div key={personId} className="anim-fade-up">
-      <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center border border-link/50 bg-link/10 font-display text-xl font-bold tracking-[0.08em] text-link">
-          {initials(person.name)}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 px-5 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      onClick={onCancel}
+    >
+      <div
+        className="anim-fade-up w-full max-w-sm border border-border/80 bg-card px-6 py-8 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="font-display text-lg font-semibold tracking-[0.04em] text-foreground">
+          Give up on this one?
+        </h2>
+        <p className="mt-3 text-sm text-muted-foreground">
+          You'll see a shortest route between the two actors.
+        </p>
+        <div className="mt-7 flex flex-col gap-3">
+          <button
+            onClick={onGiveUp}
+            className="border border-destructive/70 px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.24em] text-destructive transition-colors hover:bg-destructive/10"
+          >
+            Give up
+          </button>
+          <button
+            onClick={onCancel}
+            className="border border-border px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Keep playing
+          </button>
+          <Link
+            to={homeTo}
+            className="pt-1 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Home
+          </Link>
         </div>
-        <div className="min-w-0">
-          <p className="text-[9px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
-            Actor
-          </p>
-          <h2 className="font-display text-[clamp(1.5rem,6vw,2.4rem)] font-semibold leading-tight tracking-[0.04em] text-foreground">
-            {person.name}
-          </h2>
-        </div>
-      </div>
-      <p className="mt-8 text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
-        {person.movieIds.length} {person.movieIds.length === 1 ? "film" : "films"}
-      </p>
-      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {person.movieIds.map((id: string) => {
-          const movie = graph.moviesById[id]!;
-          return (
-            <button
-              key={id}
-              onClick={() => onPick(id)}
-              className="group border border-border/70 bg-card/40 px-4 py-3 text-left transition-colors hover:border-link/60 hover:bg-card/70"
-            >
-              <span className="block font-display text-[15px] font-medium leading-snug tracking-[0.02em] text-foreground">
-                {movie.title}
-              </span>
-              <span className="mt-1 block text-[10px] uppercase tracking-[0.22em] text-muted-foreground group-hover:text-link">
-                {movie.year}
-              </span>
-            </button>
-          );
-        })}
       </div>
     </div>
   );
 }
 
-function MoviePage({
-  graph,
-  movieId,
-  onPick,
+function ActorPlaque({
+  label,
+  person,
+  accent,
 }: {
-  graph: Graph;
-  movieId: string;
-  onPick: (personId: string) => void;
+  label: string;
+  person: Person;
+  accent?: boolean;
 }) {
-  const movie = graph.moviesById[movieId]!;
-  return (
-    <div key={movieId} className="anim-fade-up">
-      <p className="text-[9px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
-        Film · {movie.year}
-      </p>
-      <h2 className="mt-2 font-display text-[clamp(1.7rem,7vw,3rem)] font-semibold leading-tight tracking-[0.03em] text-foreground">
-        {movie.title}
-      </h2>
-      <p className="mt-8 text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
-        Credited cast
-      </p>
-      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {movie.personIds.map((id: string) => {
-          const person = graph.peopleById[id]!;
-          return (
-            <button
-              key={id}
-              onClick={() => onPick(id)}
-              className="group flex items-center gap-3 border border-border/70 bg-card/40 px-4 py-3 text-left transition-colors hover:border-link/60 hover:bg-card/70"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-border/70 font-display text-[11px] font-bold tracking-[0.06em] text-muted-foreground group-hover:border-link/50 group-hover:text-link">
-                {initials(person.name)}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate font-display text-[15px] font-medium tracking-[0.02em] text-foreground">
-                  {person.name}
-                </span>
-                <span className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  {person.movieIds.length} {person.movieIds.length === 1 ? "film" : "films"}
-                </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function ActorPlaque({ label, name, accent }: { label: string; name: string; accent?: boolean }) {
   return (
     <div
       className={`flex-1 border px-4 py-5 ${accent ? "border-link/60 bg-link/5" : "border-border/70 bg-card/40"}`}
@@ -420,21 +429,17 @@ function ActorPlaque({ label, name, accent }: { label: string; name: string; acc
       <p className="text-[9px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
         {label}
       </p>
-      <p
-        className={`mx-auto mt-3 flex h-12 w-12 items-center justify-center border font-display text-sm font-bold ${
-          accent ? "border-link/50 text-link" : "border-border/70 text-foreground"
-        }`}
-      >
-        {initials(name)}
-      </p>
+      <div className="mt-3 flex justify-center">
+        <Portrait person={person} size="lg" accent={accent ?? false} showAttribution />
+      </div>
       <p className="mt-3 font-display text-[15px] font-semibold leading-snug tracking-[0.03em] text-foreground">
-        {name}
+        {person.name}
       </p>
     </div>
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+export function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="border-r border-border/70 px-4 py-5 text-center last:border-r-0">
       <p className="text-[9px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
@@ -449,7 +454,7 @@ function Stat({ label, value, accent }: { label: string; value: string; accent?:
   );
 }
 
-function Meter({ label, value }: { label: string; value: string }) {
+export function Meter({ label, value }: { label: string; value: string }) {
   return (
     <div className="text-right">
       <p className="text-[9px] font-medium uppercase tracking-[0.24em] text-muted-foreground">

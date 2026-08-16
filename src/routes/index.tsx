@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { GAMES } from "@/config/games";
 import { SITE } from "@/config/site";
+import { TodayAtNircosi } from "@/components/TodayAtNircosi";
 import { loadBest, loadCount, loadCurrentCareer } from "@/games/hollywood/storage";
 
 /** Per-game tile identity so the three playable games never read alike. */
@@ -84,7 +85,9 @@ function Index() {
           A collection of cinema games
         </p>
 
-        <div className="mt-16 w-full">
+        <TodayAtNircosi />
+
+        <div className="mt-14 w-full">
           <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
             Choose a game
           </p>

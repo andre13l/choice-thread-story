@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
-import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as HigherLowerRouteImport } from './routes/higher-lower'
 import { Route as HollywoodRouteImport } from './routes/hollywood'
@@ -19,7 +18,10 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WalkOfFameRouteImport } from './routes/walk-of-fame'
+import { Route as ConnectIndexRouteImport } from './routes/connect.index'
+import { Route as ConnectDailyRouteImport } from './routes/connect.daily'
 import { Route as ApiPublicConnectImportRouteImport } from './routes/api/public/connect-import'
+import { Route as ApiPublicDailyConnectPublishRouteImport } from './routes/api/public/daily-connect-publish'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,11 +31,6 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConnectRoute = ConnectRouteImport.update({
-  id: '/connect',
-  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -71,16 +68,31 @@ const WalkOfFameRoute = WalkOfFameRouteImport.update({
   path: '/walk-of-fame',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConnectIndexRoute = ConnectIndexRouteImport.update({
+  id: '/connect/',
+  path: '/connect/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectDailyRoute = ConnectDailyRouteImport.update({
+  id: '/connect/daily',
+  path: '/connect/daily',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicConnectImportRoute = ApiPublicConnectImportRouteImport.update({
   id: '/api/public/connect-import',
   path: '/api/public/connect-import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDailyConnectPublishRoute =
+  ApiPublicDailyConnectPublishRouteImport.update({
+    id: '/api/public/daily-connect-publish',
+    path: '/api/public/daily-connect-publish',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/connect': typeof ConnectRoute
   '/contact': typeof ContactRoute
   '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
@@ -88,12 +100,14 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
+  '/connect/daily': typeof ConnectDailyRoute
+  '/connect/': typeof ConnectIndexRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
+  '/api/public/daily-connect-publish': typeof ApiPublicDailyConnectPublishRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/connect': typeof ConnectRoute
   '/contact': typeof ContactRoute
   '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
@@ -101,13 +115,15 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
+  '/connect/daily': typeof ConnectDailyRoute
+  '/connect': typeof ConnectIndexRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
+  '/api/public/daily-connect-publish': typeof ApiPublicDailyConnectPublishRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/connect': typeof ConnectRoute
   '/contact': typeof ContactRoute
   '/higher-lower': typeof HigherLowerRoute
   '/hollywood': typeof HollywoodRoute
@@ -115,14 +131,16 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/walk-of-fame': typeof WalkOfFameRoute
+  '/connect/daily': typeof ConnectDailyRoute
+  '/connect/': typeof ConnectIndexRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
+  '/api/public/daily-connect-publish': typeof ApiPublicDailyConnectPublishRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
-    | '/connect'
     | '/contact'
     | '/higher-lower'
     | '/hollywood'
@@ -130,12 +148,14 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
+    | '/connect/daily'
+    | '/connect/'
     | '/api/public/connect-import'
+    | '/api/public/daily-connect-publish'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/connect'
     | '/contact'
     | '/higher-lower'
     | '/hollywood'
@@ -143,12 +163,14 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
+    | '/connect/daily'
+    | '/connect'
     | '/api/public/connect-import'
+    | '/api/public/daily-connect-publish'
   id:
     | '__root__'
     | '/'
     | '/about'
-    | '/connect'
     | '/contact'
     | '/higher-lower'
     | '/hollywood'
@@ -156,13 +178,15 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/walk-of-fame'
+    | '/connect/daily'
+    | '/connect/'
     | '/api/public/connect-import'
+    | '/api/public/daily-connect-publish'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  ConnectRoute: typeof ConnectRoute
   ContactRoute: typeof ContactRoute
   HigherLowerRoute: typeof HigherLowerRoute
   HollywoodRoute: typeof HollywoodRoute
@@ -170,7 +194,10 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   WalkOfFameRoute: typeof WalkOfFameRoute
+  ConnectDailyRoute: typeof ConnectDailyRoute
+  ConnectIndexRoute: typeof ConnectIndexRoute
   ApiPublicConnectImportRoute: typeof ApiPublicConnectImportRoute
+  ApiPublicDailyConnectPublishRoute: typeof ApiPublicDailyConnectPublishRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -187,13 +214,6 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/connect': {
-      id: '/connect'
-      path: '/connect'
-      fullPath: '/connect'
-      preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -245,11 +265,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalkOfFameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/connect/': {
+      id: '/connect/'
+      path: '/connect'
+      fullPath: '/connect/'
+      preLoaderRoute: typeof ConnectIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect/daily': {
+      id: '/connect/daily'
+      path: '/connect/daily'
+      fullPath: '/connect/daily'
+      preLoaderRoute: typeof ConnectDailyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/connect-import': {
       id: '/api/public/connect-import'
       path: '/api/public/connect-import'
       fullPath: '/api/public/connect-import'
       preLoaderRoute: typeof ApiPublicConnectImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/daily-connect-publish': {
+      id: '/api/public/daily-connect-publish'
+      path: '/api/public/daily-connect-publish'
+      fullPath: '/api/public/daily-connect-publish'
+      preLoaderRoute: typeof ApiPublicDailyConnectPublishRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -258,7 +299,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  ConnectRoute: ConnectRoute,
   ContactRoute: ContactRoute,
   HigherLowerRoute: HigherLowerRoute,
   HollywoodRoute: HollywoodRoute,
@@ -266,7 +306,10 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   WalkOfFameRoute: WalkOfFameRoute,
+  ConnectDailyRoute: ConnectDailyRoute,
+  ConnectIndexRoute: ConnectIndexRoute,
   ApiPublicConnectImportRoute: ApiPublicConnectImportRoute,
+  ApiPublicDailyConnectPublishRoute: ApiPublicDailyConnectPublishRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

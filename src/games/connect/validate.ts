@@ -11,6 +11,7 @@ import {
   type Graph,
 } from "./graph";
 import { loadGraph } from "./data/dataset";
+import { dailyChallenge, dailyNumber, dailyPool } from "./daily";
 
 export interface ValidationReport {
   people: number;
@@ -98,8 +99,79 @@ export function validateGraph(graph: Graph): ValidationReport {
   };
 }
 
+/**
+ * Mainstream credits a player would immediately notice as missing. These are
+ * assertions against the shipped snapshot, not aspirations.
+ */
+export const KNOWN_CREDITS: Array<[string, string[]]> = [
+  [
+    "Spider-Man: No Way Home",
+    ["Jamie Foxx", "Willem Dafoe", "Alfred Molina", "Andrew Garfield", "Tobey Maguire"],
+  ],
+  ["Django Unchained", ["Jamie Foxx"]],
+  ["Oppenheimer", ["Cillian Murphy"]],
+  ["Barbie", ["Margot Robbie"]],
+  ["The Wolf of Wall Street", ["Leonardo DiCaprio", "Margot Robbie"]],
+  ["Pulp Fiction", ["Samuel L. Jackson", "John Travolta"]],
+];
+
+/** Reports missing credits rather than silently passing. */
+export function validateKnownCredits(graph: Graph): string[] {
+  const errors: string[] = [];
+  for (const [title, actors] of KNOWN_CREDITS) {
+    const movie = Object.values(graph.moviesById).find((m) => m.title === title);
+    if (!movie) {
+      errors.push(`film not in catalogue: ${title}`);
+      continue;
+    }
+    const cast = new Set(movie.personIds.map((id) => graph.peopleById[id]!.name));
+    for (const actor of actors) {
+      if (!cast.has(actor)) errors.push(`${title}: missing ${actor}`);
+    }
+  }
+  return errors;
+}
+
+/**
+ * Daily Connect contract: one pair per UTC date, identical on repeat calls,
+ * different the next day, famous endpoints, reachable, never co-stars.
+ */
+export function validateDaily(graph: Graph, dates: string[]): string[] {
+  const errors: string[] = [];
+  const pool = new Set(dailyPool(graph).map((star) => star.id));
+  const seenPairs = new Set<string>();
+
+  for (const date of dates) {
+    const a = dailyChallenge(graph, date);
+    const b = dailyChallenge(graph, date);
+    if (a.startId !== b.startId || a.targetId !== b.targetId) {
+      errors.push(`${date}: not deterministic`);
+    }
+    if (dailyNumber(date) < 1) errors.push(`${date}: daily number below 1`);
+    if (!pool.has(a.startId) || !pool.has(a.targetId)) {
+      errors.push(`${date}: endpoint outside the recognizable pool`);
+    }
+    if (areCoStars(graph, a.startId, a.targetId)) errors.push(`${date}: direct co-stars`);
+    const clicks = shortestClicks(graph, a.startId, a.targetId);
+    if (clicks === null) errors.push(`${date}: unreachable pair`);
+    else if (clicks !== a.best) errors.push(`${date}: optimal mismatch`);
+    seenPairs.add(`${a.startId}|${a.targetId}`);
+  }
+
+  if (dates.length > 3 && seenPairs.size < Math.ceil(dates.length * 0.8)) {
+    errors.push(`only ${seenPairs.size} distinct pairs across ${dates.length} dates`);
+  }
+  return errors;
+}
+
 if (typeof process !== "undefined" && process.argv?.[1]?.includes("validate")) {
-  const report = validateGraph(await loadGraph());
-  console.log(report);
-  if (report.errors.length) process.exit(1);
+  const graph = await loadGraph();
+  const report = validateGraph(graph);
+  const dates = Array.from({ length: 30 }, (_, i) =>
+    new Date(Date.UTC(2026, 7, 16) + i * 86_400_000).toISOString().slice(0, 10),
+  );
+  const dailyErrors = validateDaily(graph, dates);
+  const creditErrors = validateKnownCredits(graph);
+  console.log({ ...report, dailyErrors, creditErrors });
+  if (report.errors.length || dailyErrors.length || creditErrors.length) process.exit(1);
 }

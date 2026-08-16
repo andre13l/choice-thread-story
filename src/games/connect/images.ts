@@ -12,15 +12,29 @@
 
 const BASE = "https://commons.wikimedia.org";
 
+/**
+ * Stored file names arrive percent-encoded from the Wikidata dump; encoding
+ * them again would produce a 404, so decode defensively first.
+ */
+function fileSegment(file: string): string {
+  let decoded = file;
+  try {
+    decoded = decodeURIComponent(file);
+  } catch {
+    // Not valid percent-encoding — use it verbatim.
+  }
+  return encodeURIComponent(decoded.replace(/ /g, "_"));
+}
+
 export function portraitUrl(file: string, width: number): string | null {
   if (!file) return null;
-  return `${BASE}/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${width}`;
+  return `${BASE}/wiki/Special:FilePath/${fileSegment(file)}?width=${width}`;
 }
 
 /** Commons file page — the canonical place for author + licence. */
 export function attributionUrl(file: string): string | null {
   if (!file) return null;
-  return `${BASE}/wiki/File:${encodeURIComponent(file)}`;
+  return `${BASE}/wiki/File:${fileSegment(file)}`;
 }
 
 export function initials(name: string): string {
