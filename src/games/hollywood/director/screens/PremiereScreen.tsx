@@ -127,8 +127,18 @@ export function PremiereScreen({
               <p className="border-b border-border/50 px-4 py-2.5 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
                 {VERDICT_LABEL[film.verdict]}
               </p>
-              <div className="grid grid-cols-2 gap-px bg-border/40 sm:grid-cols-4">
-                <Delta label="You earned" value={formatMoney(effects.moneyDelta)} good={effects.moneyDelta >= 0} />
+              <div className="grid grid-cols-2 gap-px bg-border/40 sm:grid-cols-3">
+                <Delta
+                  label="Your fee + backend"
+                  value={`${effects.moneyDelta < 0 ? "−" : "+"}${formatMoney(Math.abs(effects.moneyDelta))}`}
+                  good={effects.moneyDelta >= 0}
+                />
+                <Delta label="Living costs" value={`−${formatMoney(effects.upkeep)}`} good={false} />
+                <Delta
+                  label="Net worth change"
+                  value={`${effects.moneyDelta - effects.upkeep < 0 ? "−" : "+"}${formatMoney(Math.abs(effects.moneyDelta - effects.upkeep))}`}
+                  good={effects.moneyDelta - effects.upkeep >= 0}
+                />
                 <Delta label="Respect" value={signed(effects.reputation)} good={effects.reputation >= 0} />
                 <Delta label="Recognition" value={signed(effects.recognition)} good={effects.recognition >= 0} />
                 <Delta label="Studio trust" value={signed(effects.studioTrust)} good={effects.studioTrust >= 0} />

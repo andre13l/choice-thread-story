@@ -8,6 +8,7 @@ import { CareerEndScreen } from "@/games/hollywood/director/screens/CareerEndScr
 import { CastingScreen } from "@/games/hollywood/director/screens/CastingScreen";
 import { DirectorHeader } from "@/games/hollywood/director/screens/DirectorHeader";
 import { DirectorIntro } from "@/games/hollywood/director/screens/DirectorIntro";
+import { EventScreen } from "@/games/hollywood/director/screens/EventScreen";
 import { DirectorLegend } from "@/games/hollywood/director/screens/DirectorLegend";
 import { FilmographySheet } from "@/games/hollywood/director/screens/FilmographySheet";
 import { NoStarScreen } from "@/games/hollywood/director/screens/NoStarScreen";
@@ -62,6 +63,16 @@ function HollywoodPage() {
 
       {state.phase === "transition" && state.jump && (
         <TimeJumpScreen jump={state.jump} onDone={() => dispatch({ type: "transition_done" })} />
+      )}
+
+      {state.phase === "event" && state.event && (
+        <EventScreen
+          key={state.event.id}
+          event={state.event}
+          outcome={state.eventOutcome}
+          onChoose={(choice) => dispatch({ type: "choose_event", choice })}
+          onDone={() => dispatch({ type: "event_done" })}
+        />
       )}
 
       {state.phase === "offers" && (

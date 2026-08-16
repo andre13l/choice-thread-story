@@ -32,8 +32,12 @@ export function DirectorHeader({
           </span>
         </span>
 
-        <span className={career.money < 0 ? "text-danger" : "text-foreground/90"}>
-          {formatMoney(career.money)}
+        <span
+          title="Personal net worth"
+          className={career.money < 0 ? "text-danger" : "text-foreground/90"}
+        >
+          <span className="hidden text-muted-foreground/50 sm:inline">Net worth </span>
+          {career.money < 0 ? `−${formatMoney(Math.abs(career.money))}` : formatMoney(career.money)}
         </span>
         <span className="flex min-w-0 items-center gap-3 sm:gap-4">
           {career.oscars > 0 && (

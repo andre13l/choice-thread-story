@@ -10,8 +10,8 @@ export const DIRECTOR_PACING = {
   startAge: 24,
   startYear: 2004,
   startMoney: 8_000,
-  softEndAge: 68,
-  hardEndAge: 82,
+  softEndAge: 62,
+  hardEndAge: 76,
 } as const;
 
 
@@ -43,4 +43,21 @@ export const DIRECTOR_DECLINE = {
   ageRampStart: 64,
   ageRampPerYear: 0.02,
   maxChance: 0.34,
+} as const;
+
+/**
+ * Pressure -> ending. Careers end because of what happened, not a timer;
+ * these constants only decide how fast that reckoning arrives.
+ */
+export const DIRECTOR_PRESSURE = {
+  /** No ending before the career has a shape (unless genuinely ruined). */
+  graceFilms: 3,
+  ruinMoney: -3_000_000,
+  base: TEST_MODE ? 0.05 : 0.012,
+  pressureWeight: 0.44,
+  lengthRampFilms: 6,
+  lengthRampPerFilm: 0.021,
+  ageRampStart: 58,
+  ageRampPerYear: 0.017,
+  maxChance: 0.46,
 } as const;

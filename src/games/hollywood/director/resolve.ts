@@ -8,7 +8,7 @@
 
 import { createRng } from "../../core/rng";
 import { hashString, noise, range } from "./names";
-import { studioResultOf } from "./finance";
+import { rentalsShare, studioResultOf } from "./finance";
 import { majorAwardScore, technicalScore } from "./awards";
 import { productionMonths, yearOf } from "./pacing";
 import type { Actor, Allocation, DirectorCareer, FilmResult, Project, Verdict } from "./types";
@@ -116,8 +116,22 @@ export function resolveFilm(args: {
      * is where the real difficulty of a big career lives.
      */
     const scaleRef = Math.max(0.35, budget / 2_000_000);
-    let baseMultiple = 5.4 * Math.pow(scaleRef, -0.24);
-    if (budget >= 80_000_000) baseMultiple *= 0.85;
+    /**
+     * Break-even is a gross of roughly 2.1x the budget (the studio keeps
+     * 47% of the gross). The base multiple therefore sits just under that:
+     * a film has to be good, well sold or lucky to make money.
+     */
+    let baseMultiple = 2.55 * Math.pow(scaleRef, -0.10);
+    if (budget >= 80_000_000) baseMultiple *= 0.9;
+    if (budget >= 180_000_000) baseMultiple *= 0.92;
+
+    /**
+     * DISCOVERY. The first couple of films are allowed to break out more
+     * easily than anything later: hope early, expectations later. The bonus
+     * decays to nothing by the fourth film.
+     */
+    const discovery = career.films.length <= 2 ? 1.3 - career.films.length * 0.09 : 1;
+    baseMultiple *= discovery;
 
     const qualityFactor = clamp(
       0.38 + appeal / 78 + (audience - 52) / 130 + (critics - 55) / 320,
@@ -130,10 +144,12 @@ export function resolveFilm(args: {
     // land anywhere from a bomb to a phenomenon.
     const strong = qualityFactor >= 1.05;
     const t = r();
-    if (t < 0.045 + project.risk / 1000) multiple *= range(r, 0.2, 0.5);
-    else if (t < 0.2) multiple *= range(r, 0.55, 0.82);
-    else if (t < 0.74) multiple *= range(r, 0.9, 1.12);
-    else if (t < 0.94) multiple *= range(r, 1.25, 1.75) * (strong ? 1.1 : 1);
+    const early = career.films.length <= 2;
+    const bombFloor = (early ? 0.03 : 0.05) + project.risk / 1000;
+    if (t < bombFloor) multiple *= range(r, 0.2, 0.5);
+    else if (t < (early ? 0.17 : 0.22)) multiple *= range(r, 0.58, 0.85);
+    else if (t < 0.74) multiple *= range(r, 0.92, 1.14);
+    else if (t < 0.94) multiple *= range(r, 1.25, 1.8) * (strong ? 1.12 : 1);
     else multiple *= range(r, 1.9, 3.4) * (strong ? 1.2 : 1);
 
     if (project.franchise) multiple = Math.max(multiple, range(r, 1.05, 1.55));
@@ -172,7 +188,9 @@ export function resolveFilm(args: {
 
   let directorTake = project.fee;
   if (project.selfFinanced) {
-    directorTake = Math.round(worldwide * 0.55) - (project.personalStake ?? budget);
+    // Self-financed: the director IS the studio, so the same rentals share
+    // applies. No second formula, ever.
+    directorTake = Math.round(worldwide * rentalsShare(theatrical)) - (project.personalStake ?? budget);
   } else if (studioResult > 0) {
     const backendRate = career.recognition >= 70 ? 0.035 : career.recognition >= 45 ? 0.018 : 0.007;
     directorTake += Math.round(studioResult * backendRate);
