@@ -47,3 +47,55 @@ export function loadCount(): number {
   const n = Number(localStorage.getItem(KEYS.count));
   return Number.isFinite(n) ? n : 0;
 }
+
+/**
+ * FULL-RUN PERSISTENCE
+ *
+ * Saving only the career meant any remount (tab restore, bfcache eviction,
+ * a stray re-render of the route) rehydrated at the START of the current
+ * cycle — the player was thrown back to the offers board after casting or
+ * budgeting. The whole in-flight turn is now persisted, so a reload lands
+ * exactly where the player was.
+ *
+ * The live `CareerEvent` object holds predicate functions, so only its id
+ * is stored and the event is re-resolved from the bank on load.
+ */
+export interface SavedRun {
+  v: 2;
+  career: DirectorCareer;
+  phase: string;
+  offers: unknown[];
+  project: unknown | null;
+  pool: unknown[];
+  cast: unknown[];
+  pending: unknown | null;
+  jump: unknown | null;
+  eventId: string | null;
+  eventOutcome: unknown | null;
+}
+
+const RUN_KEY = `${PREFIX}.run`;
+
+export function saveRun(run: SavedRun | null): void {
+  try {
+    if (run && !run.career.ended) localStorage.setItem(RUN_KEY, JSON.stringify(run));
+    else localStorage.removeItem(RUN_KEY);
+  } catch {
+    // Storage full or unavailable — the run simply won't survive a reload.
+  }
+}
+
+export function loadRun(): SavedRun | null {
+  const run = parse<SavedRun>(localStorage.getItem(RUN_KEY));
+  if (!run || run.v !== 2 || !run.career || !Array.isArray(run.career.films)) return null;
+  if (run.career.ended) return null;
+  return run;
+}
+
+export function clearRun(): void {
+  try {
+    localStorage.removeItem(RUN_KEY);
+  } catch {
+    /* ignore */
+  }
+}

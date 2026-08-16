@@ -1,5 +1,8 @@
 /** Client-safe Daily Top 10 shapes. Answers never appear in these. */
 
+/** What kind of thing the ten blanks hold. Drives autocomplete only. */
+export type Top10AnswerType = "film" | "person";
+
 export interface Top10Prompt {
   date: string;
   number: number;
@@ -10,6 +13,13 @@ export interface Top10Prompt {
   source: string;
   sourceUrl?: string;
   total: number;
+  answerType: Top10AnswerType;
+}
+
+/** One autocomplete suggestion. Carries no signal about today's answers. */
+export interface Top10Suggestion {
+  label: string;
+  hint?: string;
 }
 
 export interface Top10Hit {

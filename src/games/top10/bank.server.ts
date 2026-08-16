@@ -15,12 +15,16 @@
  *   subtitle says so rather than pretending the order is eternal.
  */
 
+import type { Top10AnswerType } from "./types";
+
 export interface Top10Challenge {
   /** Stable id — also the calendar key. Never renumber. */
   id: string;
   title: string;
   subtitle?: string;
   category: "box-office" | "awards" | "franchise";
+  /** What the ten blanks hold. Defaults to "film". Drives autocomplete only. */
+  answerType?: Top10AnswerType;
   source: string;
   sourceUrl?: string;
   published: boolean;
@@ -533,6 +537,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "oscars-actor-2015-2024",
+    answerType: "person",
     title: "Best Actor winners, ceremonies 2015–2024",
     subtitle: "In chronological order — position 1 is the 2015 ceremony.",
     category: "awards",

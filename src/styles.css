@@ -347,3 +347,34 @@
     opacity: 0.2;
   }
 }
+
+/*
+ * GAME SURFACE — the active game reads as a centered, contained sheet
+ * rather than content bleeding across the viewport. Hairline border, the
+ * house radius, and a soft lift; no dashboard chrome.
+ */
+@utility game-surface {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-background);
+  box-shadow: 0 1px 0 0 color-mix(in oklab, var(--foreground) 4%, transparent),
+    0 18px 40px -28px color-mix(in oklab, var(--foreground) 30%, transparent);
+}
+
+/*
+ * Games are authored as standalone full-screen scenes. Inside the surface
+ * they must size to their content instead of the viewport, and the `stage`
+ * atmosphere layers must stay inside the frame. These rules are unlayered
+ * on purpose so they win over the utility that sets `min-h-screen`.
+ */
+.game-surface > * {
+  min-height: min(72vh, 640px);
+}
+
+.game-surface .stage::before,
+.game-surface .stage::after {
+  position: absolute;
+  z-index: 1;
+}

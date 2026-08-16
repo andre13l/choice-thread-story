@@ -11,6 +11,7 @@ import {
   accentButton,
   formatTime,
 } from "@/games/core/components/DailyChrome";
+import { AutocompleteInput, type Suggestion } from "@/games/core/components/AutocompleteInput";
 import { loadProgress, saveProgress } from "@/games/core/dailyProgress";
 import {
   currentStreak,
@@ -22,7 +23,7 @@ import {
   type DailyStats,
 } from "@/games/core/dailyStats";
 import { TOP10_GAME_ID, type Top10Hit, type Top10Prompt } from "@/games/top10/types";
-import { getTop10Today, guessTop10, revealTop10 } from "@/lib/top10.functions";
+import { getTop10Today, guessTop10, revealTop10, searchTop10 } from "@/lib/top10.functions";
 
 export const Route = createFileRoute("/daily/top-10")({
   component: DailyTop10Page,
@@ -62,6 +63,7 @@ function DailyTop10Page() {
   const fetchToday = useServerFn(getTop10Today);
   const submitGuess = useServerFn(guessTop10);
   const reveal = useServerFn(revealTop10);
+  const runSearch = useServerFn(searchTop10);
 
   const [prompt, setPrompt] = useState<Top10Prompt | null>(null);
   const [failed, setFailed] = useState(false);
@@ -187,6 +189,8 @@ function DailyTop10Page() {
         setWrong((w) => ["Could not reach the backend — try again", ...w].slice(0, 12));
       } finally {
         setPending(false);
+        // Keep the field hot so the next entry can be typed immediately.
+        window.setTimeout(() => inputRef.current?.focus(), 0);
         window.setTimeout(() => setFlash(null), 900);
       }
     },
@@ -203,6 +207,13 @@ function DailyTop10Page() {
       finish(found.length, true, time, []);
     }
   }, [prompt, reveal, date, found.length, startedAt, elapsed, finish]);
+
+  const answerType = prompt?.answerType ?? "film";
+  const searchCatalog = useCallback(
+    async (query: string): Promise<Suggestion[]> =>
+      runSearch({ data: { kind: answerType, q: query } }),
+    [runSearch, answerType],
+  );
 
   if (failed) {
     return (
@@ -269,10 +280,18 @@ function DailyTop10Page() {
                   <span className="w-6 shrink-0 font-display text-xs tracking-[0.1em] text-muted-foreground">
                     {String(position).padStart(2, "0")}
                   </span>
-                  <span className={mine ? "text-sm text-foreground" : "text-sm text-muted-foreground/70"}>
+                  <span
+                    className={
+                      mine ? "text-sm text-foreground" : "text-sm text-muted-foreground/70"
+                    }
+                  >
                     {answer}
                   </span>
-                  {mine && <span className="ml-auto text-[10px] uppercase tracking-[0.2em] text-gold">Named</span>}
+                  {mine && (
+                    <span className="ml-auto text-[10px] uppercase tracking-[0.2em] text-gold">
+                      Named
+                    </span>
+                  )}
                 </li>
               );
             })}
@@ -356,26 +375,29 @@ function DailyTop10Page() {
         </div>
 
         <form
-          className="mt-3 flex gap-2"
+          className="mt-3 flex items-start gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             void onGuess(input);
           }}
         >
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Name an entry…"
-            autoComplete="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            className="min-w-0 flex-1 border border-border bg-card px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-gold"
-          />
+          <div className="min-w-0 flex-1">
+            <AutocompleteInput
+              ref={inputRef}
+              value={input}
+              onChange={setInput}
+              onSubmit={(v) => void onGuess(v)}
+              search={searchCatalog}
+              exclude={found.map((f) => f.answer)}
+              disabled={pending}
+              label="Name an entry"
+              placeholder={prompt.answerType === "person" ? "Name a person…" : "Name a film…"}
+            />
+          </div>
           <button
             type="submit"
             disabled={pending}
-            className={`shrink-0 border px-6 text-[11px] font-medium uppercase tracking-[0.24em] transition-colors disabled:opacity-50 ${accentButton("gold")}`}
+            className={`shrink-0 self-stretch border px-6 text-[11px] font-medium uppercase tracking-[0.24em] transition-colors disabled:opacity-50 ${accentButton("gold")}`}
           >
             Guess
           </button>

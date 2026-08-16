@@ -11,13 +11,20 @@ import { GAMES } from "@/config/games";
 import appCss from "../styles.css?url";
 
 /**
- * Full-screen game routes render without site chrome (nav/footer) so play
- * stays cinematic and free of competing sticky headers. Derived from the
- * games registry: every playable game route opts out automatically.
+ * HOLLYWOOD renders without site chrome: it is a full-screen cinematic
+ * experience with its own career HUD, and a second sticky header would
+ * compete with it. Every other game keeps the platform header and is
+ * framed inside a centered game surface.
  */
 const CHROMELESS_ROUTES = new Set(
-  GAMES.filter((g) => g.status === "playable" && g.to).map((g) => g.to as string),
+  GAMES.filter((g) => g.status === "playable" && g.to && g.id === "hollywood").map(
+    (g) => g.to as string,
+  ),
 );
+
+/** Route prefixes that render inside the centered game surface. */
+const SURFACE_PREFIXES = ["/daily", "/connect", "/higher-lower"];
+
 
 export const Route = createRootRoute({
   head: () => ({
@@ -98,19 +105,27 @@ function RootDocument({ children }: { children: ReactNode }) {
 }
 
 /**
- * Platform shell: header + content + footer on browsable pages; bare
- * full-screen rendering on game routes. The content column is intentionally
- * narrower than the viewport ceiling so desktop layouts reserve calm side
- * space (future non-intrusive side content) without touching the games.
+ * Platform shell. Browsable pages flow full width; gameplay routes are
+ * framed as a centered, contained surface so the active game reads as the
+ * hero of the page on both desktop and mobile.
  */
 function RootChrome({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   if (CHROMELESS_ROUTES.has(pathname)) return <>{children}</>;
+  const framed = SURFACE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-[1600px] flex-1">
-        <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+        <main className="flex min-w-0 flex-1 flex-col">
+          {framed ? (
+            <div className="mx-auto w-full max-w-3xl px-3 py-5 sm:px-6 sm:py-10">
+              <div className="game-surface">{children}</div>
+            </div>
+          ) : (
+            children
+          )}
+        </main>
       </div>
       <SiteFooter />
     </div>

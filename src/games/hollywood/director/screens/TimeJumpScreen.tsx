@@ -1,15 +1,29 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { formatSpan, type TimeJump } from "../pacing";
 
 /**
  * The passage of time as a beat, not prose. One line, two years,
  * then back to work.
+ *
+ * `onDone` is held in a ref and fired at most once: the parent passes a
+ * fresh inline callback on every render, and depending on it directly
+ * restarted the timer (or let a tap and the timer both advance the run).
  */
 export function TimeJumpScreen({ jump, onDone }: { jump: TimeJump; onDone: () => void }) {
+  const done = useRef(onDone);
+  done.current = onDone;
+  const fired = useRef(false);
+
+  const finish = useCallback(() => {
+    if (fired.current) return;
+    fired.current = true;
+    done.current();
+  }, []);
+
   useEffect(() => {
-    const t = setTimeout(onDone, 3400);
-    return () => clearTimeout(t);
-  }, [onDone]);
+    const t = window.setTimeout(finish, 3400);
+    return () => window.clearTimeout(t);
+  }, [finish]);
 
   const accent =
     jump.tone === "down" ? "text-danger" : jump.tone === "up" ? "text-gold" : "text-foreground";
@@ -17,7 +31,7 @@ export function TimeJumpScreen({ jump, onDone }: { jump: TimeJump; onDone: () =>
   return (
     <div
       className="anim-fade-in flex flex-1 cursor-pointer flex-col items-center justify-center px-6 py-24 text-center"
-      onClick={onDone}
+      onClick={finish}
     >
       <p
         className={`font-display text-[clamp(1.5rem,6vw,2.6rem)] uppercase leading-tight tracking-[0.06em] ${accent}`}
