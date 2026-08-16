@@ -5,7 +5,7 @@ const title = "Connect Actors Through Movies — Movie Connection Game | Nircosi
 const description =
   "Two actors who never shared a film. Hop through movies and casts to link them in as few clicks as possible, then see the shortest route that existed.";
 
-export const Route = createFileRoute("/connect")({
+export const Route = createFileRoute("/connect/")({
   head: () => ({
     meta: [
       { title },
