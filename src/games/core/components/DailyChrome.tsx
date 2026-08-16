@@ -42,6 +42,54 @@ export function prettyDate(date: string): string {
   });
 }
 
+/**
+ * When a run ends the result view replaces the board, but the window keeps the
+ * scroll offset from gameplay — so the headline and share CTA can sit above the
+ * fold. Pull the page to the top of the result card once, on mount only, so it
+ * never interrupts an in-progress game.
+ */
+export function useResultFocus<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const raf = requestAnimationFrame(() => {
+      const reduce =
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const top = el.getBoundingClientRect().top + window.scrollY - 16;
+      window.scrollTo({ top: Math.max(0, top), behavior: reduce ? "auto" : "smooth" });
+      el.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return ref;
+}
+
+/** Centered, focusable container for any end-of-run result card. */
+export function ResultSurface({
+  children,
+  className = "",
+  label = "Result",
+}: {
+  children: ReactNode;
+  className?: string;
+  label?: string;
+}) {
+  const ref = useResultFocus<HTMLDivElement>();
+  return (
+    <div
+      ref={ref}
+      tabIndex={-1}
+      role="region"
+      aria-label={label}
+      className={`w-full max-w-2xl outline-none ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function DailyHeader({
   label,
   date,
