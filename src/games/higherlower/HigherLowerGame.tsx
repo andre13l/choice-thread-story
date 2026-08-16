@@ -381,26 +381,33 @@ function GameOver({
   onPlayAgain: () => void;
   onChangeMode: () => void;
 }) {
-  return (
-    <div className="stage anim-fade-up flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-danger">Wrong guess</p>
-      <div className="mt-8 h-px w-16 bg-danger/50" />
-      <p className="mt-8 text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
-        Final streak
-      </p>
-      <h1 className="mt-3 font-display text-[clamp(4rem,16vw,7rem)] leading-none text-foreground">
-        <span className="sr-only">Game over — final streak: </span>
-        {streak}
-      </h1>
-      <p className="mt-6 text-[13px] uppercase tracking-[0.2em] text-muted-foreground">
-        Personal best · {metricLabel(metric)}
-      </p>
-      <p className="mt-1 font-display text-2xl text-gold">{Math.max(best, streak)}</p>
-      <p className="mt-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">
-        Global leaderboards — soon
-      </p>
+  const shareText = [
+    "NIRCOSI HIGHER OR LOWER",
+    `${metricLabel(metric)} · 🎬 streak ${streak}`,
+    `🏆 personal best ${Math.max(best, streak)}`,
+    "nircosi.com/higher-lower",
+  ].join("\n");
 
-      <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row">
+  return (
+    <div className="stage anim-fade-up flex min-h-screen flex-col items-center justify-center px-6 py-10 text-center">
+      <ResultSurface className="flex flex-col items-center" label="Higher or Lower result">
+        <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-danger">Wrong guess</p>
+        <div className="mt-8 h-px w-16 bg-danger/50" />
+        <p className="mt-8 text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
+          Final streak
+        </p>
+        <h1 className="mt-3 font-display text-[clamp(4rem,16vw,7rem)] leading-none text-foreground">
+          <span className="sr-only">Game over — final streak: </span>
+          {streak}
+        </h1>
+        <p className="mt-6 text-[13px] uppercase tracking-[0.2em] text-muted-foreground">
+          Personal best · {metricLabel(metric)}
+        </p>
+        <p className="mt-1 font-display text-2xl text-gold">{Math.max(best, streak)}</p>
+
+        <ShareButton text={shareText} accent="gold" className="mt-8 w-full sm:w-auto" />
+
+        <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
         <button
           onClick={onPlayAgain}
           className="flex items-center gap-2 border border-foreground bg-foreground px-10 py-3.5 text-[12px] font-medium uppercase tracking-[0.3em] text-primary-foreground transition-colors duration-300 hover:bg-transparent hover:text-foreground"
