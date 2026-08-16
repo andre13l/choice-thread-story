@@ -50,7 +50,9 @@ function mulberry32(seed: number): () => number {
  * a daily should never open on a name nobody knows.
  */
 export function dailyPool(graph: Graph): StarRating[] {
-  const pool = cachedChallengePool(graph);
+  const pool = cachedChallengePool(graph)
+    // A daily endpoint needs a real filmography to navigate through.
+    .filter((star) => (graph.peopleById[star.id]?.movieIds.length ?? 0) >= 8);
   return pool.slice(0, Math.max(80, Math.floor(pool.length * 0.35)));
 }
 

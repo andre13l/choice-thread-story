@@ -7,6 +7,8 @@ import {
   dailyNumber,
 } from "@/games/connect/daily";
 import { shortestPath, type Challenge, type GraphNode } from "@/games/connect/graph";
+import { getDailyConnect, type DailyConnectPayload } from "@/lib/connect.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { GraphError, GraphLoading, MoviePage, PersonPage } from "@/games/connect/components/Browse";
 import { Portrait } from "@/games/connect/components/Portrait";
 import { ReportDialog, type ReportContext } from "@/games/connect/components/ReportDialog";
@@ -78,10 +80,39 @@ function DailyConnectPage() {
     return () => window.clearInterval(id);
   }, [phase, startedAt]);
 
-  const challenge: Challenge | null = useMemo(
-    () => (graph ? dailyChallenge(graph, date) : null),
-    [graph, date],
-  );
+  // The backend row is authoritative; the deterministic generator is the
+  // fallback so a date is never without a challenge. Both derive the same pair.
+  const fetchDaily = useServerFn(getDailyConnect);
+  const [published, setPublished] = useState<DailyConnectPayload | null>(null);
+  const [publishedLoaded, setPublishedLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchDaily({ data: { date } })
+      .then((payload) => {
+        if (cancelled) return;
+        setPublished(payload);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setPublishedLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchDaily, date]);
+
+  const challenge: Challenge | null = useMemo(() => {
+    if (!graph || !publishedLoaded) return null;
+    if (published && graph.peopleById[published.startPersonId] && graph.peopleById[published.targetPersonId]) {
+      return {
+        startId: published.startPersonId,
+        targetId: published.targetPersonId,
+        best: published.optimalClicks,
+      };
+    }
+    return dailyChallenge(graph, date);
+  }, [graph, date, published, publishedLoaded]);
 
   useEffect(() => {
     if (challenge && path.length === 0) setPath([{ kind: "person", id: challenge.startId }]);
