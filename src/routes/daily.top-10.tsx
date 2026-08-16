@@ -356,30 +356,36 @@ function DailyTop10Page() {
         </div>
 
         <form
-          className="mt-3 flex gap-2"
+          className="mt-3 flex items-start gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             void onGuess(input);
           }}
         >
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Name an entry…"
-            autoComplete="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            className="min-w-0 flex-1 border border-border bg-card px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-gold"
-          />
+          <div className="min-w-0 flex-1">
+            <AutocompleteInput
+              ref={inputRef}
+              value={input}
+              onChange={setInput}
+              onSubmit={(v) => void onGuess(v)}
+              search={searchCatalog}
+              exclude={found.map((f) => f.answer)}
+              disabled={pending}
+              label="Name an entry"
+              placeholder={
+                prompt.answerType === "person" ? "Name a person…" : "Name a film…"
+              }
+            />
+          </div>
           <button
             type="submit"
             disabled={pending}
-            className={`shrink-0 border px-6 text-[11px] font-medium uppercase tracking-[0.24em] transition-colors disabled:opacity-50 ${accentButton("gold")}`}
+            className={`shrink-0 self-stretch border px-6 text-[11px] font-medium uppercase tracking-[0.24em] transition-colors disabled:opacity-50 ${accentButton("gold")}`}
           >
             Guess
           </button>
         </form>
+
 
         <ol className="mt-6 border border-border/70">
           {Array.from({ length: prompt.total }, (_, i) => {
