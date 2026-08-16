@@ -152,6 +152,51 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_connect: {
+        Row: {
+          created_at: string
+          date: string
+          number: number
+          optimal_clicks: number
+          published: boolean
+          start_person_id: string
+          target_person_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          number: number
+          optimal_clicks: number
+          published?: boolean
+          start_person_id: string
+          target_person_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          number?: number
+          optimal_clicks?: number
+          published?: boolean
+          start_person_id?: string
+          target_person_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_connect_start_person_id_fkey"
+            columns: ["start_person_id"]
+            isOneToOne: false
+            referencedRelation: "connect_people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_connect_target_person_id_fkey"
+            columns: ["target_person_id"]
+            isOneToOne: false
+            referencedRelation: "connect_people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       connect_catalog_counts: {
