@@ -11,13 +11,20 @@ import { GAMES } from "@/config/games";
 import appCss from "../styles.css?url";
 
 /**
- * Full-screen game routes render without site chrome (nav/footer) so play
- * stays cinematic and free of competing sticky headers. Derived from the
- * games registry: every playable game route opts out automatically.
+ * HOLLYWOOD renders without site chrome: it is a full-screen cinematic
+ * experience with its own career HUD, and a second sticky header would
+ * compete with it. Every other game keeps the platform header and is
+ * framed inside a centered game surface.
  */
 const CHROMELESS_ROUTES = new Set(
-  GAMES.filter((g) => g.status === "playable" && g.to).map((g) => g.to as string),
+  GAMES.filter((g) => g.status === "playable" && g.to && g.id === "hollywood").map(
+    (g) => g.to as string,
+  ),
 );
+
+/** Route prefixes that render inside the centered game surface. */
+const SURFACE_PREFIXES = ["/daily", "/connect", "/higher-lower"];
+
 
 export const Route = createRootRoute({
   head: () => ({
