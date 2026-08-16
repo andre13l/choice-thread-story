@@ -9,8 +9,8 @@ import { SITE } from "@/config/site";
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/70 bg-background">
-      <div className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 sm:py-20">
-        <div className="grid gap-10 sm:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))] sm:gap-12">
+      <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+        <div className="grid gap-8 sm:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
           <div className="min-w-0">
             <p className="font-display text-[13px] font-bold tracking-[0.4em] text-foreground">
               {SITE.name}
@@ -56,7 +56,7 @@ export function SiteFooter() {
           </FooterColumn>
         </div>
 
-        <p className="mt-14 border-t border-border/60 pt-6 text-[10px] uppercase tracking-[0.24em] text-muted-foreground/60">
+        <p className="mt-10 border-t border-border/60 pt-6 text-[10px] uppercase tracking-[0.24em] text-muted-foreground/60">
           © {new Date().getFullYear()} {SITE.name} — a collection of cinema games
         </p>
       </div>
