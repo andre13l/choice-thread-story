@@ -15,6 +15,7 @@ import { ReportDialog, type ReportContext } from "@/games/connect/components/Rep
 import { useGraph } from "@/games/connect/useGraph";
 import { PathTrail } from "@/games/connect/screens/PathTrail";
 import { Meter, QuitDialog, Stat, formatTime } from "@/games/connect/ConnectGame";
+import { ResultSurface, ShareButton } from "@/games/core/components/DailyChrome";
 import {
   currentStreak,
   loadDailyStats,
