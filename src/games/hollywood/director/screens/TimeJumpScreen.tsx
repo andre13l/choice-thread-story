@@ -33,7 +33,6 @@ export function TimeJumpScreen({ jump, onDone }: { jump: TimeJump; onDone: () =>
       className="anim-fade-in flex flex-1 cursor-pointer flex-col items-center justify-center px-6 py-24 text-center"
       onClick={finish}
     >
-
       <p
         className={`font-display text-[clamp(1.5rem,6vw,2.6rem)] uppercase leading-tight tracking-[0.06em] ${accent}`}
       >

@@ -1,9 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import {
-  giveUpTop10,
-  loadTop10Prompt,
-  submitTop10Guess,
-} from "@/games/top10/top10.rpc.server";
+import { giveUpTop10, loadTop10Prompt, submitTop10Guess } from "@/games/top10/top10.rpc.server";
 import { searchTop10Catalog } from "@/games/top10/search.server";
 
 /** The prompt only — never the answers. */

@@ -11,10 +11,7 @@ import {
   accentButton,
   formatTime,
 } from "@/games/core/components/DailyChrome";
-import {
-  AutocompleteInput,
-  type Suggestion,
-} from "@/games/core/components/AutocompleteInput";
+import { AutocompleteInput, type Suggestion } from "@/games/core/components/AutocompleteInput";
 import { loadProgress, saveProgress } from "@/games/core/dailyProgress";
 import {
   currentStreak,
@@ -283,10 +280,18 @@ function DailyTop10Page() {
                   <span className="w-6 shrink-0 font-display text-xs tracking-[0.1em] text-muted-foreground">
                     {String(position).padStart(2, "0")}
                   </span>
-                  <span className={mine ? "text-sm text-foreground" : "text-sm text-muted-foreground/70"}>
+                  <span
+                    className={
+                      mine ? "text-sm text-foreground" : "text-sm text-muted-foreground/70"
+                    }
+                  >
                     {answer}
                   </span>
-                  {mine && <span className="ml-auto text-[10px] uppercase tracking-[0.2em] text-gold">Named</span>}
+                  {mine && (
+                    <span className="ml-auto text-[10px] uppercase tracking-[0.2em] text-gold">
+                      Named
+                    </span>
+                  )}
                 </li>
               );
             })}
@@ -386,9 +391,7 @@ function DailyTop10Page() {
               exclude={found.map((f) => f.answer)}
               disabled={pending}
               label="Name an entry"
-              placeholder={
-                prompt.answerType === "person" ? "Name a person…" : "Name a film…"
-              }
+              placeholder={prompt.answerType === "person" ? "Name a person…" : "Name a film…"}
             />
           </div>
           <button
@@ -399,7 +402,6 @@ function DailyTop10Page() {
             Guess
           </button>
         </form>
-
 
         <ol className="mt-6 border border-border/70">
           {Array.from({ length: prompt.total }, (_, i) => {

@@ -113,8 +113,10 @@ export async function searchTop10Catalog(
     if (answerKey(label).includes(key)) add(label);
   }
 
-  return [...results.values()].sort((a, b) => {
-    const d = rank(a.label, key) - rank(b.label, key);
-    return d !== 0 ? d : a.label.length - b.label.length;
-  }).slice(0, LIMIT);
+  return [...results.values()]
+    .sort((a, b) => {
+      const d = rank(a.label, key) - rank(b.label, key);
+      return d !== 0 ? d : a.label.length - b.label.length;
+    })
+    .slice(0, LIMIT);
 }

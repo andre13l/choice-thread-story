@@ -45,8 +45,23 @@ import { hashString } from "./names";
 import type { TimeJump } from "./pacing";
 import { generateOffers } from "./offers";
 import { resolveFilm } from "./resolve";
-import { clearRun, loadCareer, loadRun, recordCareer, saveCareer, saveRun, type SavedRun } from "./storage";
-import type { Actor, Allocation, CareerSnapshot, DirectorCareer, FilmResult, Project } from "./types";
+import {
+  clearRun,
+  loadCareer,
+  loadRun,
+  recordCareer,
+  saveCareer,
+  saveRun,
+  type SavedRun,
+} from "./storage";
+import type {
+  Actor,
+  Allocation,
+  CareerSnapshot,
+  DirectorCareer,
+  FilmResult,
+  Project,
+} from "./types";
 
 export type Phase =
   | "intro"
@@ -171,7 +186,12 @@ function finalize(state: State): State {
 
   const r = createRng((career.seed ^ hashString(`end:${career.cycle}`)) >>> 0);
   if (checkLegend(career, r())) {
-    career = { ...career, legend: true, ended: true, fate: "You got out on top. Almost nobody does." };
+    career = {
+      ...career,
+      legend: true,
+      ended: true,
+      fate: "You got out on top. Almost nobody does.",
+    };
     return { ...state, career, phase: "legend", snapshot: snapshot(career), pending: null };
   }
   if (r() < endingChance(career)) {
@@ -249,7 +269,12 @@ function reducer(state: State, action: Action): State {
     case "confirm_budget": {
       const project = state.project;
       if (!project) return state;
-      const film = resolveFilm({ project, cast: state.cast, alloc: action.alloc, career: state.career });
+      const film = resolveFilm({
+        project,
+        cast: state.cast,
+        alloc: action.alloc,
+        career: state.career,
+      });
       const { career: afterFilm, effects, jump } = applyFilm(state.career, film);
       const awards = runAwards(film, afterFilm);
       const careerAfter = awards ? applyAwards(afterFilm, awards) : afterFilm;
@@ -267,7 +292,9 @@ function reducer(state: State, action: Action): State {
       const event = state.event;
       // A branch is chosen exactly once; a second tap resolves nothing.
       if (!event || state.eventOutcome) return state;
-      const r = createRng((state.career.seed ^ hashString(`ev:${event.id}:${state.career.cycle}`)) >>> 0);
+      const r = createRng(
+        (state.career.seed ^ hashString(`ev:${event.id}:${state.career.cycle}`)) >>> 0,
+      );
       const outcome = applyEventChoice(state.career, event, action.choice, r());
       return { ...state, career: outcome.career, eventOutcome: outcome };
     }
