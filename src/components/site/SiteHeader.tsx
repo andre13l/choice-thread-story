@@ -1,120 +1,129 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { useEffect, useId, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Flame, Menu, User, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { SITE } from "@/config/site";
+import { todayUTC } from "@/games/core/dailyStats";
+import { completedToday, globalStreak } from "@/games/core/globalStreak";
 
 /**
- * Platform navigation. One brand anchor and one menu — no row of competing
- * labels. Hidden entirely on full-screen game routes (see __root.tsx).
+ * Platform header: burger at the far left, wordmark, then the live daily
+ * streak and a lightweight account affordance. Sparse by design — the page
+ * below it is the product.
  */
-const MENU: { label: string; to: string; exact?: boolean; group: "play" | "more" }[] = [
-  { label: "Games", to: "/", exact: true, group: "play" },
-  { label: "Daily", to: "/daily", group: "play" },
-  { label: "Hollywood", to: "/hollywood", group: "play" },
-  { label: "Connect", to: "/connect", group: "play" },
-  { label: "Higher / Lower", to: "/higher-lower", group: "play" },
-  { label: "Walk of Fame", to: "/walk-of-fame", group: "more" },
-  { label: "About", to: "/about", group: "more" },
-  { label: "Contact", to: "/contact", group: "more" },
-];
+export function SiteHeader({
+  navOpen,
+  onToggleNav,
+  navPanelId,
+}: {
+  navOpen: boolean;
+  onToggleNav: () => void;
+  navPanelId: string;
+}) {
+  const [streak, setStreak] = useState(0);
+  const [played, setPlayed] = useState(0);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
 
-export function SiteHeader() {
-  const [open, setOpen] = useState(false);
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const panelId = useId();
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-
-  // Close on route change.
   useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+    const today = todayUTC();
+    setStreak(globalStreak(today));
+    setPlayed(Object.values(completedToday(today)).filter(Boolean).length);
+  }, []);
 
-  // Escape + outside click.
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
-    };
+    if (!profileOpen) return;
     const onDown = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!profileRef.current?.contains(e.target as Node)) setProfileOpen(false);
     };
-    document.addEventListener("keydown", onKey);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setProfileOpen(false);
+    };
     document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [profileOpen]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-md">
-      <div
-        ref={wrapRef}
-        className="relative mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-8"
-      >
-        <Link
-          to="/"
-          className="font-display text-[13px] font-bold tracking-[0.4em] text-foreground transition-opacity hover:opacity-80"
-        >
-          {SITE.name}
-        </Link>
-
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-md">
+      <div className="grid h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 sm:px-5">
         <button
-          ref={triggerRef}
           type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          aria-controls={panelId}
-          aria-label={open ? "Close menu" : "Open menu"}
-          className="flex items-center gap-2 border border-border/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.24em] text-muted-foreground transition-colors hover:border-foreground/60 hover:text-foreground"
+          onClick={onToggleNav}
+          aria-expanded={navOpen}
+          aria-controls={navPanelId}
+          aria-label={navOpen ? "Close navigation" : "Open navigation"}
+          className="flex h-9 w-9 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
-          {open ? <X className="h-3.5 w-3.5" /> : <Menu className="h-3.5 w-3.5" />}
-          <span className="hidden sm:inline">{open ? "Close" : "Menu"}</span>
+          {navOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>
 
-        {open && (
-          <div
-            id={panelId}
-            className="anim-fade-up absolute right-0 top-full z-50 w-full border-b border-l border-r border-border/70 bg-background/98 backdrop-blur-md sm:w-72 sm:border"
+        <Link
+          to="/"
+          className="min-w-0 truncate font-display text-[13px] font-bold tracking-[0.34em] text-foreground transition-opacity hover:opacity-70 sm:tracking-[0.4em]"
+        >
+          {SITE.name}
+          <span className="hidden text-muted-foreground/70 sm:inline"> GAMES</span>
+        </Link>
+
+        <div ref={profileRef} className="relative flex shrink-0 items-center gap-2">
+          <span
+            className="flex items-center gap-1.5 rounded-sm border border-border/70 px-2.5 py-1.5 text-[11px] font-medium tabular-nums text-foreground"
+            title={`${streak} day streak`}
           >
-            <nav className="flex flex-col px-5 py-5 sm:px-6">
-              <p className="text-[9px] font-medium uppercase tracking-[0.28em] text-muted-foreground/60">
-                Play
+            <Flame className="h-3.5 w-3.5 text-gold" aria-hidden />
+            {streak}
+            <span className="sr-only">day daily streak</span>
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setProfileOpen((o) => !o)}
+            aria-expanded={profileOpen}
+            aria-label="Your progress"
+            className="flex h-9 w-9 items-center justify-center rounded-sm border border-border/70 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <User className="h-4 w-4" />
+          </button>
+
+          {profileOpen && (
+            <div className="anim-fade-up absolute right-0 top-full z-50 mt-2 w-64 rounded-sm border border-border bg-popover p-5 shadow-[0_18px_40px_-28px_rgba(0,0,0,0.5)]">
+              <p className="text-[9px] font-medium uppercase tracking-[0.28em] text-muted-foreground/70">
+                Your progress
               </p>
-              {MENU.filter((m) => m.group === "play").map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  activeOptions={{ exact: item.exact ?? false }}
-                  onClick={() => setOpen(false)}
-                  className="mt-3 text-[13px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
-                  activeProps={{ className: "text-foreground" }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <div className="mt-6 h-px w-full bg-border/60" />
-              <p className="mt-5 text-[9px] font-medium uppercase tracking-[0.28em] text-muted-foreground/60">
-                More
+              <dl className="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <dt className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    Streak
+                  </dt>
+                  <dd className="mt-1 font-display text-2xl tabular-nums text-foreground">
+                    {streak}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    Today
+                  </dt>
+                  <dd className="mt-1 font-display text-2xl tabular-nums text-foreground">
+                    {played}/3
+                  </dd>
+                </div>
+              </dl>
+              <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+                Progress is saved on this device. Accounts are coming later.
               </p>
-              {MENU.filter((m) => m.group === "more").map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setOpen(false)}
-                  className="mt-3 text-[12px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
-                  activeProps={{ className: "text-foreground" }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-        )}
+              <Link
+                to="/daily"
+                onClick={() => setProfileOpen(false)}
+                className="mt-4 block rounded-sm border border-foreground bg-foreground px-3 py-2 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-background transition-colors hover:bg-transparent hover:text-foreground"
+              >
+                Today&apos;s challenges
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
