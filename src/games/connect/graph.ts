@@ -1,84 +1,20 @@
 /**
- * CONNECT — pure graph engine. No React, no DOM.
+ * CONNECT — pure graph engine. No React, no DOM, no data loading.
  *
  * The bipartite graph is people <-> movies. One "click" is one hop, so a
- * path Actor -> Movie -> Actor costs 2 clicks. Everything the UI needs is
- * derived here so the data source can later become a database query.
+ * path Actor -> Movie -> Actor costs 2 clicks.
  */
 
-import { RAW_FILMS, type RawFilm } from "./data/films";
-import { cachedChallengePool, pickWeighted, type StarRating } from "./popularity";
+import type { Graph } from "./data/dataset";
+import { challengePool, pickWeighted, type StarRating } from "./popularity";
 
-
-export interface Person {
-  id: string;
-  name: string;
-  /** Movie ids, newest first. */
-  movieIds: string[];
-}
-
-export interface Movie {
-  id: string;
-  title: string;
-  year: number;
-  /** Person ids in credited order. */
-  personIds: string[];
-}
-
-export interface Graph {
-  peopleById: Record<string, Person>;
-  moviesById: Record<string, Movie>;
-  personIds: string[];
-  movieIds: string[];
-}
+export type { Graph, Movie, Person } from "./data/dataset";
 
 export type NodeKind = "person" | "movie";
 export interface GraphNode {
   kind: NodeKind;
   id: string;
 }
-
-export function slug(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-export function buildGraph(films: RawFilm[] = RAW_FILMS): Graph {
-  const peopleById: Record<string, Person> = {};
-  const moviesById: Record<string, Movie> = {};
-
-  for (const film of films) {
-    const movieId = film.id ? `m-${film.id}` : `m-${slug(film.title)}-${film.year}`;
-    if (moviesById[movieId]) continue;
-    const movie: Movie = { id: movieId, title: film.title, year: film.year, personIds: [] };
-    moviesById[movieId] = movie;
-
-    for (const name of film.cast) {
-      const personId = `p-${slug(name)}`;
-      const person = (peopleById[personId] ??= { id: personId, name, movieIds: [] });
-      if (!movie.personIds.includes(personId)) movie.personIds.push(personId);
-      if (!person.movieIds.includes(movieId)) person.movieIds.push(movieId);
-    }
-  }
-
-  for (const person of Object.values(peopleById)) {
-    person.movieIds.sort((a, b) => moviesById[b]!.year - moviesById[a]!.year);
-  }
-
-  return {
-    peopleById,
-    moviesById,
-    personIds: Object.keys(peopleById),
-    movieIds: Object.keys(moviesById),
-  };
-}
-
-/** Shared prototype graph instance. */
-export const GRAPH: Graph = buildGraph();
 
 const key = (n: GraphNode) => `${n.kind}:${n.id}`;
 
@@ -144,14 +80,12 @@ export interface Challenge {
 export interface ChallengeOptions {
   minClicks?: number;
   maxClicks?: number;
-  /** Only use people with at least this many credits as endpoints. */
-  minCredits?: number;
   /** Pair keys ("a|b") to avoid repeating. */
   avoid?: Set<string>;
   random?: () => number;
   /**
    * Recognizability-weighted endpoint pool. Endpoints are drawn from here;
-   * the full graph is still used for traversal, so paths stay rich.
+   * the full graph is still used for traversal, so routes stay rich.
    */
   endpointPool?: StarRating[];
 }
@@ -159,29 +93,23 @@ export interface ChallengeOptions {
 export const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
 /**
- * Pick a start/target pair that are NOT co-stars and whose optimal route
- * sits inside the requested click window.
+ * Pick a start/target pair that are NOT co-stars, are both reachable, and
+ * whose optimal route sits inside the requested click window.
  */
 export function generateChallenge(graph: Graph, options: ChallengeOptions = {}): Challenge {
   const {
     minClicks = 4,
     maxClicks = 8,
-    minCredits = 3,
     avoid = new Set<string>(),
     random = Math.random,
     endpointPool,
   } = options;
 
-  const pool = endpointPool?.length ? endpointPool : cachedChallengePool(graph);
-  const fallbackIds = graph.personIds.filter(
-    (id) => (graph.peopleById[id]?.movieIds.length ?? 0) >= minCredits,
-  );
-  const source = fallbackIds.length >= 2 ? fallbackIds : graph.personIds;
-  const draw = (): string =>
-    pool.length >= 2 ? pickWeighted(pool, random) : source[Math.floor(random() * source.length)]!;
+  const pool = endpointPool?.length ? endpointPool : challengePool(graph);
+  const draw = (): string => pickWeighted(pool, random);
 
   let fallback: Challenge | null = null;
-  for (let attempt = 0; attempt < 600; attempt++) {
+  for (let attempt = 0; attempt < 400; attempt++) {
     const a = draw();
     const b = draw();
     if (a === b) continue;
@@ -190,18 +118,52 @@ export function generateChallenge(graph: Graph, options: ChallengeOptions = {}):
     const best = shortestClicks(graph, a, b);
     if (best === null) continue;
     if (best >= minClicks && best <= maxClicks) return { startId: a, targetId: b, best };
-    if (!fallback && best >= 4) fallback = { startId: a, targetId: b, best };
+    if (!fallback && best >= 2) fallback = { startId: a, targetId: b, best };
   }
   if (fallback) return fallback;
 
-  // Exhaustive last resort so the game can never fail to start.
-  for (const a of source) {
-    for (const b of source) {
-      if (a === b || areCoStars(graph, a, b)) continue;
-      const best = shortestClicks(graph, a, b);
-      if (best !== null && best >= minClicks) return { startId: a, targetId: b, best };
+  // Last resort so the game can never fail to start.
+  for (const rating of pool) {
+    for (const other of pool) {
+      if (rating.id === other.id || areCoStars(graph, rating.id, other.id)) continue;
+      const best = shortestClicks(graph, rating.id, other.id);
+      if (best !== null && best >= 2) return { startId: rating.id, targetId: other.id, best };
     }
   }
   throw new Error("connect: no valid challenge pair in graph");
 }
 
+/** Simple ranked search across people and films. */
+export interface SearchHit {
+  kind: NodeKind;
+  id: string;
+  label: string;
+  sub: string;
+}
+
+export function searchGraph(graph: Graph, query: string, limit = 12): SearchHit[] {
+  const q = query.trim().toLowerCase();
+  if (q.length < 2) return [];
+  const hits: (SearchHit & { score: number })[] = [];
+
+  const push = (kind: NodeKind, id: string, label: string, sub: string, weight: number) => {
+    const lower = label.toLowerCase();
+    const at = lower.indexOf(q);
+    if (at === -1) return;
+    hits.push({ kind, id, label, sub, score: (at === 0 ? 1000 : 400 - at * 4) + weight });
+  };
+
+  for (const id of graph.personIds) {
+    const p = graph.peopleById[id]!;
+    push("person", id, p.name, `${p.movieIds.length} in Connect`, Math.min(p.notability, 200));
+  }
+  for (const id of graph.movieIds) {
+    const m = graph.moviesById[id]!;
+    push("movie", id, m.title, String(m.year), Math.min(m.notability, 200));
+  }
+
+  return hits
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(({ score: _score, ...hit }) => hit);
+}
