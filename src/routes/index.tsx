@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Lock, Share2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, Lock, Share2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import heroImage from "@/assets/hollywood-hero.jpg";
 import { GAMES } from "@/config/games";
 import { SITE } from "@/config/site";
-import { StreakStrip } from "@/components/StreakStrip";
+import { RecentActivity, StreakStrip } from "@/components/StreakStrip";
 import { TodaysChallenges } from "@/components/TodaysChallenges";
 import { loadBest, loadCount, loadCurrentCareer } from "@/games/hollywood/storage";
 
