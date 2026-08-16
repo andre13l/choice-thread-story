@@ -63,9 +63,7 @@ function Index() {
   }, []);
 
   const flagship = GAMES.find((g) => g.flagship && g.status === "playable");
-  const playable = GAMES.filter(
-    (g) => g.status === "playable" && !g.flagship && g.id !== "daily",
-  );
+  const playable = GAMES.filter((g) => g.status === "playable" && !g.flagship && g.id !== "daily");
   const upcoming = GAMES.filter((g) => g.status === "soon");
 
   return (
@@ -108,8 +106,8 @@ function Index() {
                   Or watch it crumble.
                 </h2>
                 <p className="mt-4 max-w-md text-[13px] leading-relaxed text-ink-foreground/75">
-                  Direct film after film: pick the project, cast it, spend the money, then watch
-                  the premiere fill — or empty.
+                  Direct film after film: pick the project, cast it, spend the money, then watch the
+                  premiere fill — or empty.
                 </p>
                 <span className="mt-6 inline-flex items-center gap-2 border border-ink-foreground/50 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.24em] transition-colors group-hover:bg-ink-foreground group-hover:text-ink">
                   Play {flagship.name}

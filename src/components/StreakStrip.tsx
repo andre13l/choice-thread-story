@@ -1,11 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  loadDailyStats,
-  shiftDate,
-  todayUTC,
-  type DailyResult,
-} from "@/games/core/dailyStats";
+import { loadDailyStats, shiftDate, todayUTC, type DailyResult } from "@/games/core/dailyStats";
 import { DAILY_GAMES, globalStreak, type DailyGameId } from "@/games/core/globalStreak";
 
 const GAME_LABEL: Record<DailyGameId, string> = {

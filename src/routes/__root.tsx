@@ -3,8 +3,6 @@ import type { ReactNode } from "react";
 import { AppShell } from "@/components/site/AppShell";
 import appCss from "../styles.css?url";
 
-
-
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -48,8 +46,7 @@ export const Route = createRootRoute({
               "@id": "https://nircosi.com/#organization",
               name: "Nircosi",
               url: "https://nircosi.com/",
-              description:
-                "Nircosi makes short, highly replayable cinema and pop-culture games.",
+              description: "Nircosi makes short, highly replayable cinema and pop-culture games.",
             },
             {
               "@type": "WebSite",
@@ -82,4 +79,3 @@ function RootDocument({ children }: { children: ReactNode }) {
     </html>
   );
 }
-
