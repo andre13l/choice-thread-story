@@ -217,6 +217,9 @@ function DailyConnectPage() {
             </p>
           )}
 
+          <ShareButton text={shareText} accent="link" className="mt-8 w-full sm:w-auto" />
+
+
           {!result.gaveUp && path.length > 1 && (
             <div className="mt-10 text-left">
               <p className="text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
