@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useReducer, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { createRng } from "@/games/core/rng";
+import { ResultSurface, ShareButton } from "@/games/core/components/DailyChrome";
 import { SITE } from "@/config/site";
 import {
   ALL_METRICS,
