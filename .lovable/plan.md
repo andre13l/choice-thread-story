@@ -1,86 +1,89 @@
-# Plan: Higher / Lower v2 — dataset, timer, persistent highscores
+# Connect data architecture — read-only audit (no code or data changed)
 
-## Current state (verified in code)
+## 1. Source of truth today
 
-- `src/games/higherlower/`: pure engine (`engine.ts`), 226-film static array (`data/movies.ts`), localStorage bests (`storage.ts`), one UI file (`HigherLowerGame.tsx`). No timer; reveal settles on an 800 ms timeout.
-- Engine is already seeded (mulberry32 via `src/games/core/rng.ts`) and `drawMovie` already accepts an injectable `pool` — server re-simulation and dataset swap need no engine rewrite.
-- No backend: Lovable Cloud is not enabled, no `src/integrations/`, no Supabase deps. `src/start.ts` has no bearer `functionMiddleware` yet.
+There are two copies of the catalogue, and **gameplay reads the static file, not the database**.
 
-## Assumptions (correct me if wrong)
+- Static snapshot: `public/data/connect-graph.json` — 2.42 MB raw, ~870 KB gzipped. Header fields: `source: "Wikidata (CC0) + Wikimedia Commons image metadata phase1"`. Contents: 24,969 people, 2,530 films, 52,701 cast rows.
+- Runtime loader: `src/games/connect/data/dataset.ts` → `loadGraph()` does `fetch("/data/connect-graph.json")` and builds the in-memory bipartite graph via `buildGraph()`. It memoises into a module-level `cached` promise (one fetch per browser tab session).
+- Consumers: `src/games/connect/useGraph.ts` → `ConnectGame.tsx` and `src/routes/connect.daily.tsx`. All navigation, cast lists, filmographies, search/filter (`components/Browse.tsx`, plain `String.includes` over the in-memory arrays), BFS (`graph.ts`), challenge generation (`graph.ts` / `popularity.ts`) and daily fallback (`daily.ts`) run entirely client-side against that JSON.
 
-- Movie source: **TMDB API** (free key, reputable, has all required fields incl. popularity, poster paths, credits). Their terms require an attribution notice ("This product uses the TMDB API but is not endorsed or certified by TMDB") on About/footer, and posters must be hotlinked from `image.tmdb.org`, not re-hosted. Commercial use may need a separate TMDB agreement — flagging for you to confirm; fallback is Wikidata/OMDb if that is a blocker.
-- We DO need minimal user profiles (a display handle) because leaderboards need names. Profile = handle only, nothing else.
-- Login methods: email/password + Google (Cloud defaults).
+Supabase is used for Connect only at the edges:
+- `src/lib/connect.functions.ts` → `getCatalogCounts()` reads the `connect_catalog_counts` view (only feeds the "films · actors · connections" line in `components/GraphStats.tsx`, with the snapshot as fallback) and `getDailyConnect()` reads `daily_connect` + two rows from `connect_people`.
+- `src/games/person/person.server.ts` (Daily Person) and `src/games/top10/search.server.ts` (Top 10 autocomplete) read `connect_people` / `connect_movies` / `connect_cast` server-side — these are the only features where the DB is the real source of truth.
 
-## Part 1 — Massive movie dataset (own DB, no runtime external calls)
+Consequence: the DB rows are a mirror for other games; **Connect gameplay never queries them**.
 
-**Table `movies`** (one row per film, ~300 bytes): `tmdb_id` (unique, stable external id), `title`, `year`, `box_office_m`, `budget_m`, `rating`, `runtime_min`, `popularity`, `genres text[]`, `poster_path` (path only, hotlinked), `top_cast jsonb` (top 5 cast + director names — enough for the future deduction/graph games; no separate credits table yet), `updated_at`. 10k rows ≈ 3 MB. Public `SELECT TO anon`, writes service-role only.
+## 2. How the current dataset was produced and imported
 
-**Ingestion**: `scripts/ingest-movies.ts` run locally with bun (env: `TMDB_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`). Pulls TMDB `discover` by decade with `vote_count.gte` + popularity thresholds so classics are represented alongside recent hits, upserts ~5–10k recognizable titles in minutes. Re-run quarterly to refresh; old films' figures are static. Production runtime never calls TMDB.
+- Generation: performed out-of-repo (no generator script exists under `scripts/` — only `daily-checks.ts`, `hollywood-checks.ts`, `hollywood-sim.ts`). The committed artifact is the only record. Rows are positional tuples: people `[qid, name, sitelinks, commonsFile, birthYear]`, films `[qid, title, year, sitelinks]`, cast index-aligned to films as `[personIndex, billingOrder, character]`.
+- IDs are Wikidata QIDs for both films and people. No IMDb/TMDB IDs anywhere.
+- Observable filters baked into the snapshot: film Wikidata sitelinks ≥ 35 (min 35, median 45, max 137 — this is the ~2.5k cap); film years 1920–2026; cast per film 2–223 (median 18, so cast is not truncated to top-billed); person sitelinks range 0–339 (no person notability floor — people enter via cast membership).
+- Build-time pruning in `buildGraph()`: films with fewer than 2 in-graph cast members are dropped, and `personIds` excludes people with zero surviving credits. No connected-component pruning anywhere.
+- Import: `src/routes/api/public/connect-import.ts` (POST). It fetches the same `/data/connect-graph.json`, refuses to run if `connect_movies` is non-empty unless `?reset=1` + `x-import-token` header (`CONNECT_IMPORT_TOKEN`), then upserts in 1,000-row chunks using `supabaseAdmin`. It applies its own extra rule: `challenge_eligible = notability >= 45 AND credits >= 3` (constants `MIN_NOTABILITY = 45`, `MIN_CREDITS = 3`).
+- Live DB matches the snapshot exactly: 2,530 films, 24,969 people (1,312 `challenge_eligible`, 14,118 with a portrait), 52,701 cast rows.
+- Data-quality artifacts found: 4 films have their QID as the title in both the snapshot and the DB (e.g. `Q134773`, a 1994 film with 136 sitelinks) — label resolution failed for those.
 
-**Gameplay reads**: `getMovieCatalogue` public server fn returns a compact columnar payload (id, title, year, 5 metrics, popularity) + `catalogue_version`. ~500 KB raw / ~150–250 KB gzip for 10k films; client fetches once per session and caches (memory + sessionStorage keyed by version). Posters deliberately excluded from the bundle — stored in the table for future use. Engine's existing `pool` parameter consumes it; `metricValue`/formatting unchanged.
+## 3. Schema (from `supabase/migrations/`)
 
-## Part 2 — Timer (pure frontend, zero backend)
+- `connect_movies(id text PK, title, year, notability, source default 'wikidata', created_at)`; index on `lower(title)`.
+- `connect_people(id text PK, name, notability, birth_year, image_file, image_attribution_url, image_source default 'wikimedia-commons', challenge_eligible bool, source, created_at)`; indexes on `lower(name)` and a partial index on `challenge_eligible WHERE challenge_eligible`.
+- `connect_cast(movie_id → connect_movies.id ON DELETE CASCADE, person_id → connect_people.id ON DELETE CASCADE, billing, character_name, PK(movie_id, person_id))`; extra index on `person_id`. No surrogate key — the composite PK makes upserts idempotent.
+- `connect_catalog_counts` — `security_invoker` view of four `count(*)` subqueries (films, people, connections, challenge_actors). Full scans; fine today, slow at 500k edges.
+- `connect_reports(id uuid, kind CHECK in 5 values, movie_id, person_id, message 1–1000 chars, context jsonb, visitor_key, status CHECK new/reviewing/accepted/rejected, created_at)`; indexes on `created_at DESC` and `(visitor_key, created_at DESC)`. `movie_id`/`person_id` are **not** foreign keys, deliberately — a report can name something not in the catalogue. `BEFORE INSERT` trigger `connect_reports_rate_limit()` caps 10 inserts/hour/visitor_key.
+- RLS: catalogue tables are `SELECT USING (true)` for anon; `connect_reports` is INSERT-only for anon (no SELECT policy → nobody can read reports from the client). `daily_connect` is SELECT where `published`. `daily_person` has RLS enabled with no anon policy (server-only, correct).
+- IDs everywhere are Wikidata QIDs as `text`, so adding rows requires knowing/minting a QID.
 
-- New `src/games/higherlower/config.ts`: `timePerComparisonMs = 8000`, `warningMs = 3000`, plausibility cap (Part 3). Single source, mirrors Hollywood's config pattern.
-- **Deadline-based**, not tick-counting: `deadline = Date.now() + 8000` stored per round in the reducer; UI re-renders via a short interval. Backgrounding a tab does not pause the clock (no free thinking time); on return the timeout fires immediately. New `timeout` action = loss → reveal actual value, game-over copy "Out of time".
-- UI: thin full-width progress bar under the streak header, shrinks left-to-right, turns `text-danger` under 3 s with a subtle pulse. No large numerals. Keyboard arrows unchanged.
+## 4. Would adding a film + cast to Supabase make it playable?
 
-## Part 3 — Login + daily / all-time highscores
+**No.** Connect's board is built purely from `public/data/connect-graph.json`. A DB-only insert would:
+- change the counts line in `GraphStats` (via the view),
+- become searchable in Daily Top 10 autocomplete and usable by Daily Person,
+- have zero effect on Connect navigation, filmographies, BFS or challenge generation.
 
-**Auth**: enable Lovable Cloud. New public `/auth` route (email/password + Google via `lovable.auth.signInWithOAuth`; `configure_social_auth` at build time). Anonymous play is untouched — sign-in is only a nudge on the game-over screen. Handle captured at signup (fallback: `Player-XXXX`). Register bearer `functionMiddleware` in `src/start.ts` (append, keep existing middleware).
+Cache/runtime specifics that matter for any fix:
+- The JSON is served from `public/`, so it is a deploy-time artifact: updating it requires a new build/deploy.
+- Browser HTTP caching plus the module-level `cached` promise in `dataset.ts` means returning players can hold a stale graph until a hard reload; the URL is unversioned (no hash/query param), so cache-busting is not currently possible without renaming the file or adding a version query.
+- `daily_connect` rows reference person QIDs; the client recomputes `shortestPath` against its local graph, so a graph/DB drift can make a published daily's `optimal_clicks` disagree with what the client computes.
 
-**Tables** (upsert-only, no run history):
-- `profiles`: `user_id`, `handle`. Public select, own-row write.
-- `hl_alltime`: `(user_id, metric)` PK, `best int`, `updated_at`. Max 5 rows/user, forever.
-- `hl_daily`: `(user_id, metric, day)` PK, `best int`. One row per user per metric per active day; cron deletes rows older than 30 days.
-- `hl_run_tokens`: `(id, user_id, metric, seed, catalogue_version, used_at)` — single-use run seeds, deleted on use + daily cron cleanup.
+## 5. Scale bottlenecks at 10k–30k films / 200k–500k edges
 
-**Storage math**: ~80 bytes/row. 1M registered users → `hl_alltime` ≈ 5M rows ≈ 400 MB worst case (realistic: far less). 100k daily players × 2 modes × 30-day retention ≈ 6M rows ≈ 500 MB–1 GB worst case; 7-day retention quarters that. Nothing else grows.
+Current cost is ~2.42 MB raw / 870 KB gz for 53k edges — roughly 46 B/edge gzipped plus per-person overhead.
 
-**Anti-cheat (the core ask: DevTools can't submit a fake score)**:
-1. `startHlRun` server fn (auth) mints a single-use seed token storing `seed` + `catalogue_version` (2 h validity).
-2. Client plays from that seed; on game over, `submitHlRun` sends `{ tokenId, guesses: "hlhlh…", durationMs }` — never a score.
-3. Server consumes the token (rejects re-use/expiry), re-runs `seed + guesses` through the **same shared engine module** against the deterministic pool ordering for that `catalogue_version`, computes the true streak, rejects implausible values (cap ~60) and inhuman durations (< streak × 1 s), then upserts `hl_alltime`/`hl_daily` with `GREATEST`.
-4. A bare fabricated score is impossible (server derives it); a replayed token is rejected; fabricating 200 correct guesses requires re-simulating the client itself — accepted residual risk for a casual game, bounded by the cap.
-Anonymous runs keep a client-side random seed and never touch the server.
+- Initial download: linear extrapolation puts 200k edges at ~3–4 MB gz and 500k edges at ~8–10 MB gz, with people likely growing to 100k–250k. That is unacceptable as a blocking fetch before first paint on mobile — this is the hard wall, hit well before 10k films.
+- Client graph construction: `buildGraph()` allocates one object per person/film plus per-credit arrays and does a sort per person. At 500k edges expect multi-hundred-ms to seconds of main-thread work and 150–400 MB of JS heap; mobile Safari tab crashes become likely.
+- Search: `Browse.tsx` filters use linear `toLowerCase().includes` over arrays — fine per-film, but any global search over 250k people would need an index (prefix trie / server search like `top10/search.server.ts` already does).
+- Shortest path: BFS in `graph.ts` is O(V+E) with `Map`/string keys (`"person:Q123"`). At 500k edges a full worst-case BFS is ~100–400 ms per call. `generateChallenge` runs up to 400 attempts, each with a BFS, and `dailyChallenge` up to 600 — that is minutes of blocking main thread. This breaks before the download does for the daily fallback path.
+- DB: `connect_catalog_counts` full-scan counts, and the import endpoint's 1,000-row chunk upserts (500 sequential round-trips for 500k edges) will exceed request timeouts on a Worker.
+- Build/deploy: a multi-MB JSON in `public/` inflates every deploy artifact and the Worker bundle's static assets.
 
-**Leaderboards**: `/higher-lower/leaderboard` route — metric tabs, Daily / All-time toggle, top 50 + your rank/personal best (indexes on `(metric, day, best desc)` and `(metric, best desc)`). Game-over screen gains "Sign in to compete" (anonymous) or "New daily/all-time best" (signed-in).
+## 6. Evaluation of the Tier-A / Tier-B model
 
-## What stays local
+The proposal fits the existing code well and is the right shape, with one correction: the real constraint is **payload and BFS cost**, not actor count, so the tiering must be expressed as edges shipped to the client.
 
-The entire game loop (draw, compare, reveal), timer, anonymous bests + rounds counter, and all of Hollywood. The server only stores the catalogue and per-(user, metric[, day]) best rows.
+- Tier A (searchable, challenge-eligible, deep coverage): the existing `challenge_eligible` flag already encodes exactly this idea (`notability ≥ 45 && credits ≥ 3`, currently 1,312 people). Reuse the column rather than inventing a new one; consider `tier smallint` if more than two levels are wanted.
+- Tier B (connector-only): people who exist as cast rows but whose filmography is not recursively expanded. Important caveat: a Tier-B person with only one in-graph credit adds a dead-end node and inflates payload without ever creating a path. `buildGraph()` already drops zero-credit people; the same logic should drop client-side any Tier-B person with < 2 credits (keep them in the DB for display/attribution, exclude from the shipped graph).
+- Risk to watch: Tier-B expansion is what actually creates the missing edges users report (e.g. Vince Vaughn ↔ Jennifer Aniston via *The Break-Up*). Tiering must be applied to *films* too: the current sitelinks ≥ 35 film floor is the direct cause of most reports — every title reported (The Break-Up, Swingers, The Informant!, Picture Perfect, Rumor Has It, Murder Mystery, Wanderlust, The Object of My Affection) is a mainstream English-language film that falls under 35 sitelinks. Verified: none of those titles exist in `connect_movies`.
+- Structural recommendation regardless of tiering: make Supabase the single source of truth and generate the client snapshot from it (a build step or a cached server function), so DB inserts and gameplay stop drifting.
 
-## Files to change
+## 7. Reports as an ingestion priority queue
 
-```text
-scripts/ingest-movies.ts                new — TMDB → movies upsert (run manually)
-supabase migration                      movies, profiles, hl_alltime, hl_daily,
-                                        hl_run_tokens + grants + RLS + indexes + cron
-src/games/movies/catalogue.ts           new — shared types + compact payload mapping
-src/lib/movies.functions.ts             new — getMovieCatalogue (public),
-                                        startHlRun / submitHlRun / getHlLeaderboard (auth)
-src/games/higherlower/config.ts         new — timer, cap, cache settings
-src/games/higherlower/engine.ts         pool injection + exported simulateRun() validator
-src/games/higherlower/HigherLowerGame.tsx  timer UI, timeout action, submit flow
-src/games/higherlower/storage.ts        unchanged (anonymous bests)
-src/routes/auth.tsx                     new — sign-in/sign-up + handle
-src/routes/higher-lower/leaderboard.tsx new — daily/all-time boards
-src/routes/about.tsx                    TMDB attribution line
-src/components/site/SiteHeader.tsx      Sign in link
-src/start.ts                            append bearer functionMiddleware
-```
+Current signal (25 rows, all 2026-08-17): 24 `movie_missing`, 1 `actor_missing_from_movie`, 1 `other`. Free-text only; the same film arrives as "The Break-Up", "The break up Vince Vaughn Jen aniston", "The Breakup", "The break-up" — four rows, one title. Reports are insert-only for anon and readable only via service role, which is correct for a triage queue.
 
-## Build order (credit-lean, each phase independently shippable)
+Usable as a queue with additive changes only:
+- Add `resolved_movie_id` / `resolved_person_id`, `dedupe_key` (normalised title + year) and a triage `status` transition; the existing `status` CHECK already has `reviewing/accepted/rejected`.
+- Rank the queue by distinct `visitor_key` count per `dedupe_key` — "The Break-Up" would immediately be the top item.
+- Resolution step: normalised title → Wikidata QID lookup → ingest film + full cast → mark accepted. That turns each report into a concrete ingestion job rather than a text note.
+- The `other` report ("use a proper database like TMDB") is worth taking as a real signal about the sitelinks floor, not the storage engine.
 
-1. **Timer** — 3 files, no backend, immediate feel.
-2. **Dataset** — enable Cloud, `movies` migration, ingestion script (needs your free TMDB key in Project Settings → Secrets), catalogue endpoint + client cache. Gameplay instantly feels bigger.
-3. **Scores** — auth, profiles, tokens, validated submission, leaderboards. Largest phase; everything above works without it.
+## 8. Recommended sequence (not implemented)
 
-## Technical details
+1. Freeze the current playable snapshot; add a version/hash to the graph URL so a refreshed catalogue can invalidate browser caches deterministically.
+2. Make Supabase authoritative: write a repo-checked-in generator that queries Wikidata and writes into `connect_movies`/`connect_people`/`connect_cast`, and a second step that emits `connect-graph.json` from the DB. Retire the one-shot `connect-import.ts` path once that exists.
+3. Lower the film floor deliberately (sitelinks ≥ 35 → a mainstream-cinema rule combining sitelinks, release year and cast overlap with Tier-A people) rather than importing everything; measure resulting edge count before shipping.
+4. Introduce explicit tiering columns and generate the client snapshot from Tier A + Tier B people with ≥ 2 in-graph credits, keeping the shipped payload under a fixed budget (suggest ≤ 1.5 MB gz).
+5. Backfill the reported titles first, driven by the report queue, and verify each with a targeted path check.
+6. Only when the payload budget is exceeded, move BFS/search server-side (a server function over the DB, or a precomputed adjacency binary format) — before that point, keep the client graph, which is what makes Connect feel instant.
+7. Re-run `src/games/connect/validate.ts` and `scripts/daily-checks.ts` after every catalogue change, and re-verify that published `daily_connect.optimal_clicks` still matches the client BFS after the graph grows.
 
-- Determinism contract: catalogue payload is ordered by `tmdb_id`; `simulateRun(seed, metric, guesses, pool)` is pure and imported by both the client and `submitHlRun`. Token's `catalogue_version` must match the current one or the run is rejected (only possible during an ingest window).
-- Timer uses one interval per round, cleared on unmount; no `setInterval` accumulation across rounds.
-- RLS: `movies` + leaderboard reads `TO anon`; `hl_alltime`/`hl_daily`/`hl_run_tokens` own-row policies via `context.supabase` in `requireSupabaseAuth` fns; `profiles` public select on handle only.
-- Cron: pg_cron jobs for `hl_daily` retention and token cleanup, created in the same migration.
-- Hub gains a leaderboard entry point on the Higher/Lower card; no Hollywood or Walk of Fame changes.
+Nothing above has been executed; no files, schema or rows were modified during this audit.
