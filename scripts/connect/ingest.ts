@@ -115,13 +115,14 @@ export async function selectPool(): Promise<string[]> {
 /* ----------------------------------------------------------------- films */
 
 const filmQuery = (ids: string[]) => `
-SELECT ?actor ?film ?filmLabel (MIN(?y) AS ?year) (SAMPLE(?sl) AS ?sitelinks) WHERE {
+SELECT ?actor ?film ?filmLabel ?enName (MIN(?y) AS ?year) (SAMPLE(?sl) AS ?sitelinks) WHERE {
   ${values("actor", ids)}
   VALUES ?class { ${FILM_CLASSES.map((c) => `wd:${c}`).join(" ")} }
   ?film wdt:P161 ?actor ; wdt:P31 ?class ; wikibase:sitelinks ?sl ; wdt:P577 ?date .
   BIND(YEAR(?date) AS ?y)
+  OPTIONAL { ?article schema:about ?film ; schema:isPartOf <https://en.wikipedia.org/> ; schema:name ?enName }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-} GROUP BY ?actor ?film ?filmLabel`;
+} GROUP BY ?actor ?film ?filmLabel ?enName`;
 
 export async function hydrateFilms(pool: string[]) {
   const films = new Map<string, FilmRow>(Object.entries(read<Record<string, FilmRow>>("films.json") ?? {}));
@@ -133,7 +134,10 @@ export async function hydrateFilms(pool: string[]) {
     const bindings = await sparql(filmQuery(batch));
     for (const b of bindings) {
       const id = qid(b["film"]?.value);
-      const title = b["filmLabel"]?.value ?? "";
+      const label = b["filmLabel"]?.value ?? "";
+      // Some notable films (e.g. Forrest Gump) carry no English Wikidata
+      // label; the English Wikipedia article title is the correct fallback.
+      const title = label && label !== id ? label : (b["enName"]?.value ?? "");
       const year = Number(b["year"]?.value ?? 0);
       const sitelinks = Number(b["sitelinks"]?.value ?? 0);
       if (!id || !title || title === id) continue; // unresolved label -> skip
@@ -143,6 +147,7 @@ export async function hydrateFilms(pool: string[]) {
       const actor = qid(b["actor"]?.value);
       (credits[actor] ??= []).push(id);
     }
+
     batch.forEach((id) => done.add(id));
     if (i % 5 === 0 || done.size === pool.length) {
       write("films.json", Object.fromEntries(films));
