@@ -50,6 +50,87 @@ export type Database = {
           },
         ]
       }
+      connect_ingest_items: {
+        Row: {
+          attempts: number
+          item_id: string
+          last_error: string | null
+          run_id: string
+          stage: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          item_id: string
+          last_error?: string | null
+          run_id: string
+          stage: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          item_id?: string
+          last_error?: string | null
+          run_id?: string
+          stage?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connect_ingest_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "connect_ingest_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_ingest_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "connect_ingest_status"
+            referencedColumns: ["run_id"]
+          },
+        ]
+      }
+      connect_ingest_runs: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          last_error: string | null
+          source: string
+          stage: string
+          stats: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string
+          last_error?: string | null
+          source?: string
+          stage?: string
+          stats?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          last_error?: string | null
+          source?: string
+          stage?: string
+          stats?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       connect_movies: {
         Row: {
           created_at: string
@@ -170,6 +251,159 @@ export type Database = {
         }
         Relationships: []
       }
+      connect_stage_cast: {
+        Row: {
+          billing: number | null
+          character_qid: string | null
+          movie_id: string
+          person_id: string
+          run_id: string
+        }
+        Insert: {
+          billing?: number | null
+          character_qid?: string | null
+          movie_id: string
+          person_id: string
+          run_id: string
+        }
+        Update: {
+          billing?: number | null
+          character_qid?: string | null
+          movie_id?: string
+          person_id?: string
+          run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connect_stage_cast_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "connect_ingest_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_stage_cast_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "connect_ingest_status"
+            referencedColumns: ["run_id"]
+          },
+        ]
+      }
+      connect_stage_characters: {
+        Row: {
+          id: string
+          label: string
+          run_id: string
+        }
+        Insert: {
+          id: string
+          label: string
+          run_id: string
+        }
+        Update: {
+          id?: string
+          label?: string
+          run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connect_stage_characters_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "connect_ingest_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_stage_characters_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "connect_ingest_status"
+            referencedColumns: ["run_id"]
+          },
+        ]
+      }
+      connect_stage_movies: {
+        Row: {
+          id: string
+          run_id: string
+          sitelinks: number
+          title: string
+          year: number
+        }
+        Insert: {
+          id: string
+          run_id: string
+          sitelinks?: number
+          title: string
+          year: number
+        }
+        Update: {
+          id?: string
+          run_id?: string
+          sitelinks?: number
+          title?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connect_stage_movies_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "connect_ingest_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_stage_movies_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "connect_ingest_status"
+            referencedColumns: ["run_id"]
+          },
+        ]
+      }
+      connect_stage_people: {
+        Row: {
+          birth_year: number | null
+          id: string
+          image_file: string | null
+          name: string
+          run_id: string
+          sitelinks: number
+        }
+        Insert: {
+          birth_year?: number | null
+          id: string
+          image_file?: string | null
+          name: string
+          run_id: string
+          sitelinks?: number
+        }
+        Update: {
+          birth_year?: number | null
+          id?: string
+          image_file?: string | null
+          name?: string
+          run_id?: string
+          sitelinks?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connect_stage_people_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "connect_ingest_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_stage_people_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "connect_ingest_status"
+            referencedColumns: ["run_id"]
+          },
+        ]
+      }
       daily_connect: {
         Row: {
           created_at: string
@@ -279,6 +513,19 @@ export type Database = {
           connections: number | null
           films: number | null
           people: number | null
+        }
+        Relationships: []
+      }
+      connect_ingest_status: {
+        Row: {
+          items: number | null
+          label: string | null
+          last_update: string | null
+          run_id: string | null
+          run_stage: string | null
+          run_status: string | null
+          stage: string | null
+          status: string | null
         }
         Relationships: []
       }
