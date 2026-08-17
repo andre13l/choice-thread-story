@@ -24,6 +24,15 @@
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import { sparql, qid, values, chunk } from "./wikidata";
+import {
+  getEntities,
+  pool as entityPool,
+  claimId,
+  claimString,
+  claimYear,
+  qualifierId,
+  qualifierString,
+} from "./entities";
 
 const CACHE = ".cache/connect";
 mkdirSync(CACHE, { recursive: true });
@@ -165,66 +174,108 @@ export async function hydrateFilms(pool: string[]) {
 
 /* ----------------------------------------------------------------- casts */
 
-const castQuery = (ids: string[]) => `
-SELECT ?film ?person ?personLabel ?enName ?sitelinks ?birth ?image ?order ?charLabel WHERE {
-  ${values("film", ids)}
-  ?film p:P161 ?st .
-  ?st ps:P161 ?person .
-  ?person wikibase:sitelinks ?sitelinks .
-  OPTIONAL { ?st pq:P1545 ?order }
-  OPTIONAL { ?st pq:P453 ?char }
-  OPTIONAL { ?person wdt:P569 ?birthDate BIND(YEAR(?birthDate) AS ?birth) }
-  OPTIONAL { ?person wdt:P18 ?image }
-  OPTIONAL { ?article schema:about ?person ; schema:isPartOf <https://en.wikipedia.org/> ; schema:name ?enName }
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-}`;
-
+/**
+ * Cast hydration runs over the Wikibase entity API rather than SPARQL: same
+ * CC0 data, but 50 entities per request with bounded concurrency, which is
+ * what makes hydrating a full 20k+ film catalogue practical. Three phases,
+ * each independently checkpointed so an interrupted run resumes cheaply.
+ */
 export async function hydrateCasts(filmIds: string[]) {
-  const people = new Map<string, PersonRow>(
-    Object.entries(read<Record<string, PersonRow>>("people.json") ?? {}),
-  );
   const cast: CastRow[] = read("cast.json") ?? [];
   const done = new Set(read<string[]>("casts-done.json") ?? []);
 
+  /* Phase A — cast statements from the film entities. */
   const todo = filmIds.filter((id) => !done.has(id));
-  for (const [i, batch] of chunk(todo, 60).entries()) {
-    const bindings = await sparql(castQuery(batch));
-    for (const b of bindings) {
-      const personId = qid(b["person"]?.value);
-      const label = b["personLabel"]?.value ?? "";
-      const name = label && label !== personId ? label : (b["enName"]?.value ?? "");
-      if (!personId || !name || name === personId) continue;
-
-      const sitelinks = Number(b["sitelinks"]?.value ?? 0);
-      const imageUrl = b["image"]?.value ?? "";
-      people.set(personId, {
-        id: personId,
-        name,
-        sitelinks,
-        birthYear: Number(b["birth"]?.value ?? 0) || null,
-        image: imageUrl ? decodeURIComponent(imageUrl.split("/").pop()!).replace(/_/g, " ") : null,
-      });
-      const character = b["charLabel"]?.value ?? null;
-      cast.push({
-        movie: qid(b["film"]?.value),
-        person: personId,
-        billing: Number(b["order"]?.value ?? 0) || null,
-        character: character && character !== qid(b["char"]?.value) ? character : null,
-      });
-    }
-    batch.forEach((id) => done.add(id));
-    if (i % 10 === 0 || done.size === filmIds.length) {
-      write("people.json", Object.fromEntries(people));
-      write("cast.json", cast);
-      write("casts-done.json", [...done]);
-      console.log(`casts: ${done.size}/${filmIds.length} films, ${cast.length} credits`);
-    }
+  if (todo.length) {
+    const batches = chunk(todo, 50);
+    let processed = 0;
+    await entityPool(batches, 6, async (batch) => {
+      const entities = await getEntities(batch, "claims");
+      for (const id of batch) {
+        const statements = entities[id]?.claims?.["P161"] ?? [];
+        for (const st of statements) {
+          const person = claimId(st);
+          if (!person) continue;
+          const order = qualifierString(st, "P1545");
+          cast.push({
+            movie: id,
+            person,
+            billing: Number(order ?? 0) || null,
+            character: qualifierId(st, "P453"), // QID; resolved to a label below
+          });
+        }
+        done.add(id);
+      }
+      processed += 1;
+      if (processed % 20 === 0) {
+        write("cast.json", cast);
+        write("casts-done.json", [...done]);
+        console.log(`casts: ${done.size}/${filmIds.length} films, ${cast.length} credits`);
+      }
+    });
+    write("cast.json", cast);
+    write("casts-done.json", [...done]);
   }
-  write("people.json", Object.fromEntries(people));
-  write("cast.json", cast);
-  write("casts-done.json", [...done]);
-  console.log(`casts: done, ${people.size} people, ${cast.length} credits`);
+  console.log(`casts: statements done, ${cast.length} credits`);
+
+  /* Phase B — person metadata for everyone credited. */
+  const people = new Map<string, PersonRow>(
+    Object.entries(read<Record<string, PersonRow>>("people.json") ?? {}),
+  );
+  const personTodo = [...new Set(cast.map((c) => c.person))].filter((id) => !people.has(id));
+  if (personTodo.length) {
+    const batches = chunk(personTodo, 50);
+    let processed = 0;
+    await entityPool(batches, 6, async (batch) => {
+      const entities = await getEntities(batch, "labels|sitelinks|claims");
+      for (const id of batch) {
+        const e = entities[id];
+        if (!e) continue;
+        const enwiki = e.sitelinks?.["enwiki"] as { title?: string } | undefined;
+        const name = e.labels?.["en"]?.value ?? enwiki?.title ?? "";
+        if (!name || name === id) continue;
+        const image = claimString(e.claims?.["P18"]?.[0]);
+        people.set(id, {
+          id,
+          name,
+          sitelinks: Object.keys(e.sitelinks ?? {}).length,
+          birthYear: claimYear(e.claims?.["P569"]?.[0]),
+          image: image ? image.replace(/_/g, " ") : null,
+        });
+      }
+      processed += 1;
+      if (processed % 20 === 0) {
+        write("people.json", Object.fromEntries(people));
+        console.log(`people: ${people.size}/${personTodo.length + people.size} hydrated`);
+      }
+    });
+    write("people.json", Object.fromEntries(people));
+  }
+  console.log(`casts: ${people.size} people`);
+
+  /* Phase C — character labels (cosmetic, resolved last so a slow run here
+     never blocks the traversal-critical data above). */
+  const chars: Record<string, string> = read("chars.json") ?? {};
+  const charTodo = [
+    ...new Set(cast.map((c) => c.character).filter((c): c is string => !!c && !chars[c])),
+  ];
+  if (charTodo.length) {
+    const batches = chunk(charTodo, 50);
+    let processed = 0;
+    await entityPool(batches, 6, async (batch) => {
+      const entities = await getEntities(batch, "labels");
+      for (const id of batch) {
+        const label = entities[id]?.labels?.["en"]?.value;
+        if (label && label !== id) chars[id] = label;
+      }
+      processed += 1;
+      if (processed % 40 === 0) write("chars.json", chars);
+    });
+    write("chars.json", chars);
+  }
+  console.log(`casts: done, ${people.size} people, ${cast.length} credits, ${Object.keys(chars).length} characters`);
 }
+
 
 /* ---------------------------------------------------------------- upsert */
 
@@ -233,6 +284,7 @@ export function loadCache() {
   const films = read<Record<string, FilmRow>>("films.json") ?? {};
   const people = read<Record<string, PersonRow>>("people.json") ?? {};
   const rawCast = read<CastRow[]>("cast.json") ?? [];
+  const chars: Record<string, string> = read("chars.json") ?? {};
 
   // De-duplicate credits (a person can hold several cast statements per film).
   const seen = new Set<string>();
@@ -265,7 +317,9 @@ export function loadCache() {
     pool,
     people: keptPeople,
     films: keptFilms,
-    cast: keptCast.filter((c) => filmIds.has(c.movie)),
+    cast: keptCast
+      .filter((c) => filmIds.has(c.movie))
+      .map((c) => ({ ...c, character: (c.character && chars[c.character]) || null })),
     credits,
   };
 }
