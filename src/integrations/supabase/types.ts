@@ -81,7 +81,10 @@ export type Database = {
         Row: {
           birth_year: number | null
           challenge_eligible: boolean
+          coverage_status: string
           created_at: string
+          credit_count: number
+          hydrated_at: string | null
           id: string
           image_attribution_url: string | null
           image_file: string | null
@@ -93,7 +96,10 @@ export type Database = {
         Insert: {
           birth_year?: number | null
           challenge_eligible?: boolean
+          coverage_status?: string
           created_at?: string
+          credit_count?: number
+          hydrated_at?: string | null
           id: string
           image_attribution_url?: string | null
           image_file?: string | null
@@ -105,7 +111,10 @@ export type Database = {
         Update: {
           birth_year?: number | null
           challenge_eligible?: boolean
+          coverage_status?: string
           created_at?: string
+          credit_count?: number
+          hydrated_at?: string | null
           id?: string
           image_attribution_url?: string | null
           image_file?: string | null
@@ -120,33 +129,42 @@ export type Database = {
         Row: {
           context: Json
           created_at: string
+          dedupe_key: string | null
           id: string
           kind: string
           message: string
           movie_id: string | null
           person_id: string | null
+          resolved_movie_id: string | null
+          resolved_person_id: string | null
           status: string
           visitor_key: string | null
         }
         Insert: {
           context?: Json
           created_at?: string
+          dedupe_key?: string | null
           id?: string
           kind: string
           message: string
           movie_id?: string | null
           person_id?: string | null
+          resolved_movie_id?: string | null
+          resolved_person_id?: string | null
           status?: string
           visitor_key?: string | null
         }
         Update: {
           context?: Json
           created_at?: string
+          dedupe_key?: string | null
           id?: string
           kind?: string
           message?: string
           movie_id?: string | null
           person_id?: string | null
+          resolved_movie_id?: string | null
+          resolved_person_id?: string | null
           status?: string
           visitor_key?: string | null
         }

@@ -10,9 +10,14 @@
  * so two different performers with the same name never merge.
  */
 
+import { GRAPH_VERSION } from "./version";
+
 export interface RawDataset {
-  /** [qid, name, sitelinks, commonsImageFile, birthYear] */
-  people: [string, string, number, string, number][];
+
+  /** Content hash of the catalogue this snapshot was generated from. */
+  version?: string;
+  /** [qid, name, sitelinks, commonsImageFile, birthYear, playable] */
+  people: [string, string, number, string, number, (0 | 1)?][];
   /** [qid, title, year, sitelinks] */
   films: [string, string, number, number][];
   /** Per film (index-aligned with `films`): [personIndex, billingOrder, character] */
@@ -29,9 +34,16 @@ export interface Person {
   /** Wikimedia Commons file name, empty when none is known. */
   image: string;
   birthYear: number;
+  /**
+   * Coverage tier. `true` means the ingestion pipeline deliberately hydrated
+   * this actor's feature filmography, so they may be a challenge endpoint.
+   * Connectors are traversable but never selectable.
+   */
+  playable: boolean;
   /** Film ids present IN CONNECT, newest first. Not a full filmography. */
   movieIds: string[];
 }
+
 
 export interface Movie {
   id: string;
@@ -46,10 +58,14 @@ export interface Movie {
 export interface Graph {
   peopleById: Record<string, Person>;
   moviesById: Record<string, Movie>;
+  /** Traversable people (everyone with at least one credit). */
   personIds: string[];
+  /** Coverage-qualified people — the only legal challenge endpoints. */
+  playableIds: string[];
   movieIds: string[];
-  counts: { films: number; people: number; connections: number };
+  counts: { films: number; people: number; connections: number; playable: number };
   source: string;
+  version: string;
 }
 
 export function buildGraph(data: RawDataset): Graph {
@@ -58,11 +74,20 @@ export function buildGraph(data: RawDataset): Graph {
   const personIds: string[] = [];
   const movieIds: string[] = [];
 
-  for (const [qid, name, notability, image, birthYear] of data.people) {
+  for (const [qid, name, notability, image, birthYear, playable] of data.people) {
     if (peopleById[qid]) continue;
-    peopleById[qid] = { id: qid, name, notability, image, birthYear, movieIds: [] };
+    peopleById[qid] = {
+      id: qid,
+      name,
+      notability,
+      image,
+      birthYear,
+      playable: playable === 1,
+      movieIds: [],
+    };
     personIds.push(qid);
   }
+
 
   let connections = 0;
   data.films.forEach(([qid, title, year, notability], index) => {
@@ -87,13 +112,23 @@ export function buildGraph(data: RawDataset): Graph {
     person.movieIds.sort((a, b) => moviesById[b]!.year - moviesById[a]!.year);
   }
 
+  const live = personIds.filter((id) => peopleById[id]!.movieIds.length > 0);
+  const playableIds = live.filter((id) => peopleById[id]!.playable);
+
   return {
     peopleById,
     moviesById,
-    personIds: personIds.filter((id) => peopleById[id]!.movieIds.length > 0),
+    personIds: live,
+    playableIds,
     movieIds,
-    counts: { films: movieIds.length, people: personIds.length, connections },
+    counts: {
+      films: movieIds.length,
+      people: personIds.length,
+      connections,
+      playable: playableIds.length,
+    },
     source: data.source,
+    version: data.version ?? "",
   };
 }
 
@@ -101,10 +136,12 @@ let cached: Promise<Graph> | null = null;
 
 /**
  * Fetches and builds the graph once per session. `origin` is only needed on
- * the server, where a relative URL cannot be resolved.
+ * the server, where a relative URL cannot be resolved. The version query is
+ * what stops a returning player from being served a stale catalogue.
  */
 export function loadGraph(origin?: string): Promise<Graph> {
-  cached ??= fetch(`${origin ?? ""}/data/connect-graph.json`)
+  cached ??= fetch(`${origin ?? ""}/data/connect-graph.json?v=${GRAPH_VERSION}`)
+
     .then((res) => {
       if (!res.ok) throw new Error(`connect: dataset ${res.status}`);
       return res.json() as Promise<RawDataset>;
