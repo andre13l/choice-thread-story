@@ -10,7 +10,9 @@
  * so two different performers with the same name never merge.
  */
 
-export interface RawDataset {
+import { GRAPH_VERSION } from "./version";
+
+
   /** Content hash of the catalogue this snapshot was generated from. */
   version?: string;
   /** [qid, name, sitelinks, commonsImageFile, birthYear, playable] */
