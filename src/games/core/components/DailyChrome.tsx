@@ -102,14 +102,15 @@ export function DailyHeader({
   return (
     <>
       <p
-        className={`text-[11px] font-medium uppercase tracking-[0.3em] ${ACCENT_TEXT[accent]}`}
+        className={`font-display text-[13px] font-semibold uppercase tracking-[0.28em] ${ACCENT_TEXT[accent]}`}
       >
         {label}
       </p>
-      <p className="mt-3 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+      <p className="mt-2.5 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
         {prettyDate(date)}
       </p>
-      <div className={`mx-auto mt-6 h-px w-14 ${ACCENT_RULE[accent]}`} />
+      <div className={`mx-auto mt-5 h-px w-12 ${ACCENT_RULE[accent]}`} />
+
     </>
   );
 }
