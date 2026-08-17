@@ -166,7 +166,7 @@ export async function hydrateFilms(pool: string[]) {
 /* ----------------------------------------------------------------- casts */
 
 const castQuery = (ids: string[]) => `
-SELECT ?film ?person ?personLabel ?sitelinks ?birth ?image ?order ?charLabel WHERE {
+SELECT ?film ?person ?personLabel ?enName ?sitelinks ?birth ?image ?order ?charLabel WHERE {
   ${values("film", ids)}
   ?film p:P161 ?st .
   ?st ps:P161 ?person .
@@ -175,6 +175,7 @@ SELECT ?film ?person ?personLabel ?sitelinks ?birth ?image ?order ?charLabel WHE
   OPTIONAL { ?st pq:P453 ?char }
   OPTIONAL { ?person wdt:P569 ?birthDate BIND(YEAR(?birthDate) AS ?birth) }
   OPTIONAL { ?person wdt:P18 ?image }
+  OPTIONAL { ?article schema:about ?person ; schema:isPartOf <https://en.wikipedia.org/> ; schema:name ?enName }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
 }`;
 
@@ -190,8 +191,10 @@ export async function hydrateCasts(filmIds: string[]) {
     const bindings = await sparql(castQuery(batch));
     for (const b of bindings) {
       const personId = qid(b["person"]?.value);
-      const name = b["personLabel"]?.value ?? "";
+      const label = b["personLabel"]?.value ?? "";
+      const name = label && label !== personId ? label : (b["enName"]?.value ?? "");
       if (!personId || !name || name === personId) continue;
+
       const sitelinks = Number(b["sitelinks"]?.value ?? 0);
       const imageUrl = b["image"]?.value ?? "";
       people.set(personId, {
