@@ -84,16 +84,21 @@ export async function selectPool(): Promise<string[]> {
   const supabase = admin();
   const ids = new Set<string>();
 
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await supabase
-      .from("connect_people")
-      .select("id")
-      .gte("notability", RULES.poolMinNotability)
-      .range(from, from + 999);
-    if (error) throw error;
-    data?.forEach((p) => ids.add(p.id));
-    if (!data || data.length < 1000) break;
+  // Every actor the product already exposes as selectable must be covered,
+  // plus anyone above the notability floor.
+  for (const filter of ["notability", "challenge_eligible"] as const) {
+    for (let from = 0; ; from += 1000) {
+      let q = supabase.from("connect_people").select("id");
+      q = filter === "notability"
+        ? q.gte("notability", RULES.poolMinNotability)
+        : q.eq("challenge_eligible", true);
+      const { data, error } = await q.range(from, from + 999);
+      if (error) throw error;
+      data?.forEach((p) => ids.add(p.id));
+      if (!data || data.length < 1000) break;
+    }
   }
+
 
   const { data: dailies } = await supabase.from("daily_connect").select("start_person_id, target_person_id");
   dailies?.forEach((d) => {
