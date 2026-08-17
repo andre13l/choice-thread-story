@@ -84,16 +84,21 @@ export async function selectPool(): Promise<string[]> {
   const supabase = admin();
   const ids = new Set<string>();
 
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await supabase
-      .from("connect_people")
-      .select("id")
-      .gte("notability", RULES.poolMinNotability)
-      .range(from, from + 999);
-    if (error) throw error;
-    data?.forEach((p) => ids.add(p.id));
-    if (!data || data.length < 1000) break;
+  // Every actor the product already exposes as selectable must be covered,
+  // plus anyone above the notability floor.
+  for (const filter of ["notability", "challenge_eligible"] as const) {
+    for (let from = 0; ; from += 1000) {
+      let q = supabase.from("connect_people").select("id");
+      q = filter === "notability"
+        ? q.gte("notability", RULES.poolMinNotability)
+        : q.eq("challenge_eligible", true);
+      const { data, error } = await q.range(from, from + 999);
+      if (error) throw error;
+      data?.forEach((p) => ids.add(p.id));
+      if (!data || data.length < 1000) break;
+    }
   }
+
 
   const { data: dailies } = await supabase.from("daily_connect").select("start_person_id, target_person_id");
   dailies?.forEach((d) => {
@@ -110,13 +115,14 @@ export async function selectPool(): Promise<string[]> {
 /* ----------------------------------------------------------------- films */
 
 const filmQuery = (ids: string[]) => `
-SELECT ?actor ?film ?filmLabel (MIN(?y) AS ?year) (SAMPLE(?sl) AS ?sitelinks) WHERE {
+SELECT ?actor ?film ?filmLabel ?enName (MIN(?y) AS ?year) (SAMPLE(?sl) AS ?sitelinks) WHERE {
   ${values("actor", ids)}
   VALUES ?class { ${FILM_CLASSES.map((c) => `wd:${c}`).join(" ")} }
   ?film wdt:P161 ?actor ; wdt:P31 ?class ; wikibase:sitelinks ?sl ; wdt:P577 ?date .
   BIND(YEAR(?date) AS ?y)
+  OPTIONAL { ?article schema:about ?film ; schema:isPartOf <https://en.wikipedia.org/> ; schema:name ?enName }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-} GROUP BY ?actor ?film ?filmLabel`;
+} GROUP BY ?actor ?film ?filmLabel ?enName`;
 
 export async function hydrateFilms(pool: string[]) {
   const films = new Map<string, FilmRow>(Object.entries(read<Record<string, FilmRow>>("films.json") ?? {}));
@@ -128,7 +134,10 @@ export async function hydrateFilms(pool: string[]) {
     const bindings = await sparql(filmQuery(batch));
     for (const b of bindings) {
       const id = qid(b["film"]?.value);
-      const title = b["filmLabel"]?.value ?? "";
+      const label = b["filmLabel"]?.value ?? "";
+      // Some notable films (e.g. Forrest Gump) carry no English Wikidata
+      // label; the English Wikipedia article title is the correct fallback.
+      const title = label && label !== id ? label : (b["enName"]?.value ?? "");
       const year = Number(b["year"]?.value ?? 0);
       const sitelinks = Number(b["sitelinks"]?.value ?? 0);
       if (!id || !title || title === id) continue; // unresolved label -> skip
@@ -138,6 +147,7 @@ export async function hydrateFilms(pool: string[]) {
       const actor = qid(b["actor"]?.value);
       (credits[actor] ??= []).push(id);
     }
+
     batch.forEach((id) => done.add(id));
     if (i % 5 === 0 || done.size === pool.length) {
       write("films.json", Object.fromEntries(films));
@@ -156,7 +166,7 @@ export async function hydrateFilms(pool: string[]) {
 /* ----------------------------------------------------------------- casts */
 
 const castQuery = (ids: string[]) => `
-SELECT ?film ?person ?personLabel ?sitelinks ?birth ?image ?order ?charLabel WHERE {
+SELECT ?film ?person ?personLabel ?enName ?sitelinks ?birth ?image ?order ?charLabel WHERE {
   ${values("film", ids)}
   ?film p:P161 ?st .
   ?st ps:P161 ?person .
@@ -165,6 +175,7 @@ SELECT ?film ?person ?personLabel ?sitelinks ?birth ?image ?order ?charLabel WHE
   OPTIONAL { ?st pq:P453 ?char }
   OPTIONAL { ?person wdt:P569 ?birthDate BIND(YEAR(?birthDate) AS ?birth) }
   OPTIONAL { ?person wdt:P18 ?image }
+  OPTIONAL { ?article schema:about ?person ; schema:isPartOf <https://en.wikipedia.org/> ; schema:name ?enName }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
 }`;
 
@@ -180,8 +191,10 @@ export async function hydrateCasts(filmIds: string[]) {
     const bindings = await sparql(castQuery(batch));
     for (const b of bindings) {
       const personId = qid(b["person"]?.value);
-      const name = b["personLabel"]?.value ?? "";
+      const label = b["personLabel"]?.value ?? "";
+      const name = label && label !== personId ? label : (b["enName"]?.value ?? "");
       if (!personId || !name || name === personId) continue;
+
       const sitelinks = Number(b["sitelinks"]?.value ?? 0);
       const imageUrl = b["image"]?.value ?? "";
       people.set(personId, {
