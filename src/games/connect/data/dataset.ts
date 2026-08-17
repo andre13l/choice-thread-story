@@ -109,13 +109,23 @@ export function buildGraph(data: RawDataset): Graph {
     person.movieIds.sort((a, b) => moviesById[b]!.year - moviesById[a]!.year);
   }
 
+  const live = personIds.filter((id) => peopleById[id]!.movieIds.length > 0);
+  const playableIds = live.filter((id) => peopleById[id]!.playable);
+
   return {
     peopleById,
     moviesById,
-    personIds: personIds.filter((id) => peopleById[id]!.movieIds.length > 0),
+    personIds: live,
+    playableIds,
     movieIds,
-    counts: { films: movieIds.length, people: personIds.length, connections },
+    counts: {
+      films: movieIds.length,
+      people: personIds.length,
+      connections,
+      playable: playableIds.length,
+    },
     source: data.source,
+    version: data.version ?? "",
   };
 }
 
@@ -123,10 +133,12 @@ let cached: Promise<Graph> | null = null;
 
 /**
  * Fetches and builds the graph once per session. `origin` is only needed on
- * the server, where a relative URL cannot be resolved.
+ * the server, where a relative URL cannot be resolved. The version query is
+ * what stops a returning player from being served a stale catalogue.
  */
 export function loadGraph(origin?: string): Promise<Graph> {
-  cached ??= fetch(`${origin ?? ""}/data/connect-graph.json`)
+  cached ??= fetch(`${origin ?? ""}/data/connect-graph.json?v=${GRAPH_VERSION}`)
+
     .then((res) => {
       if (!res.ok) throw new Error(`connect: dataset ${res.status}`);
       return res.json() as Promise<RawDataset>;
