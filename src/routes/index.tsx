@@ -68,65 +68,84 @@ function Index() {
   const upcoming = GAMES.filter((g) => g.status === "soon");
 
   return (
-    <div className="anim-fade-up mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <h1 className="sr-only">{SITE.name} — free daily movie games</h1>
+    <div className="anim-fade-up mx-auto w-full max-w-5xl px-4 py-5 sm:px-6 sm:py-7">
+      <h1 className="sr-only">{SITE.name} — free movie games</h1>
 
-      <TodaysChallenges />
+      {/* Hollywood editorial hero — the acquisition surface. */}
+      {flagship?.to && (
+        <section aria-labelledby="hollywood-hero">
+          <div className="overflow-hidden rounded-md border border-border bg-card">
+            <div className="grid sm:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+              <div className="order-2 p-5 sm:order-none sm:p-8">
+                <span className="text-[10px] font-medium uppercase tracking-[0.34em] text-muted-foreground">
+                  Hollywood · Career simulator
+                </span>
+                <h2
+                  id="hollywood-hero"
+                  className="mt-3 font-display text-[clamp(1.7rem,6.2vw,2.9rem)] font-semibold uppercase leading-[1.02] tracking-[0.01em] text-foreground"
+                >
+                  Build your legacy.
+                  <br />
+                  <span className="text-muted-foreground">Or watch it crumble.</span>
+                </h2>
+                <p className="mt-4 max-w-md text-[13px] leading-relaxed text-muted-foreground">
+                  Start with nothing. Make movies. Build your reputation. Chase awards. Survive
+                  Hollywood.
+                </p>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
+                <Link
+                  to={flagship.to}
+                  className="group mt-6 inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.2em] text-background transition-opacity hover:opacity-85"
+                >
+                  Start your career
+                  <ArrowRight
+                    className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
+                </Link>
+
+                <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-4 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  <li className="tabular-nums">$186M box office</li>
+                  <li className="text-gold">Best director</li>
+                  <li>Studio wars</li>
+                </ul>
+
+                {(best !== null || hasOngoing) && (
+                  <p className="mt-3 text-[11px] text-muted-foreground">
+                    {hasOngoing ? "A career is already in progress" : null}
+                    {hasOngoing && best !== null ? " · " : null}
+                    {best !== null
+                      ? `Personal best ${best.toLocaleString("en-US")}${lived > 1 ? ` · ${lived} careers` : ""}`
+                      : null}
+                  </p>
+                )}
+              </div>
+
+              <div className="relative order-1 h-40 sm:order-none sm:h-auto sm:min-h-[19rem]">
+                <img
+                  src={heroImage}
+                  alt="An empty director's chair, film reels and a clapperboard on a sunlit backlot"
+                  width={1600}
+                  height={1008}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/25 to-transparent sm:bg-gradient-to-r sm:via-card/15" />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Retention layer — the three dailies. */}
+      <div className="mt-6">
+        <TodaysChallenges />
+      </div>
+
+      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
         <StreakStrip />
         <RecentActivity />
       </div>
 
-      {/* Hollywood editorial hero */}
-      {flagship?.to && (
-        <section aria-labelledby="hollywood-hero" className="mt-8">
-          <Link
-            to={flagship.to}
-            className="group grid overflow-hidden rounded-md border border-border bg-card sm:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]"
-          >
-            <div className="p-5 sm:p-7">
-              <span className="text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
-                Hollywood
-              </span>
-              <h2
-                id="hollywood-hero"
-                className="mt-3 font-display text-[clamp(1.35rem,4vw,2rem)] font-semibold leading-[1.15] tracking-[0.02em] text-foreground"
-              >
-                Build your legacy.
-                <br />
-                Or watch it crumble.
-              </h2>
-              <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
-                Make movies, manage studios, chase awards and survive Hollywood.
-              </p>
-              <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-[11px] font-medium text-background transition-opacity group-hover:opacity-85">
-                Play {flagship.name}
-              </span>
-              {(best !== null || hasOngoing) && (
-                <p className="mt-3 text-[11px] text-muted-foreground">
-                  {hasOngoing ? "A career is already in progress" : null}
-                  {hasOngoing && best !== null ? " · " : null}
-                  {best !== null
-                    ? `Personal best ${best.toLocaleString("en-US")}${lived > 1 ? ` · ${lived} careers` : ""}`
-                    : null}
-                </p>
-              )}
-            </div>
-            <div className="relative order-first h-28 sm:order-none sm:h-auto sm:min-h-40">
-              <img
-                src={heroImage}
-                alt=""
-                loading="lazy"
-                width={1600}
-                height={912}
-                className="h-full w-full object-cover opacity-90 transition-opacity duration-500 group-hover:opacity-100"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent sm:bg-gradient-to-r sm:via-card/40" />
-            </div>
-          </Link>
-        </section>
-      )}
 
       {/* More games */}
       <section aria-labelledby="more-games" className="mt-8">
