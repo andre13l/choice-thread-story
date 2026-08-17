@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, ChevronRight, Lock, Share2 } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, ChevronRight, Lock, Share2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import heroImage from "@/assets/hollywood-hero.jpg";
+import heroImage from "@/assets/hollywood-hero-wide.jpg";
 import { GAMES } from "@/config/games";
 import { SITE } from "@/config/site";
 import { RecentActivity, StreakStrip } from "@/components/StreakStrip";
 import { TodaysChallenges } from "@/components/TodaysChallenges";
 import { loadBest, loadCount, loadCurrentCareer } from "@/games/hollywood/storage";
+
 
 /** Per-game tile identity so the non-daily games never read alike. */
 const TILE_META: Record<string, { label: string; icon: ReactNode }> = {
