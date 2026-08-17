@@ -11,8 +11,10 @@
  */
 
 export interface RawDataset {
-  /** [qid, name, sitelinks, commonsImageFile, birthYear] */
-  people: [string, string, number, string, number][];
+  /** Content hash of the catalogue this snapshot was generated from. */
+  version?: string;
+  /** [qid, name, sitelinks, commonsImageFile, birthYear, playable] */
+  people: [string, string, number, string, number, (0 | 1)?][];
   /** [qid, title, year, sitelinks] */
   films: [string, string, number, number][];
   /** Per film (index-aligned with `films`): [personIndex, billingOrder, character] */
@@ -29,9 +31,16 @@ export interface Person {
   /** Wikimedia Commons file name, empty when none is known. */
   image: string;
   birthYear: number;
+  /**
+   * Coverage tier. `true` means the ingestion pipeline deliberately hydrated
+   * this actor's feature filmography, so they may be a challenge endpoint.
+   * Connectors are traversable but never selectable.
+   */
+  playable: boolean;
   /** Film ids present IN CONNECT, newest first. Not a full filmography. */
   movieIds: string[];
 }
+
 
 export interface Movie {
   id: string;
