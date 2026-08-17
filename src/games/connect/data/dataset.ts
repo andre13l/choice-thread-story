@@ -12,6 +12,7 @@
 
 import { GRAPH_VERSION } from "./version";
 
+export interface RawDataset {
 
   /** Content hash of the catalogue this snapshot was generated from. */
   version?: string;
