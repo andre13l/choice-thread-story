@@ -1,0 +1,1 @@
+ALTER VIEW public.connect_ingest_status SET (security_invoker = on);
