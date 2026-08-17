@@ -24,8 +24,14 @@ const LABEL: Record<Accent, string> = {
   person: "text-person",
 };
 
+const RULE: Record<Accent, string> = {
+  connect: "bg-connect/60",
+  top10: "bg-top10/60",
+  person: "bg-person/60",
+};
+
 /**
- * The three live dailies as a compact dashboard row. Only real local state is
+ * The three live dailies as one compact module. Only real local state is
  * shown: a finished puzzle reports its actual result instead of a fake replay.
  */
 export function TodaysChallenges() {
@@ -70,29 +76,29 @@ export function TodaysChallenges() {
   const played = Object.values(done).filter(Boolean).length;
 
   return (
-    <section aria-labelledby="todays-challenges" className="w-full">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-        <div className="min-w-0">
-          <h2
-            id="todays-challenges"
-            className="text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground"
-          >
-            Today&apos;s challenges
-          </h2>
-          <p className="mt-1 truncate font-display text-[clamp(1.25rem,5vw,1.75rem)] font-semibold uppercase tracking-[0.06em] text-foreground">
-            {prettyDate(today)}
-          </p>
+    <section
+      aria-labelledby="todays-challenges"
+      className="w-full overflow-hidden rounded-md border border-border bg-card"
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border px-4 py-3">
+        <h2
+          id="todays-challenges"
+          className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-foreground"
+        >
+          Today at Nircosi
+        </h2>
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+          <span className="tracking-[0.08em]">{prettyDate(today)}</span>
+          <span aria-hidden className="h-3 w-px bg-border" />
+          <span className="tabular-nums">{played}/3 played</span>
         </div>
-        <span className="shrink-0 rounded-full border border-border px-3 py-1 text-[11px] font-medium tabular-nums text-muted-foreground">
-          {played}/3 completed
-        </span>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <ChallengeCard
+      <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <ChallengeCell
           to="/connect/daily"
           accent="connect"
-          icon={<Share2 className="h-4 w-4" />}
+          icon={<Share2 className="h-3.5 w-3.5" />}
           name={`Connect${connect ? ` #${connect.number}` : ""}`}
           headline={
             connect?.start && connect.target
@@ -108,10 +114,10 @@ export function TodaysChallenges() {
               : null
           }
         />
-        <ChallengeCard
+        <ChallengeCell
           to="/daily/top-10"
           accent="top10"
-          icon={<ListOrdered className="h-4 w-4" />}
+          icon={<ListOrdered className="h-3.5 w-3.5" />}
           name={`Top 10${top10 ? ` #${top10.number}` : ""}`}
           headline={top10?.title ?? "One ranked list. Ten blanks."}
           done={done.top10}
@@ -121,12 +127,12 @@ export function TodaysChallenges() {
               : null
           }
         />
-        <ChallengeCard
+        <ChallengeCell
           to="/daily/person"
           accent="person"
-          icon={<UserRound className="h-4 w-4" />}
+          icon={<UserRound className="h-3.5 w-3.5" />}
           name="Person"
-          headline="Can you guess the actor today?"
+          headline="Six clues. One hidden actor."
           done={done.person}
           resultText={
             results.person
@@ -141,7 +147,7 @@ export function TodaysChallenges() {
   );
 }
 
-function ChallengeCard({
+function ChallengeCell({
   to,
   accent,
   icon,
@@ -161,32 +167,35 @@ function ChallengeCard({
   return (
     <Link
       to={to}
-      className="group flex flex-col rounded-md border border-border bg-card p-4 transition-colors duration-200 hover:border-foreground/30"
+      className="group relative flex min-w-0 items-center gap-3 px-4 py-3.5 transition-colors duration-200 hover:bg-accent/50 sm:flex-col sm:items-stretch sm:gap-0"
     >
-      <div className="flex items-center gap-2.5">
-        <span
-          aria-hidden
-          className={`grid h-8 w-8 shrink-0 place-items-center rounded-md ${TINT[accent]}`}
-        >
-          {icon}
+      <span aria-hidden className={`absolute inset-x-0 top-0 h-px ${RULE[accent]}`} />
+
+      <span
+        aria-hidden
+        className={`grid h-7 w-7 shrink-0 place-items-center rounded-sm ${TINT[accent]} sm:mb-2.5`}
+      >
+        {icon}
+      </span>
+
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-1.5">
+          <span className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground">
+            {name}
+          </span>
+          {done && <Check className="h-3.5 w-3.5 shrink-0 text-top10" aria-hidden />}
+        </span>
+        <span className="mt-1 line-clamp-2 block text-[13px] leading-snug text-foreground">
+          {headline}
         </span>
         <span
-          className={`min-w-0 flex-1 truncate text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground`}
+          className={`mt-1 block truncate text-[11px] ${done ? LABEL[accent] : "text-muted-foreground"}`}
         >
-          {name}
+          {done ? (resultText ?? "Completed") : "Not played yet"}
         </span>
-        {done && (
-          <Check className="h-4 w-4 shrink-0 text-top10" aria-hidden />
-        )}
-      </div>
+      </span>
 
-      <p className="mt-3 line-clamp-2 text-[13px] leading-snug text-foreground">{headline}</p>
-
-      <p className={`mt-2 text-[12px] ${done ? LABEL[accent] : "text-muted-foreground"}`}>
-        {done ? (resultText ?? "Completed") : "Not played yet"}
-      </p>
-
-      <span className="mt-3 inline-flex w-fit items-center rounded-full bg-foreground px-4 py-1.5 text-[11px] font-medium text-background transition-opacity group-hover:opacity-85">
+      <span className="shrink-0 self-center rounded-full bg-foreground px-3.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-background transition-opacity group-hover:opacity-85 sm:mt-3 sm:self-start">
         {done ? "Review" : "Play"}
       </span>
     </Link>
