@@ -55,10 +55,14 @@ export interface Movie {
 export interface Graph {
   peopleById: Record<string, Person>;
   moviesById: Record<string, Movie>;
+  /** Traversable people (everyone with at least one credit). */
   personIds: string[];
+  /** Coverage-qualified people — the only legal challenge endpoints. */
+  playableIds: string[];
   movieIds: string[];
-  counts: { films: number; people: number; connections: number };
+  counts: { films: number; people: number; connections: number; playable: number };
   source: string;
+  version: string;
 }
 
 export function buildGraph(data: RawDataset): Graph {
@@ -67,11 +71,20 @@ export function buildGraph(data: RawDataset): Graph {
   const personIds: string[] = [];
   const movieIds: string[] = [];
 
-  for (const [qid, name, notability, image, birthYear] of data.people) {
+  for (const [qid, name, notability, image, birthYear, playable] of data.people) {
     if (peopleById[qid]) continue;
-    peopleById[qid] = { id: qid, name, notability, image, birthYear, movieIds: [] };
+    peopleById[qid] = {
+      id: qid,
+      name,
+      notability,
+      image,
+      birthYear,
+      playable: playable === 1,
+      movieIds: [],
+    };
     personIds.push(qid);
   }
+
 
   let connections = 0;
   data.films.forEach(([qid, title, year, notability], index) => {
