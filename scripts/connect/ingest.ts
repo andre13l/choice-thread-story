@@ -123,7 +123,7 @@ export async function selectPool(): Promise<string[]> {
 
 /* ----------------------------------------------------------------- films */
 
-const filmQuery = (ids: string[]) => `
+export const filmQuery = (ids: string[]) => `
 SELECT ?actor ?film ?filmLabel ?enName (MIN(?y) AS ?year) (SAMPLE(?sl) AS ?sitelinks) WHERE {
   ${values("actor", ids)}
   VALUES ?class { ${FILM_CLASSES.map((c) => `wd:${c}`).join(" ")} }
