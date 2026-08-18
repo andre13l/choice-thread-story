@@ -23,7 +23,8 @@
 
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
-import { sparql, qid, values, chunk } from "./wikidata";
+import { sparql, qid, chunk } from "./wikidata";
+import { RULES, filmQuery } from "./rules";
 import {
   getEntities,
   pool as entityPool,
@@ -42,19 +43,7 @@ const read = <T>(name: string): T | null =>
 const write = (name: string, data: unknown) =>
   writeFileSync(`${CACHE}/${name}`, JSON.stringify(data));
 
-export const RULES = {
-  /** Playable pool: recognizable enough that people expect full coverage. */
-  poolMinNotability: 80,
-  /** Films kept from a playable actor's filmography. Was 35 globally. */
-  filmMinSitelinks: 5,
-  filmMinYear: 1920,
-  /** Cast members kept per film: everyone above this, plus every playable. */
-  castMinSitelinks: 3,
-  /** A connector only earns a place in the shipped graph with 2+ credits. */
-  connectorMinCredits: 2,
-} as const;
-
-const FILM_CLASSES = ["Q11424", "Q24869", "Q202866", "Q29168811", "Q20650540"];
+export { RULES } from "./rules";
 
 function admin() {
   return createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_SERVICE_ROLE_KEY"]!, {
@@ -123,15 +112,6 @@ export async function selectPool(): Promise<string[]> {
 
 /* ----------------------------------------------------------------- films */
 
-const filmQuery = (ids: string[]) => `
-SELECT ?actor ?film ?filmLabel ?enName (MIN(?y) AS ?year) (SAMPLE(?sl) AS ?sitelinks) WHERE {
-  ${values("actor", ids)}
-  VALUES ?class { ${FILM_CLASSES.map((c) => `wd:${c}`).join(" ")} }
-  ?film wdt:P161 ?actor ; wdt:P31 ?class ; wikibase:sitelinks ?sl ; wdt:P577 ?date .
-  BIND(YEAR(?date) AS ?y)
-  OPTIONAL { ?article schema:about ?film ; schema:isPartOf <https://en.wikipedia.org/> ; schema:name ?enName }
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-} GROUP BY ?actor ?film ?filmLabel ?enName`;
 
 export async function hydrateFilms(pool: string[]) {
   const films = new Map<string, FilmRow>(Object.entries(read<Record<string, FilmRow>>("films.json") ?? {}));
