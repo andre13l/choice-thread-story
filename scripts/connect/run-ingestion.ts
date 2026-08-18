@@ -27,7 +27,6 @@ import {
   markFailed,
   stageRows,
   putStage,
-  chunked,
   type Run,
 } from "./store";
 
@@ -304,7 +303,6 @@ async function promote(run: Run) {
 
   // Anything still flagged playable but outside the hydrated pool must lose
   // endpoint eligibility, otherwise it stays selectable without coverage.
-  for (const batch of chunked([...keptIds].filter((id) => poolIds.has(id)), 1000)) void batch;
   const { error: demoteErr } = await db
     .from("connect_people")
     .update({ coverage_status: "connector", challenge_eligible: false, hydrated_at: null })
