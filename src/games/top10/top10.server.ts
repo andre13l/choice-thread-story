@@ -23,16 +23,33 @@ function published(): Top10Challenge[] {
   return CHALLENGES.filter((c) => c.published);
 }
 
+/**
+ * Editorial pins. The shuffle is deterministic but blind to variety, so a
+ * date can be pinned to a specific list to break a run of box-office-by-year
+ * challenges. Pins are code, so every player gets the same thing, and they
+ * outrank the stored schedule. Never edit a pin for a date in the past.
+ */
+const PINNED: Record<string, string> = {
+  "2026-08-21": "oscars-actor-2015-2024",
+  "2026-08-23": "franchise-bond",
+  "2026-08-25": "oscars-bp-1985-1994",
+  "2026-08-27": "franchise-pixar",
+};
+
 /** Deterministic rotation: same date, same list, for every player. */
 export function scheduledChallenge(date: string): Top10Challenge {
+  const pinned = PINNED[date] ? published().find((c) => c.id === PINNED[date]) : undefined;
+  if (pinned) return pinned;
   const pool = published();
   const order = seededShuffle(pool, CALENDAR_SEED);
   const index = ((dayNumberFromDate(date) % order.length) + order.length) % order.length;
   return order[index]!;
 }
 
-/** DB row wins when one exists and points at a known, published list. */
+/** Pins win, then a DB row pointing at a known published list. */
 export async function challengeFor(date: string): Promise<Top10Challenge> {
+  const pinned = PINNED[date] ? published().find((c) => c.id === PINNED[date]) : undefined;
+  if (pinned) return pinned;
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin

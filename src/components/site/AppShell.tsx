@@ -4,6 +4,7 @@ import { SITE } from "@/config/site";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import { SidebarNav } from "./SiteSidebar";
+import { UpdateBanner } from "./UpdateBanner";
 
 const NAV_KEY = `${SITE.storagePrefix}.nav.open`;
 
@@ -53,6 +54,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader navOpen={open} onToggleNav={toggle} navPanelId={panelId} />
+      <UpdateBanner />
 
       <div className="relative flex flex-1">
         {/* Desktop rail — pushes the content column. */}
