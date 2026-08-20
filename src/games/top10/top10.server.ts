@@ -30,10 +30,16 @@ function published(): Top10Challenge[] {
  * outrank the stored schedule. Never edit a pin for a date in the past.
  */
 const PINNED: Record<string, string> = {
+  // Each pin is a swap with the date the list would naturally have fallen on,
+  // so the cycle still covers the bank exactly once.
   "2026-08-21": "oscars-actor-2015-2024",
+  "2026-09-07": "wwbo-2008",
   "2026-08-23": "franchise-bond",
+  "2026-08-29": "wwbo-2017",
   "2026-08-25": "oscars-bp-1985-1994",
+  "2026-09-04": "wwbo-2004",
   "2026-08-27": "franchise-pixar",
+  "2026-09-08": "wwbo-2006",
 };
 
 /** Deterministic rotation: same date, same list, for every player. */
