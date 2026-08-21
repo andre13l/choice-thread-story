@@ -198,11 +198,11 @@ export async function upsertCredits(
   ];
 
   for (const batch of chunked(deduped)) {
-
     const { error } = await db
       .from("connect_cast")
       .upsert(batch, { onConflict: "movie_id,person_id" });
     if (error) throw new Error(`connect_cast: ${error.message}`);
   }
-  return rows.length;
+  return deduped.length;
+
 }
