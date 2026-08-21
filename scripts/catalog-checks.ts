@@ -16,6 +16,19 @@ if (!url || !key) {
 }
 const db = createClient(url, key, { auth: { persistSession: false } });
 
+/** PostgREST caps a response at 1000 rows; page through everything. */
+async function all<T>(table: string, columns: string): Promise<T[]> {
+  const out: T[] = [];
+  const size = 1000;
+  for (let from = 0; ; from += size) {
+    const { data, error } = await db.from(table).select(columns).range(from, from + size - 1);
+    if (error) throw new Error(error.message);
+    const rows = (data ?? []) as T[];
+    out.push(...rows);
+    if (rows.length < size) return out;
+  }
+}
+
 let failures = 0;
 function check(ok: boolean, message: string) {
   if (!ok) {
@@ -29,13 +42,12 @@ const BANNED_NAMES = ["zoe sandalia"];
 
 // 1. Exactly one catalogue row per TMDB person id.
 {
-  const { data, error } = await db
-    .from("connect_people")
-    .select("id, tmdb_id")
-    .not("tmdb_id", "is", null);
-  if (error) throw new Error(error.message);
+  const data = await all<{ id: string; tmdb_id: number | null }>(
+    "connect_people",
+    "id, tmdb_id",
+  );
   const seen = new Map<number, string>();
-  for (const row of data ?? []) {
+  for (const row of data.filter((r) => r.tmdb_id !== null)) {
     const previous = seen.get(row.tmdb_id as number);
     check(!previous, `tmdb_id ${row.tmdb_id} is on both ${previous} and ${row.id}`);
     seen.set(row.tmdb_id as number, row.id);
@@ -69,10 +81,10 @@ for (const banned of BANNED_NAMES) {
 
 // 4. No dangling cast edges (the classic merge mistake).
 {
-  const { data: cast } = await db.from("connect_cast").select("person_id").limit(100000);
-  const ids = [...new Set((cast ?? []).map((r) => r.person_id))];
-  const { data: people } = await db.from("connect_people").select("id").limit(100000);
-  const known = new Set((people ?? []).map((p) => p.id));
+  const cast = await all<{ person_id: string }>("connect_cast", "person_id");
+  const ids = [...new Set(cast.map((r) => r.person_id))];
+  const people = await all<{ id: string }>("connect_people", "id");
+  const known = new Set(people.map((p) => p.id));
   const dangling = ids.filter((id) => !known.has(id));
   check(dangling.length === 0, `${dangling.length} cast rows point at missing people`);
 }
