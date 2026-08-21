@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SITE } from "@/config/site";
 import {
@@ -22,8 +21,14 @@ import {
   type DailyStats,
 } from "@/games/core/dailyStats";
 import { recordRankable } from "@/games/core/rankable";
-import { UPDOWN_GAME_ID, UPDOWN_ROUNDS, type UpDownPrompt } from "@/games/updown/types";
-import { getDailyUpDown } from "@/lib/updown.functions";
+import {
+  isSurvivalDate,
+  UPDOWN_GAME_ID,
+  UPDOWN_PATH_LENGTH,
+  UPDOWN_ROUNDS,
+  type UpDownPrompt,
+} from "@/games/updown/types";
+import { loadUpDownPrompt } from "@/games/updown/path";
 import { DailyRank } from "@/games/core/components/DailyRank";
 
 export const Route = createFileRoute("/daily/up-down")({
@@ -37,12 +42,13 @@ export const Route = createFileRoute("/daily/up-down")({
       {
         name: "description",
         content:
-          "Ten rounds against the clock: did the next film make more or less worldwide than the last? A new frozen sequence every midnight UTC, identical for every player.",
+          "How far can you go? One shared 100-movie box office path a day — did the next film make more or less worldwide? One mistake ends your run.",
       },
       { property: "og:title", content: `Daily Up & Down | ${SITE.name}` },
       {
         property: "og:description",
-        content: "Box Office Rush — ten timed rounds of more or less, same films for everyone.",
+        content:
+          "Box Office Rush — the same 100-movie path for everyone today. One mistake ends the run.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -54,7 +60,7 @@ type Phase = "intro" | "playing" | "done";
 
 interface Progress {
   index: number;
-  marks: boolean[];
+  streak: number;
   startedAt: number;
   done: boolean;
 }
@@ -74,27 +80,42 @@ function DailyUpDownPage() {
   const search = Route.useSearch();
   const today = useMemo(() => todayUTC(), []);
   const date = search.date && /^\d{4}-\d{2}-\d{2}$/.test(search.date) ? search.date : today;
-  const fetchPrompt = useServerFn(getDailyUpDown);
+  const survival = isSurvivalDate(date);
+  const pathLength = survival ? UPDOWN_PATH_LENGTH : UPDOWN_ROUNDS;
 
+  /**
+   * The daily path is derived locally from the bundled catalogue: no server
+   * function, no network, so the game always starts even if the backend or
+   * the leaderboard is unavailable.
+   */
   const [prompt, setPrompt] = useState<UpDownPrompt | null>(null);
   const [failed, setFailed] = useState(false);
   const [phase, setPhase] = useState<Phase>("intro");
   const [index, setIndex] = useState(0);
-  const [marks, setMarks] = useState<boolean[]>([]);
+  const [streak, setStreak] = useState(0);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [locked, setLocked] = useState(false);
+  const [missed, setMissed] = useState(false);
   const [result, setResult] = useState<DailyResult | null>(null);
   const [stats, setStats] = useState<DailyStats | null>(null);
   const recorded = useRef(false);
   const timer = useRef<number | null>(null);
 
   useEffect(() => {
+    try {
+      setPrompt(loadUpDownPrompt(date, pathLength));
+    } catch {
+      setFailed(true);
+    }
+  }, [date, pathLength]);
+
+  useEffect(() => {
     setStats(loadDailyStats(UPDOWN_GAME_ID));
     const saved = loadProgress<Progress>(UPDOWN_GAME_ID, date);
     if (saved && !saved.done) {
       setIndex(saved.index);
-      setMarks(saved.marks ?? []);
+      setStreak(saved.streak ?? saved.index);
       setStartedAt(saved.startedAt);
       setPhase("playing");
     }
@@ -106,35 +127,28 @@ function DailyUpDownPage() {
     }
   }, [date]);
 
-  useEffect(() => {
-    void fetchPrompt({ data: { date } })
-      .then(setPrompt)
-      .catch(() => setFailed(true));
-  }, [fetchPrompt, date]);
-
   useEffect(() => () => {
     if (timer.current) window.clearTimeout(timer.current);
   }, []);
 
   const finish = useCallback(
-    (finalMarks: boolean[], startTime: number) => {
-      const correct = finalMarks.filter(Boolean).length;
+    (distance: number, startTime: number) => {
       const timeMs = Date.now() - startTime;
       const number = prompt?.number ?? 0;
       const finished: DailyResult = {
         date,
         number,
         clicks: 0,
-        score: correct,
-        total: UPDOWN_ROUNDS,
+        score: distance,
+        total: pathLength,
         timeMs,
         gaveUp: false,
       };
       setResult(finished);
       setPhase("done");
       saveProgress<Progress>(UPDOWN_GAME_ID, date, {
-        index: UPDOWN_ROUNDS,
-        marks: finalMarks,
+        index: distance,
+        streak: distance,
         startedAt: startTime,
         done: true,
       });
@@ -145,13 +159,13 @@ function DailyUpDownPage() {
           gameId: UPDOWN_GAME_ID,
           date,
           number,
-          correct,
-          total: UPDOWN_ROUNDS,
+          correct: distance,
+          total: pathLength,
           timeMs,
         });
       }
     },
-    [date, prompt],
+    [date, prompt, pathLength],
   );
 
   const answer = useCallback(
@@ -160,38 +174,50 @@ function DailyUpDownPage() {
       const current = prompt.cards[index]!;
       const next = prompt.cards[index + 1]!;
       const correct = (next.grossM > current.grossM) === saidMore;
-      const nextMarks = [...marks, correct];
-      setMarks(nextMarks);
       setRevealed(true);
       setLocked(true);
+
+      // Survival: the first mistake ends the run. Pre-cutover dates keep the
+      // old fixed 10-round accuracy rules so submitted scores stay valid.
+      if (!correct && survival) {
+        setMissed(true);
+        timer.current = window.setTimeout(() => finish(streak, startedAt), 900);
+        return;
+      }
+
+      const nextStreak = correct ? streak + 1 : streak;
+      setStreak(nextStreak);
+
+      // Deliberately snappy: the run should never feel gated by animation.
       timer.current = window.setTimeout(() => {
         setRevealed(false);
         setLocked(false);
-        if (index + 1 >= UPDOWN_ROUNDS) {
-          finish(nextMarks, startedAt);
+        if (index + 1 >= pathLength) {
+          finish(nextStreak, startedAt);
         } else {
           setIndex(index + 1);
           saveProgress<Progress>(UPDOWN_GAME_ID, date, {
             index: index + 1,
-            marks: nextMarks,
+            streak: nextStreak,
             startedAt,
             done: false,
           });
         }
-      }, 650);
+      }, 380);
     },
-    [prompt, locked, startedAt, index, marks, finish, date],
+    [prompt, locked, startedAt, index, streak, finish, date, pathLength, survival],
   );
 
   const start = useCallback(() => {
     const now = Date.now();
     setStartedAt(now);
     setIndex(0);
-    setMarks([]);
+    setStreak(0);
+    setMissed(false);
     setPhase("playing");
     saveProgress<Progress>(UPDOWN_GAME_ID, date, {
       index: 0,
-      marks: [],
+      streak: 0,
       startedAt: now,
       done: false,
     });
@@ -204,7 +230,7 @@ function DailyUpDownPage() {
           Today&apos;s Up &amp; Down is unavailable
         </h1>
         <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-          The backend didn&apos;t answer. Refresh in a moment.
+          The daily path could not be built. Refresh in a moment.
         </p>
         <DailyFooterLinks />
       </div>
@@ -219,16 +245,15 @@ function DailyUpDownPage() {
     );
   }
 
-  const streak = stats ? currentStreak(stats, date) : 0;
+  const dayStreak = stats ? currentStreak(stats, date) : 0;
 
   if (phase === "done" && result) {
-    const grid = marks.length
-      ? marks.map((m) => (m ? "🟩" : "🟥")).join("")
-      : "";
+    const distance = result.score ?? 0;
+    const finishedPath = distance >= (result.total ?? pathLength);
     const shareText = [
-      `${SITE.name.toUpperCase()} UP & DOWN #${result.number} — ${result.score ?? 0}/${result.total ?? UPDOWN_ROUNDS} — ${formatSeconds(result.timeMs)}`,
-      ...(grid ? [grid] : []),
-      ...(streak > 0 ? [`🔥 ${streak} day streak`] : []),
+      `${SITE.name.toUpperCase()} UP & DOWN #${result.number} — ${distance} straight · ${formatSeconds(result.timeMs)}`,
+      ...(finishedPath ? ["🏁 Full path cleared"] : []),
+      ...(dayStreak > 0 ? [`🔥 ${dayStreak} day streak`] : []),
     ].join("\n");
 
     return (
@@ -236,20 +261,20 @@ function DailyUpDownPage() {
         <ResultSurface className="text-center" label="Daily Up and Down result">
           <DailyHeader label={`Daily Up & Down #${result.number}`} date={date} accent="gold" />
           <h1 className="mt-8 font-display text-[clamp(2rem,7vw,3.2rem)] leading-none tracking-[0.06em] text-foreground">
-            {result.score ?? 0}/{result.total ?? UPDOWN_ROUNDS}
+            {distance} STRAIGHT
           </h1>
           <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground tabular-nums">
             {formatSeconds(result.timeMs)}
           </p>
 
           <div className="mt-8 grid grid-cols-3 border border-border/70">
-            <Stat label="Correct" value={`${result.score ?? 0}/${result.total ?? UPDOWN_ROUNDS}`} accent />
+            <Stat label="Distance" value={`${distance}`} accent />
             <Stat label="Time" value={formatSeconds(result.timeMs)} />
-            <Stat label="Streak" value={String(streak)} />
+            <Stat label="Streak" value={String(dayStreak)} />
           </div>
 
           <p className="mt-4 text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">
-            Accuracy first · time only breaks ties
+            Distance first · time only breaks ties
           </p>
 
           <ShareButton
@@ -263,9 +288,9 @@ function DailyUpDownPage() {
             game="updown"
             date={date}
             number={result.number}
-            score={result.score ?? 0}
+            score={distance}
             timeMs={result.timeMs}
-            meta={{ total: result.total ?? UPDOWN_ROUNDS }}
+            meta={{ total: result.total ?? pathLength }}
           />
           <NextDailyNote />
           <DailyFooterLinks />
@@ -279,11 +304,12 @@ function DailyUpDownPage() {
       <div className="stage anim-fade-up flex min-h-screen flex-col items-center justify-center px-5 py-14 text-center">
         <DailyHeader label={`Daily Up & Down #${prompt.number}`} date={date} accent="gold" />
         <h1 className="mt-6 font-display text-[clamp(2.2rem,9vw,4rem)] leading-none tracking-[0.08em] text-foreground">
-          BOX OFFICE RUSH
+          HOW FAR CAN YOU GO?
         </h1>
         <p className="mt-6 max-w-sm text-sm leading-relaxed text-muted-foreground">
-          Ten films, one after another. Did the next film make MORE or LESS worldwide than the one
-          on screen? Same ten for everyone today — the clock is the tiebreaker.
+          {survival
+            ? `Did the next film make MORE or LESS worldwide? One mistake ends your run. The same ${UPDOWN_PATH_LENGTH}-movie path for everyone today.`
+            : "Ten films, one after another. Did the next film make MORE or LESS worldwide than the one on screen?"}
         </p>
         <button
           onClick={start}
@@ -309,15 +335,13 @@ function DailyUpDownPage() {
           <DailyHeader label={`Daily Up & Down #${prompt.number}`} date={date} accent="gold" />
         </div>
 
-        <div className="mt-6 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-          <span className="tabular-nums">
-            Round {index + 1}/{UPDOWN_ROUNDS}
-          </span>
-          <span aria-label="Answers so far" className="tracking-normal">
-            {marks.map((m, i) => (
-              <span key={i}>{m ? "🟩" : "🟥"}</span>
-            ))}
-          </span>
+        <div className="mt-6 flex items-baseline justify-between">
+          <p className="font-display text-2xl tracking-[0.08em] text-foreground tabular-nums">
+            {streak} <span className="text-[11px] tracking-[0.24em] text-muted-foreground">STRAIGHT</span>
+          </p>
+          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            One mistake ends it
+          </p>
         </div>
 
         <div className="mt-4 border border-border/70">
@@ -344,7 +368,9 @@ function DailyUpDownPage() {
             </p>
             <p
               className={`mt-2 font-display text-2xl tracking-[0.06em] tabular-nums transition-opacity duration-150 ${
-                revealed ? "text-gold opacity-100" : "select-none text-transparent opacity-0"
+                revealed
+                  ? `${missed ? "text-foreground" : "text-gold"} opacity-100`
+                  : "select-none text-transparent opacity-0"
               }`}
               aria-hidden={!revealed}
             >
@@ -371,7 +397,7 @@ function DailyUpDownPage() {
         </div>
 
         <p className="mt-3 text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
-          Worldwide theatrical gross · accuracy first, time breaks ties
+          {missed ? "Run over" : "Worldwide theatrical gross · distance beats speed"}
         </p>
 
         <DailyFooterLinks />

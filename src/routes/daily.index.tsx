@@ -77,7 +77,7 @@ const CARDS: DailyCard[] = [
   {
     id: "updown",
     name: "Daily Up & Down",
-    tagline: "Box Office Rush — ten rounds of more or less, against the clock.",
+    tagline: "Box Office Rush — how far can you go? One mistake ends your run.",
     to: "/daily/up-down",
     accent: "text-gold",
     border: "hover:border-gold/70",

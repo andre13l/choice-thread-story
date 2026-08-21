@@ -68,7 +68,8 @@ export function isPlausible(game: DailyGameId, score: number, timeMs: number): b
     top10: 10,
     person: 6,
     timeline: 6,
-    updown: 10,
+    // Survival run: distance along the shared 100-comparison path.
+    updown: 100,
   };
   return score <= max[game];
 }
@@ -91,7 +92,8 @@ export function formatPerformance(
     case "timeline":
       return `${score}/${Number(meta["total"] ?? 6)} · ${secs.toFixed(1)}s`;
     case "updown":
-      return `${score}/${Number(meta["total"] ?? 10)} · ${secs.toFixed(1)}s`;
+      // Distance first, time only as the tiebreaker.
+      return `${score} straight · ${secs.toFixed(1)}s`;
     case "top10":
       return `${score}/${Number(meta["total"] ?? 10)} · ${mmss()}`;
     case "person": {
@@ -100,3 +102,4 @@ export function formatPerformance(
     }
   }
 }
+

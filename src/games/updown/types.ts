@@ -12,14 +12,15 @@ export interface UpDownCard {
 export interface UpDownPrompt {
   date: string;
   number: number;
-  /** Length ROUNDS + 1: the first card is the opening reference. */
+  /** Length `total + 1`: the first card is the opening reference. */
   cards: UpDownCard[];
+  /** Comparisons available on this path. */
   total: number;
 }
 
 /**
- * Rank-ready result row. Accuracy is primary, elapsed time is the tiebreaker,
- * so Phase 3 can submit this verbatim without touching gameplay.
+ * Rank-ready result row. Distance (consecutive correct calls before the first
+ * mistake) is primary; elapsed time only breaks ties at equal distance.
  */
 export interface UpDownScore {
   date: string;
@@ -31,4 +32,19 @@ export interface UpDownScore {
 }
 
 export const UPDOWN_GAME_ID = "updown";
+
+/** Legacy fixed-length accuracy format, kept for dates before the cutover. */
 export const UPDOWN_ROUNDS = 10;
+
+/** Survival format: one long shared path, one mistake ends the run. */
+export const UPDOWN_PATH_LENGTH = 100;
+
+/**
+ * First UTC date played as a survival run. Earlier dates keep the 10-round
+ * accuracy rules so already-submitted scores stay historically valid.
+ */
+export const UPDOWN_SURVIVAL_FROM = "2026-08-22";
+
+export function isSurvivalDate(date: string): boolean {
+  return date >= UPDOWN_SURVIVAL_FROM;
+}
