@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarClock, Check, ListOrdered, Share2, UserRound } from "lucide-react";
+import { CalendarClock, Check, ListOrdered, Share2, TrendingUp, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { getDailyConnect, type DailyConnectPayload } from "@/lib/connect.functions";
@@ -41,18 +41,20 @@ export function TodaysChallenges() {
   const fetchDaily = useServerFn(getDailyConnect);
   const fetchTop10 = useServerFn(getTop10Today);
   const [today] = useState(() => todayUTC());
-  const [done, setDone] = useState<Record<DailyGameId, boolean>>({
+  const [done, setDone] = useState<Record<DailyGameId, boolean>>(() => ({
     connect: false,
     top10: false,
     person: false,
     timeline: false,
-  });
-  const [results, setResults] = useState<Record<DailyGameId, DailyResult | null>>({
+    updown: false,
+  }));
+  const [results, setResults] = useState<Record<DailyGameId, DailyResult | null>>(() => ({
     connect: null,
     top10: null,
     person: null,
     timeline: null,
-  });
+    updown: null,
+  }));
   const [connect, setConnect] = useState<DailyConnectPayload | null>(null);
   const [top10, setTop10] = useState<Top10Prompt | null>(null);
 
@@ -63,6 +65,7 @@ export function TodaysChallenges() {
       top10: resultFor("top10", today),
       person: resultFor("person", today),
       timeline: resultFor("timeline", today),
+      updown: resultFor("updown", today),
     });
   }, [today]);
 
@@ -96,11 +99,11 @@ export function TodaysChallenges() {
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
           <span className="tracking-[0.08em]">{prettyDate(today)}</span>
           <span aria-hidden className="h-3 w-px bg-border" />
-          <span className="tabular-nums">{played}/4 played</span>
+          <span className="tabular-nums">{played}/5 played</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 sm:divide-x lg:grid-cols-4 sm:divide-y-0">
+      <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 sm:divide-x lg:grid-cols-5 sm:divide-y-0">
         <ChallengeCell
           to="/connect/daily"
           accent="connect"
@@ -161,6 +164,19 @@ export function TodaysChallenges() {
               : null
           }
         />
+        <ChallengeCell
+          to="/daily/up-down"
+          accent="top10"
+          icon={<TrendingUp className="h-3.5 w-3.5" />}
+          name="Up & Down"
+          headline="More or less at the box office."
+          done={done.updown}
+          resultText={
+            results.updown
+              ? `Score: ${results.updown.score ?? 0}/${results.updown.total ?? 10}`
+              : null
+          }
+        />
       </div>
     </section>
   );
@@ -175,7 +191,12 @@ function ChallengeCell({
   done,
   resultText,
 }: {
-  to: "/connect/daily" | "/daily/top-10" | "/daily/person" | "/daily/timeline";
+  to:
+    | "/connect/daily"
+    | "/daily/top-10"
+    | "/daily/person"
+    | "/daily/timeline"
+    | "/daily/up-down";
   accent: Accent;
   icon: ReactNode;
   name: string;

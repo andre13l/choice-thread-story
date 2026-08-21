@@ -23,6 +23,7 @@ import {
   type DailyResult,
   type DailyStats,
 } from "@/games/core/dailyStats";
+import { recordRankable } from "@/games/core/rankable";
 import {
   TIMELINE_GAME_ID,
   TIMELINE_SIZE,
@@ -207,6 +208,14 @@ function DailyTimelinePage() {
       if (!recorded.current) {
         recorded.current = true;
         setStats(recordDaily(TIMELINE_GAME_ID, finished));
+        recordRankable({
+          gameId: TIMELINE_GAME_ID,
+          date,
+          number: prompt.number,
+          correct: score,
+          total: prompt.total,
+          timeMs,
+        });
       }
     } catch {
       setSubmitting(false);
