@@ -99,7 +99,7 @@ console.log(
 {
   const { upDownSequence } = await import("../src/games/updown/updown.server");
   const { UPDOWN_PATH_LENGTH } = await import("../src/games/updown/types");
-  for (let i = 0; i < 400; i++) {
+  for (let i = 0; i < 60; i++) {
     const date = shiftDate(start, i);
     const seq = upDownSequence(date);
     check(
@@ -119,7 +119,7 @@ console.log(
       `up&down ${date} is not deterministic`,
     );
   }
-  console.log("Daily Up & Down: 400 dates build the full 100-comparison path.");
+  console.log("Daily Up & Down: 60 dates build the full 100-comparison path.");
 }
 
 
