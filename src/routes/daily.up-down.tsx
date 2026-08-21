@@ -29,6 +29,7 @@ import {
   type UpDownPrompt,
 } from "@/games/updown/types";
 import { loadUpDownPrompt } from "@/games/updown/path";
+import { resetLegacyUpDown } from "@/games/updown/reset";
 import { DailyRank } from "@/games/core/components/DailyRank";
 
 export const Route = createFileRoute("/daily/up-down")({
