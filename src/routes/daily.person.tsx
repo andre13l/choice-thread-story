@@ -315,10 +315,10 @@ function DailyPersonPage() {
           <DailyFooterLinks
             extra={
               <Link
-                to="/connect"
+                to="/daily"
                 className="text-[11px] uppercase tracking-[0.2em] text-link transition-opacity hover:opacity-70"
               >
-                Play unlimited Connect
+                Today&apos;s other dailies
               </Link>
             }
           />

@@ -12,10 +12,8 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Home", to: "/", exact: true, group: "play" },
-  { label: "Daily", to: "/daily", group: "play" },
+  { label: "Daily Games", to: "/daily", group: "play" },
   { label: "Hollywood", to: "/hollywood", group: "play" },
-  { label: "Connect", to: "/connect", group: "play" },
-  { label: "Higher or Lower", to: "/higher-lower", group: "play" },
   { label: "Walk of Fame", to: "/walk-of-fame", group: "more" },
   { label: "About", to: "/about", group: "more" },
   { label: "Contact", to: "/contact", group: "more" },

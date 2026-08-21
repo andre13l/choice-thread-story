@@ -12,6 +12,9 @@
 import type { SourceCredit, SourceMovie, SourcePerson } from "@/lib/catalog/source";
 import { chunked, db } from "./store";
 
+/** Legacy Wikidata catalogue keys look like `Q12345`. */
+const isQid = (id: string) => /^Q\d+$/.test(id);
+
 export const movieKey = (sourceId: string) => `tm${sourceId}`;
 export const personKey = (sourceId: string) => `tp${sourceId}`;
 
@@ -113,6 +116,8 @@ export async function upsertMovies(movies: SourceMovie[]): Promise<Map<string, s
       poster_path: movie.posterPath,
       notability: Math.round(movie.popularity),
       source: "tmdb",
+      // An adopted legacy row keeps its Wikidata QID as debuggable provenance.
+      ...(isQid(id) ? { legacy_qid: id } : {}),
       last_synced_at: new Date().toISOString(),
     };
   });
@@ -152,6 +157,7 @@ export async function upsertPeople(
       profile_path: person.profilePath,
       notability: Math.round(person.popularity),
       source: "tmdb",
+      ...(isQid(id) ? { legacy_qid: id } : {}),
       last_synced_at: new Date().toISOString(),
       ...(coverage ? { coverage_status: coverage } : {}),
     };

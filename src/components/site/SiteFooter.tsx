@@ -21,10 +21,8 @@ export function SiteFooter() {
           </div>
 
           <FooterColumn title="Games">
-            <FooterLink to="/daily">Daily</FooterLink>
+            <FooterLink to="/daily">Daily Games</FooterLink>
             <FooterLink to="/hollywood">Hollywood</FooterLink>
-            <FooterLink to="/connect">Connect</FooterLink>
-            <FooterLink to="/higher-lower">Higher or Lower</FooterLink>
           </FooterColumn>
 
           <FooterColumn title="Community">

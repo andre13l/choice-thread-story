@@ -109,7 +109,7 @@ export function SiteHeader({
                     Today
                   </dt>
                   <dd className="mt-1 font-display text-2xl tabular-nums text-foreground">
-                    {played}/3
+                    {played}/5
                   </dd>
                 </div>
               </dl>
