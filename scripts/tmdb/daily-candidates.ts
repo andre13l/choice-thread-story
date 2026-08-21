@@ -27,10 +27,24 @@ function arg(name: string): string | null {
   return index > -1 ? (process.argv[index + 1] ?? null) : null;
 }
 
+/**
+ * Catalogue id for a TMDB person id. A legacy Wikidata row that ingestion has
+ * adopted keeps its QID, so never assume the `tp<id>` key.
+ */
+async function catalogueId(tmdbId: string): Promise<string> {
+  const { data } = await db
+    .from("connect_people")
+    .select("id")
+    .eq("tmdb_id", Number(tmdbId))
+    .maybeSingle();
+  return (data?.id as string) ?? personKey(tmdbId);
+}
+
 async function filmsOf(personId: string): Promise<string[]> {
   const { data } = await db.from("connect_cast").select("movie_id").eq("person_id", personId);
   return (data ?? []).map((r) => r.movie_id as string);
 }
+
 
 async function castOf(movieIds: string[]): Promise<Map<string, string[]>> {
   const out = new Map<string, string[]>();
