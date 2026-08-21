@@ -95,10 +95,14 @@ export async function upsertMovies(movies: SourceMovie[]): Promise<Map<string, s
     unique.map((m) => Number(m.sourceId)),
   );
 
+  const byTitle = await adoptMoviesByTitle(unique.filter((m) => !adopted.has(Number(m.sourceId))));
+
   const ids = new Map<string, string>();
   const rows = unique.map((movie) => {
-    const id = adopted.get(Number(movie.sourceId)) ?? movieKey(movie.sourceId);
+    const id =
+      adopted.get(Number(movie.sourceId)) ?? byTitle.get(movie.sourceId) ?? movieKey(movie.sourceId);
     ids.set(movie.sourceId, id);
+
     return {
       id,
       tmdb_id: Number(movie.sourceId),
