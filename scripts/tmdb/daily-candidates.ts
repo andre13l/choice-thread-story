@@ -157,6 +157,19 @@ async function main() {
 
   if (process.argv.includes("--validate")) await validate(Number(arg("limit") ?? 10));
 
+  // Approval step: validated -> ready. Publication itself stays a separate,
+  // append-only action so no live daily is ever rewritten by preparation.
+  if (process.argv.includes("--approve")) {
+    const { data, error } = await db
+      .from("daily_connect_candidates")
+      .update({ status: "ready", updated_at: new Date().toISOString() })
+      .eq("status", "validated")
+      .select("start_person_id, target_person_id");
+    if (error) throw error;
+    console.log(`approved ${data?.length ?? 0} candidate(s)`);
+  }
+
+
   if (process.argv.includes("--list") || !add) {
     const { data } = await db
       .from("daily_connect_candidates")
