@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, ListOrdered, Share2, UserRound } from "lucide-react";
+import { CalendarClock, Check, ListOrdered, Share2, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { getDailyConnect, type DailyConnectPayload } from "@/lib/connect.functions";
@@ -10,24 +10,27 @@ import { completedToday, type DailyGameId } from "@/games/core/globalStreak";
 import { resultFor, todayUTC, type DailyResult } from "@/games/core/dailyStats";
 import type { Top10Prompt } from "@/games/top10/types";
 
-type Accent = "connect" | "top10" | "person";
+type Accent = "connect" | "top10" | "person" | "timeline";
 
 const TINT: Record<Accent, string> = {
   connect: "bg-connect/10 text-connect",
   top10: "bg-top10/10 text-top10",
   person: "bg-person/10 text-person",
+  timeline: "bg-foreground/10 text-foreground",
 };
 
 const LABEL: Record<Accent, string> = {
   connect: "text-connect",
   top10: "text-top10",
   person: "text-person",
+  timeline: "text-foreground",
 };
 
 const RULE: Record<Accent, string> = {
   connect: "bg-connect/60",
   top10: "bg-top10/60",
   person: "bg-person/60",
+  timeline: "bg-foreground/60",
 };
 
 /**
@@ -42,11 +45,13 @@ export function TodaysChallenges() {
     connect: false,
     top10: false,
     person: false,
+    timeline: false,
   });
   const [results, setResults] = useState<Record<DailyGameId, DailyResult | null>>({
     connect: null,
     top10: null,
     person: null,
+    timeline: null,
   });
   const [connect, setConnect] = useState<DailyConnectPayload | null>(null);
   const [top10, setTop10] = useState<Top10Prompt | null>(null);
@@ -57,6 +62,7 @@ export function TodaysChallenges() {
       connect: resultFor("connect", today),
       top10: resultFor("top10", today),
       person: resultFor("person", today),
+      timeline: resultFor("timeline", today),
     });
   }, [today]);
 
@@ -90,11 +96,11 @@ export function TodaysChallenges() {
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
           <span className="tracking-[0.08em]">{prettyDate(today)}</span>
           <span aria-hidden className="h-3 w-px bg-border" />
-          <span className="tabular-nums">{played}/3 played</span>
+          <span className="tabular-nums">{played}/4 played</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 sm:divide-x lg:grid-cols-4 sm:divide-y-0">
         <ChallengeCell
           to="/connect/daily"
           accent="connect"
@@ -142,6 +148,19 @@ export function TodaysChallenges() {
               : null
           }
         />
+        <ChallengeCell
+          to="/daily/timeline"
+          accent="timeline"
+          icon={<CalendarClock className="h-3.5 w-3.5" />}
+          name="Timeline"
+          headline="Six films, oldest to newest."
+          done={done.timeline}
+          resultText={
+            results.timeline
+              ? `Score: ${results.timeline.score ?? 0}/${results.timeline.total ?? 6}`
+              : null
+          }
+        />
       </div>
     </section>
   );
@@ -156,7 +175,7 @@ function ChallengeCell({
   done,
   resultText,
 }: {
-  to: "/connect/daily" | "/daily/top-10" | "/daily/person";
+  to: "/connect/daily" | "/daily/top-10" | "/daily/person" | "/daily/timeline";
   accent: Accent;
   icon: ReactNode;
   name: string;

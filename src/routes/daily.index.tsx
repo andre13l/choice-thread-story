@@ -31,7 +31,7 @@ interface DailyCard {
   id: DailyGameId;
   name: string;
   tagline: string;
-  to: "/connect/daily" | "/daily/top-10" | "/daily/person";
+  to: "/connect/daily" | "/daily/top-10" | "/daily/person" | "/daily/timeline";
   accent: string;
   border: string;
 }
@@ -61,6 +61,14 @@ const CARDS: DailyCard[] = [
     accent: "text-foreground",
     border: "hover:border-foreground/60",
   },
+  {
+    id: "timeline",
+    name: "Daily Timeline",
+    tagline: "Six films. Put them in release order, oldest to newest.",
+    to: "/daily/timeline",
+    accent: "text-foreground",
+    border: "hover:border-foreground/60",
+  },
 ];
 
 function DailyHubPage() {
@@ -69,6 +77,7 @@ function DailyHubPage() {
     connect: false,
     top10: false,
     person: false,
+    timeline: false,
   });
   const [streak, setStreak] = useState(0);
 
