@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SITE } from "@/config/site";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { useSession } from "@/games/core/useSession";
 
 export const Route = createFileRoute("/auth")({
@@ -41,11 +42,10 @@ function AuthPage() {
     setError(null);
     setBusy(true);
     try {
-      const { error: err } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: `${window.location.origin}/profile` },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
-      if (err) throw err;
+      if (result.error) throw result.error;
     } catch {
       setError("Google sign-in is unavailable right now. Try the email link.");
       setBusy(false);
