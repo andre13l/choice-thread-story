@@ -99,3 +99,30 @@ if (failures > 0) {
   process.exit(1);
 }
 console.log("All daily checks passed.");
+
+// 6. Daily Up & Down: every date must build a full, playable sequence.
+{
+  const { upDownSequence } = await import("../src/games/updown/updown.server");
+  const { UPDOWN_ROUNDS } = await import("../src/games/updown/types");
+  for (let i = 0; i < 400; i++) {
+    const date = shiftDate(start, i);
+    const seq = upDownSequence(date);
+    check(
+      seq.length === UPDOWN_ROUNDS + 1,
+      `up&down ${date} produced ${seq.length} films, expected ${UPDOWN_ROUNDS + 1}`,
+    );
+    check(new Set(seq.map((m) => m.id)).size === seq.length, `up&down ${date} repeats a film`);
+    for (let r = 0; r < seq.length - 1; r++) {
+      check(
+        seq[r]!.boxOfficeM !== seq[r + 1]!.boxOfficeM,
+        `up&down ${date} round ${r + 1} is a tie`,
+      );
+    }
+    const again = upDownSequence(date);
+    check(
+      again.map((m) => m.id).join() === seq.map((m) => m.id).join(),
+      `up&down ${date} is not deterministic`,
+    );
+  }
+  console.log("Daily Up & Down: 400 dates build a full sequence.");
+}
