@@ -111,6 +111,8 @@ function DailyUpDownPage() {
   }, [date, pathLength]);
 
   useEffect(() => {
+    // Cutover day: clear any local state written under the old 10-round rules.
+    resetLegacyUpDown(date);
     setStats(loadDailyStats(UPDOWN_GAME_ID));
     const saved = loadProgress<Progress>(UPDOWN_GAME_ID, date);
     if (saved && !saved.done) {
