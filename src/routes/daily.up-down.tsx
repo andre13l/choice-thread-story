@@ -205,7 +205,7 @@ function DailyUpDownPage() {
         }
       }, 380);
     },
-    [prompt, locked, startedAt, index, streak, finish, date, pathLength],
+    [prompt, locked, startedAt, index, streak, finish, date, pathLength, survival],
   );
 
   const start = useCallback(() => {
