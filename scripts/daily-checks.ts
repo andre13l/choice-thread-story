@@ -94,11 +94,6 @@ const families = new Set(CHALLENGES.map((c) => c.family));
 console.log(
   `${CHALLENGES.length} challenges · ${families.size} families · ${CHALLENGES.length * 10} answers · ${Object.keys(ALIASES).length} alias entries · ${published}-day cycle`,
 );
-if (failures > 0) {
-  console.error(`\n${failures} failing check(s)`);
-  process.exit(1);
-}
-console.log("All daily checks passed.");
 
 // 6. Daily Up & Down: every date must build a full, playable sequence.
 {
@@ -126,3 +121,9 @@ console.log("All daily checks passed.");
   }
   console.log("Daily Up & Down: 400 dates build a full sequence.");
 }
+
+if (failures > 0) {
+  console.error(`\n${failures} failing check(s)`);
+  process.exit(1);
+}
+console.log("All daily checks passed.");
