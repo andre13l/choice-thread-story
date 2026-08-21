@@ -43,7 +43,13 @@ export const UPDOWN_PATH_LENGTH = 100;
  * First UTC date played as a survival run. Earlier dates keep the 10-round
  * accuracy rules so already-submitted scores stay historically valid.
  */
-export const UPDOWN_SURVIVAL_FROM = "2026-08-22";
+export const UPDOWN_SURVIVAL_FROM = "2026-08-21";
+
+/**
+ * Local state written under the old 10-round rules for the cutover date is
+ * stale: bumping this token makes those players replayable exactly once.
+ */
+export const UPDOWN_FORMAT_VERSION = 2;
 
 export function isSurvivalDate(date: string): boolean {
   return date >= UPDOWN_SURVIVAL_FROM;

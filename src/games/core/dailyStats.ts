@@ -108,3 +108,35 @@ export function recordDaily(gameId: string, result: DailyResult): DailyStats {
   }
   return next;
 }
+
+/**
+ * Removes one recorded day so it can be played again (format cutovers only).
+ * Streak counters are recomputed from the remaining results so a replay does
+ * not double count the day.
+ */
+export function forgetDaily(gameId: string, date: string): DailyStats {
+  const prev = loadDailyStats(gameId);
+  if (!prev.results.some((r) => r.date === date)) return prev;
+  const results = prev.results.filter((r) => r.date !== date);
+  const dates = results.map((r) => r.date).sort();
+  const lastPlayed = dates.length ? dates[dates.length - 1]! : null;
+  let streak = 0;
+  for (let i = dates.length - 1; i >= 0; i--) {
+    const expected = dayNumberFromDate(dates[dates.length - 1]!) - (dates.length - 1 - i);
+    if (dayNumberFromDate(dates[i]!) !== expected) break;
+    streak++;
+  }
+  const next: DailyStats = {
+    played: Math.max(0, prev.played - 1),
+    streak,
+    bestStreak: Math.max(streak, prev.bestStreak),
+    lastPlayed,
+    results,
+  };
+  try {
+    window.localStorage.setItem(key(gameId), JSON.stringify(next));
+  } catch {
+    // Stats are a nicety, not state.
+  }
+  return next;
+}

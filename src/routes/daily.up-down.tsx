@@ -29,6 +29,7 @@ import {
   type UpDownPrompt,
 } from "@/games/updown/types";
 import { loadUpDownPrompt } from "@/games/updown/path";
+import { resetLegacyUpDown } from "@/games/updown/reset";
 import { DailyRank } from "@/games/core/components/DailyRank";
 
 export const Route = createFileRoute("/daily/up-down")({
@@ -111,6 +112,8 @@ function DailyUpDownPage() {
   }, [date, pathLength]);
 
   useEffect(() => {
+    // Cutover day: clear any local state written under the old 10-round rules.
+    resetLegacyUpDown(date);
     setStats(loadDailyStats(UPDOWN_GAME_ID));
     const saved = loadProgress<Progress>(UPDOWN_GAME_ID, date);
     if (saved && !saved.done) {
