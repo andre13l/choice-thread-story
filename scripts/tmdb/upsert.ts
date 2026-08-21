@@ -186,7 +186,19 @@ export async function upsertCredits(
     })
     .filter((row): row is NonNullable<typeof row> => row !== null);
 
-  for (const batch of chunked(rows)) {
+  // One row per (movie, person): TMDB credits the same actor twice for dual roles,
+  // and Postgres refuses an ON CONFLICT batch that hits the same key twice.
+  const deduped = [
+    ...new Map(
+      rows
+        .slice()
+        .sort((a, b) => (a.cast_order ?? 9999) - (b.cast_order ?? 9999))
+        .map((row) => [`${row.movie_id}|${row.person_id}`, row]),
+    ).values(),
+  ];
+
+  for (const batch of chunked(deduped)) {
+
     const { error } = await db
       .from("connect_cast")
       .upsert(batch, { onConflict: "movie_id,person_id" });
