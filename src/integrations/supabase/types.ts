@@ -17,21 +17,30 @@ export type Database = {
       connect_cast: {
         Row: {
           billing: number | null
+          cast_order: number | null
           character_name: string | null
           movie_id: string
           person_id: string
+          source: string
+          tmdb_credit_id: string | null
         }
         Insert: {
           billing?: number | null
+          cast_order?: number | null
           character_name?: string | null
           movie_id: string
           person_id: string
+          source?: string
+          tmdb_credit_id?: string | null
         }
         Update: {
           billing?: number | null
+          cast_order?: number | null
           character_name?: string | null
           movie_id?: string
           person_id?: string
+          source?: string
+          tmdb_credit_id?: string | null
         }
         Relationships: [
           {
@@ -135,25 +144,40 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          last_synced_at: string | null
           notability: number
+          popularity: number | null
+          poster_path: string | null
+          release_date: string | null
           source: string
           title: string
+          tmdb_id: number | null
           year: number
         }
         Insert: {
           created_at?: string
           id: string
+          last_synced_at?: string | null
           notability?: number
+          popularity?: number | null
+          poster_path?: string | null
+          release_date?: string | null
           source?: string
           title: string
+          tmdb_id?: number | null
           year: number
         }
         Update: {
           created_at?: string
           id?: string
+          last_synced_at?: string | null
           notability?: number
+          popularity?: number | null
+          poster_path?: string | null
+          release_date?: string | null
           source?: string
           title?: string
+          tmdb_id?: number | null
           year?: number
         }
         Relationships: []
@@ -170,9 +194,13 @@ export type Database = {
           image_attribution_url: string | null
           image_file: string | null
           image_source: string
+          last_synced_at: string | null
           name: string
           notability: number
+          popularity: number | null
+          profile_path: string | null
           source: string
+          tmdb_id: number | null
         }
         Insert: {
           birth_year?: number | null
@@ -185,9 +213,13 @@ export type Database = {
           image_attribution_url?: string | null
           image_file?: string | null
           image_source?: string
+          last_synced_at?: string | null
           name: string
           notability?: number
+          popularity?: number | null
+          profile_path?: string | null
           source?: string
+          tmdb_id?: number | null
         }
         Update: {
           birth_year?: number | null
@@ -200,9 +232,13 @@ export type Database = {
           image_attribution_url?: string | null
           image_file?: string | null
           image_source?: string
+          last_synced_at?: string | null
           name?: string
           notability?: number
+          popularity?: number | null
+          profile_path?: string | null
           source?: string
+          tmdb_id?: number | null
         }
         Relationships: []
       }
@@ -404,6 +440,92 @@ export type Database = {
           },
         ]
       }
+      connect_sync_items: {
+        Row: {
+          attempts: number
+          job_id: string
+          kind: string
+          last_error: string | null
+          payload: Json
+          ref_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          job_id: string
+          kind: string
+          last_error?: string | null
+          payload?: Json
+          ref_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          job_id?: string
+          kind?: string
+          last_error?: string | null
+          payload?: Json
+          ref_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connect_sync_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "connect_sync_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connect_sync_jobs: {
+        Row: {
+          created_at: string
+          done_items: number
+          failed_items: number
+          id: string
+          label: string
+          last_error: string | null
+          source: string
+          stage: string
+          stats: Json
+          status: string
+          total_items: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          done_items?: number
+          failed_items?: number
+          id?: string
+          label?: string
+          last_error?: string | null
+          source?: string
+          stage?: string
+          stats?: Json
+          status?: string
+          total_items?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          done_items?: number
+          failed_items?: number
+          id?: string
+          label?: string
+          last_error?: string | null
+          source?: string
+          stage?: string
+          stats?: Json
+          status?: string
+          total_items?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daily_connect: {
         Row: {
           created_at: string
@@ -448,6 +570,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      daily_connect_candidates: {
+        Row: {
+          created_at: string
+          id: string
+          last_error: string | null
+          optimal_clicks: number | null
+          planned_date: string | null
+          start_person_id: string
+          status: string
+          target_person_id: string
+          updated_at: string
+          validation: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          optimal_clicks?: number | null
+          planned_date?: string | null
+          start_person_id: string
+          status?: string
+          target_person_id: string
+          updated_at?: string
+          validation?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          optimal_clicks?: number | null
+          planned_date?: string | null
+          start_person_id?: string
+          status?: string
+          target_person_id?: string
+          updated_at?: string
+          validation?: Json
+        }
+        Relationships: []
       }
       daily_person: {
         Row: {

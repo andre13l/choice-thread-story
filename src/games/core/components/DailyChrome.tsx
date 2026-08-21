@@ -1,6 +1,7 @@
 /** Shared chrome for every NIRCOSI daily: header, stat blocks, share button. */
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { ShareMenu } from "./ShareMenu";
 
 type Accent = "link" | "gold" | "ink";
 
@@ -138,46 +139,30 @@ export function Stat({
   );
 }
 
+/**
+ * Share control for daily results. Delegates to the one shared implementation
+ * so desktop gets an explicit copy menu instead of an OS/mail hand-off.
+ */
 export function ShareButton({
   text,
+  url,
   accent = "link",
   children,
   className = "mt-10",
 }: {
   text: string;
+  url?: string;
   accent?: Accent;
   children?: ReactNode;
   className?: string;
 }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard blocked — nothing else to offer.
-    }
-  };
-  const share = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-        return;
-      } catch (err) {
-        // User dismissed the sheet: leave it at that.
-        if (err instanceof DOMException && err.name === "AbortError") return;
-      }
-    }
-    await copy();
-  };
   return (
-    <button
-      onClick={share}
-      className={`border px-10 py-3 text-[11px] font-medium uppercase tracking-[0.26em] transition-colors ${ACCENT_BUTTON[accent]} ${className}`}
-    >
-      {copied ? "Copied" : (children ?? "Share result")}
-    </button>
+    <ShareMenu
+      payload={{ text, url }}
+      buttonClass={ACCENT_BUTTON[accent]}
+      className={className}
+      label={typeof children === "string" ? children : "Share result"}
+    />
   );
 }
 
