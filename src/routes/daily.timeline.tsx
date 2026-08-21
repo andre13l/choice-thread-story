@@ -23,6 +23,7 @@ import {
   type DailyResult,
   type DailyStats,
 } from "@/games/core/dailyStats";
+import { recordRankable } from "@/games/core/rankable";
 import {
   TIMELINE_GAME_ID,
   TIMELINE_SIZE,
