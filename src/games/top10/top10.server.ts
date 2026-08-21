@@ -34,15 +34,19 @@ const PINNED: Record<string, string> = {
 
 /**
  * The rotation, built once: a deterministic order over the published bank in
- * which no two neighbours come from the same content family. The bank is
+ * which no two neighbours — including across the wrap from the last day of a
+ * cycle to the first — come from the same content family. The bank is
  * dominated by "highest-grossing films of YEAR" lists, so a blind shuffle
- * produces long box-office runs; this spreads the big families out and pulls
- * awards, franchise and filmography lists between them.
+ * produces long box-office runs; this pulls awards, franchise and filmography
+ * lists between them.
+ *
+ * Pinned dates are placed first and the rest of the calendar is built around
+ * them, so a pin never creates the repetition the rotation exists to avoid.
  */
 function buildOrder(): Top10Challenge[] {
   const pool = published();
+  const size = pool.length;
 
-  // Group, largest family first, each group internally shuffled deterministically.
   const groups = new Map<string, Top10Challenge[]>();
   for (const challenge of seededShuffle(pool, CALENDAR_SEED)) {
     const list = groups.get(challenge.family) ?? [];
@@ -50,28 +54,36 @@ function buildOrder(): Top10Challenge[] {
     groups.set(challenge.family, list);
   }
 
-  const order: Top10Challenge[] = [];
-  let previous: string | null = null;
-  while (order.length < pool.length) {
+  const slots: (Top10Challenge | null)[] = Array.from({ length: size }, () => null);
+  const take = (family: string): Top10Challenge => groups.get(family)!.shift()!;
+
+  for (const [date, id] of Object.entries(PINNED)) {
+    const challenge = pool.find((c) => c.id === id);
+    if (!challenge) continue;
+    const slot = ((dayNumberFromDate(date) % size) + size) % size;
+    const list = groups.get(challenge.family)!;
+    list.splice(list.indexOf(challenge), 1);
+    slots[slot] = challenge;
+  }
+
+  for (let i = 0; i < size; i++) {
+    if (slots[i]) continue;
+    const left = slots[(i - 1 + size) % size]?.family ?? null;
+    const right = slots[(i + 1) % size]?.family ?? null;
     const ranked = [...groups.entries()]
       .filter(([, list]) => list.length > 0)
       .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
-    // Prefer the largest family that isn't the one we just used; fall back to
-    // it only when it is all that is left.
-    const pick = ranked.find(([family]) => family !== previous) ?? ranked[0]!;
-    order.push(pick[1].shift()!);
-    previous = pick[0];
+    // Largest remaining family that clashes with neither neighbour; relax the
+    // forward-looking constraint first, and only then the backward one, so the
+    // calendar always fills even for an awkward bank.
+    const pick =
+      ranked.find(([f]) => f !== left && f !== right) ??
+      ranked.find(([f]) => f !== left) ??
+      ranked[0]!;
+    slots[i] = take(pick[0]);
   }
 
-  // Apply pins as swaps so the rotation stays a permutation of the bank.
-  const length = order.length;
-  for (const [date, id] of Object.entries(PINNED)) {
-    const target = ((dayNumberFromDate(date) % length) + length) % length;
-    const from = order.findIndex((c) => c.id === id);
-    if (from < 0 || from === target) continue;
-    [order[target], order[from]] = [order[from]!, order[target]!];
-  }
-  return order;
+  return slots as Top10Challenge[];
 }
 
 let ORDER: Top10Challenge[] | null = null;
