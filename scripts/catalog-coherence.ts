@@ -179,7 +179,24 @@ for (const [k, group] of byTitle) {
   }
 }
 
-// 8. Legacy-only rows are reported, never deleted.
+// 8. The shipped Connect snapshot must not carry a banned/artifact label either.
+{
+  const file = Bun.file("public/data/connect-graph.json");
+  if (await file.exists()) {
+    const snapshot = (await file.json()) as { people: [string, string, ...unknown[]][] };
+    for (const row of snapshot.people) {
+      const label = String(row[1] ?? "");
+      if (BANNED_NAMES.includes(norm(label)))
+        fail(`connect-graph.json still ships the banned label "${label}" (${row[0]})`);
+      if (QID_LABEL.test(label)) fail(`connect-graph.json ships a raw QID label for ${row[0]}`);
+    }
+    const zoe = snapshot.people.find((r) => r[0] === "Q190162");
+    if (zoe && zoe[1] !== "Zoe Saldaña")
+      fail(`connect-graph.json names Q190162 "${zoe[1]}"`);
+  }
+}
+
+// 9. Legacy-only rows are reported, never deleted.
 const legacyWithCredits = people.filter(
   (p) => p.tmdb_id === null && cast.some((c) => c.person_id === p.id),
 );
