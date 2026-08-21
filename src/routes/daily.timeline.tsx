@@ -31,6 +31,7 @@ import {
   type TimelineReveal,
 } from "@/games/timeline/types";
 import { getDailyTimeline, revealDailyTimeline } from "@/lib/timeline.functions";
+import { DailyRank } from "@/games/core/components/DailyRank";
 
 export const Route = createFileRoute("/daily/timeline")({
   component: DailyTimelinePage,
@@ -306,11 +307,16 @@ function DailyTimelinePage() {
             <Stat label="Streak" value={String(streak)} />
           </div>
 
-          <p className="mt-4 text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">
-            Daily rankings coming soon
-          </p>
-
           <ShareButton text={shareText} accent="ink" className="mt-8 w-full sm:w-auto" />
+
+          <DailyRank
+            game="timeline"
+            date={date}
+            number={result.number}
+            score={result.score ?? 0}
+            timeMs={result.timeMs}
+            meta={{ total: result.total ?? TIMELINE_SIZE }}
+          />
           <NextDailyNote />
           <DailyFooterLinks />
         </ResultSurface>

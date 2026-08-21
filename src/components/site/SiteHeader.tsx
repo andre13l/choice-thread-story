@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { SITE } from "@/config/site";
 import { todayUTC } from "@/games/core/dailyStats";
 import { completedToday, globalStreak } from "@/games/core/globalStreak";
+import { useSession } from "@/games/core/useSession";
 
 /**
  * Platform header: burger at the far left, wordmark, then the live daily
@@ -23,6 +24,7 @@ export function SiteHeader({
   const [played, setPlayed] = useState(0);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const session = useSession();
 
   useEffect(() => {
     const today = todayUTC();
@@ -112,12 +114,21 @@ export function SiteHeader({
                 </div>
               </dl>
               <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
-                Progress is saved on this device. Accounts are coming later.
+                {session.userId
+                  ? `Signed in as ${session.username ?? "your new profile"}.`
+                  : "Progress is saved on this device. Add a profile to keep it anywhere."}
               </p>
+              <Link
+                to={session.userId ? "/profile" : "/auth"}
+                onClick={() => setProfileOpen(false)}
+                className="mt-4 block rounded-sm border border-foreground bg-foreground px-3 py-2 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-background transition-colors hover:bg-transparent hover:text-foreground"
+              >
+                {session.userId ? "Your profile" : "Save your scores"}
+              </Link>
               <Link
                 to="/daily"
                 onClick={() => setProfileOpen(false)}
-                className="mt-4 block rounded-sm border border-foreground bg-foreground px-3 py-2 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-background transition-colors hover:bg-transparent hover:text-foreground"
+                className="mt-2 block rounded-sm border border-border px-3 py-2 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-foreground transition-colors hover:bg-accent"
               >
                 Today&apos;s challenges
               </Link>

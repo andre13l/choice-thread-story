@@ -35,6 +35,7 @@ import {
   revealDailyPerson,
   searchDailyPeople,
 } from "@/lib/person.functions";
+import { DailyRank } from "@/games/core/components/DailyRank";
 
 export const Route = createFileRoute("/daily/person")({
   component: DailyPersonPage,
@@ -300,6 +301,16 @@ function DailyPersonPage() {
           </div>
 
           <ShareButton text={shareText} accent="ink" className="mt-8 w-full sm:w-auto" />
+
+          <DailyRank
+            game="person"
+            date={date}
+            number={result.number}
+            score={cluesUsed}
+            timeMs={result.timeMs}
+            meta={{ guesses: result.guesses ?? 0, total: prompt.totalClues }}
+            eligible={solved}
+          />
           <NextDailyNote />
           <DailyFooterLinks
             extra={
