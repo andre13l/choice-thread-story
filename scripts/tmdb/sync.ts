@@ -138,7 +138,9 @@ async function main() {
   console.log(`job ${job.id}: processed ${spent}, remaining ${remaining}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

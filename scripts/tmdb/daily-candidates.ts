@@ -27,10 +27,24 @@ function arg(name: string): string | null {
   return index > -1 ? (process.argv[index + 1] ?? null) : null;
 }
 
+/**
+ * Catalogue id for a TMDB person id. A legacy Wikidata row that ingestion has
+ * adopted keeps its QID, so never assume the `tp<id>` key.
+ */
+async function catalogueId(tmdbId: string): Promise<string> {
+  const { data } = await db
+    .from("connect_people")
+    .select("id")
+    .eq("tmdb_id", Number(tmdbId))
+    .maybeSingle();
+  return (data?.id as string) ?? personKey(tmdbId);
+}
+
 async function filmsOf(personId: string): Promise<string[]> {
   const { data } = await db.from("connect_cast").select("movie_id").eq("person_id", personId);
   return (data ?? []).map((r) => r.movie_id as string);
 }
+
 
 async function castOf(movieIds: string[]): Promise<Map<string, string[]>> {
   const out = new Map<string, string[]>();
@@ -126,20 +140,35 @@ async function main() {
   if (add) {
     const [a, b] = add.split(",").map((s) => s.trim());
     if (!a || !b) throw new Error("--add expects two TMDB person ids: --add 31,6193");
+    const [startId, targetId] = await Promise.all([catalogueId(a), catalogueId(b)]);
     const { error } = await db.from("daily_connect_candidates").upsert(
       {
-        start_person_id: personKey(a),
-        target_person_id: personKey(b),
+        start_person_id: startId,
+        target_person_id: targetId,
         planned_date: arg("date"),
         status: "pending",
       },
       { onConflict: "start_person_id,target_person_id" },
     );
     if (error) throw error;
-    console.log(`candidate queued: ${personKey(a)} -> ${personKey(b)}`);
+    console.log(`candidate queued: ${startId} -> ${targetId}`);
+
   }
 
   if (process.argv.includes("--validate")) await validate(Number(arg("limit") ?? 10));
+
+  // Approval step: validated -> ready. Publication itself stays a separate,
+  // append-only action so no live daily is ever rewritten by preparation.
+  if (process.argv.includes("--approve")) {
+    const { data, error } = await db
+      .from("daily_connect_candidates")
+      .update({ status: "ready", updated_at: new Date().toISOString() })
+      .eq("status", "validated")
+      .select("start_person_id, target_person_id");
+    if (error) throw error;
+    console.log(`approved ${data?.length ?? 0} candidate(s)`);
+  }
+
 
   if (process.argv.includes("--list") || !add) {
     const { data } = await db
