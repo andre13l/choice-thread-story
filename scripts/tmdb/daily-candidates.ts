@@ -140,17 +140,19 @@ async function main() {
   if (add) {
     const [a, b] = add.split(",").map((s) => s.trim());
     if (!a || !b) throw new Error("--add expects two TMDB person ids: --add 31,6193");
+    const [startId, targetId] = await Promise.all([catalogueId(a), catalogueId(b)]);
     const { error } = await db.from("daily_connect_candidates").upsert(
       {
-        start_person_id: personKey(a),
-        target_person_id: personKey(b),
+        start_person_id: startId,
+        target_person_id: targetId,
         planned_date: arg("date"),
         status: "pending",
       },
       { onConflict: "start_person_id,target_person_id" },
     );
     if (error) throw error;
-    console.log(`candidate queued: ${personKey(a)} -> ${personKey(b)}`);
+    console.log(`candidate queued: ${startId} -> ${targetId}`);
+
   }
 
   if (process.argv.includes("--validate")) await validate(Number(arg("limit") ?? 10));
