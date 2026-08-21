@@ -16,13 +16,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Free movie games you can play in a minute: three daily film puzzles, a Hollywood career simulator, and endless Connect and Higher or Lower rounds.",
+          "Free movie games you can play in a minute: five daily film puzzles — Connect, Top 10, Person, Timeline and Up & Down — plus the Hollywood career simulator.",
       },
       { property: "og:title", content: "Nircosi — Free Movie Games" },
       {
         property: "og:description",
         content:
-          "Three daily film puzzles plus a Hollywood career simulator. Free movie games for people who love cinema.",
+          "Five daily film puzzles plus a Hollywood career simulator. Free movie games for people who love cinema.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://nircosi.com/" },
