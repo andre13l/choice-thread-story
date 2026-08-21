@@ -83,7 +83,41 @@ function buildOrder(): Top10Challenge[] {
     slots[i] = take(pick[0]);
   }
 
-  return slots as Top10Challenge[];
+  const order = slots as Top10Challenge[];
+  const pinnedSlots = new Set(
+    Object.keys(PINNED).map((date) => ((dayNumberFromDate(date) % size) + size) % size),
+  );
+
+  // Repair pass: greedy filling can still paint itself into a corner near the
+  // end of the cycle. Swap any clashing day with a day where the exchange is
+  // clean in both places, leaving pinned dates untouched.
+  const clashes = (i: number, c: Top10Challenge) =>
+    order[(i - 1 + size) % size]!.family === c.family ||
+    order[(i + 1) % size]!.family === c.family;
+
+  for (let pass = 0; pass < 4; pass++) {
+    let repaired = false;
+    for (let i = 0; i < size; i++) {
+      if (pinnedSlots.has(i) || !clashes(i, order[i]!)) continue;
+      for (let j = 0; j < size; j++) {
+        if (j === i || pinnedSlots.has(j)) continue;
+        const a = order[i]!;
+        const b = order[j]!;
+        if (a.family === b.family) continue;
+        order[i] = b;
+        order[j] = a;
+        if (!clashes(i, b) && !clashes(j, a)) {
+          repaired = true;
+          break;
+        }
+        order[i] = a;
+        order[j] = b;
+      }
+    }
+    if (!repaired) break;
+  }
+
+  return order;
 }
 
 let ORDER: Top10Challenge[] | null = null;
