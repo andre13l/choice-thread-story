@@ -8,6 +8,7 @@ const GAME_LABEL: Record<DailyGameId, string> = {
   connect: "Connect",
   top10: "Top 10",
   person: "Person",
+  timeline: "Timeline",
 };
 
 const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

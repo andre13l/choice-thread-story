@@ -44,6 +44,19 @@ function AboutPage() {
         All people, studios, productions and events inside HOLLYWOOD are fictional. Any
         resemblance to real careers is the point of the genre, not a reference.
       </p>
+      <p className="text-[13px] text-muted-foreground/70">
+        Film, cast and person data used in the daily games comes in part from{" "}
+        <a
+          href="https://www.themoviedb.org/"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="text-foreground underline underline-offset-4"
+        >
+          TMDB
+        </a>{" "}
+        and from Wikidata. This product uses the TMDB API but is not endorsed or certified
+        by TMDB.
+      </p>
     </StaticPage>
   );
 }
