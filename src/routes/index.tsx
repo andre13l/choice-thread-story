@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowRight, ArrowUp, ChevronRight, Lock, Share2 } from "lucide-react";
-import type { ReactNode } from "react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import heroImage from "@/assets/hollywood-hero-wide.jpg";
 import { GAMES } from "@/config/games";
@@ -10,23 +9,6 @@ import { TodaysChallenges } from "@/components/TodaysChallenges";
 import { loadBest, loadCount, loadCurrentCareer } from "@/games/hollywood/storage";
 
 
-/** Per-game tile identity so the non-daily games never read alike. */
-const TILE_META: Record<string, { label: string; icon: ReactNode }> = {
-  "higher-lower": {
-    label: "30-second arcade",
-    icon: (
-      <>
-        <ArrowUp className="h-4 w-4" />
-        <ArrowDown className="-ml-1.5 h-4 w-4" />
-      </>
-    ),
-  },
-  connect: {
-    label: "Path puzzle",
-    icon: <Share2 className="h-4 w-4" />,
-  },
-};
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -34,13 +16,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Free movie games you can play in a minute: three daily film puzzles, a Hollywood career simulator, and endless Connect and Higher or Lower rounds.",
+          "Free movie games you can play in a minute: five daily film puzzles — Connect, Top 10, Person, Timeline and Up & Down — plus the Hollywood career simulator.",
       },
       { property: "og:title", content: "Nircosi — Free Movie Games" },
       {
         property: "og:description",
         content:
-          "Three daily film puzzles plus a Hollywood career simulator. Free movie games for people who love cinema.",
+          "Five daily film puzzles plus a Hollywood career simulator. Free movie games for people who love cinema.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://nircosi.com/" },
@@ -147,71 +129,30 @@ function Index() {
       </div>
 
 
-      {/* More games */}
-      <section aria-labelledby="more-games" className="mt-8">
+      <section aria-labelledby="all-dailies" className="mt-8">
         <h2
-          id="more-games"
+          id="all-dailies"
           className="text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground"
         >
-          More games
+          The daily set
         </h2>
-
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {playable.map((game) => {
-            const meta = TILE_META[game.id] ?? { label: "Play", icon: null };
-            return (
-              <Link
-                key={game.id}
-                to={game.to!}
-                className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-md border border-border bg-card px-4 py-3.5 transition-colors duration-200 hover:border-foreground/30"
-              >
-                <span
-                  aria-hidden
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-accent text-muted-foreground"
-                >
-                  {meta.icon}
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground">
-                    {game.name}
-                  </span>
-                  <span className="mt-0.5 block truncate text-[12px] text-muted-foreground">
-                    {game.tagline}
-                  </span>
-                </span>
-                <ChevronRight
-                  className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-                  aria-hidden
-                />
-              </Link>
-            );
-          })}
-
-          {upcoming.map((game) => (
-            <div
-              key={game.id}
-              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-md border border-dashed border-border px-4 py-3.5"
-            >
-              <span
-                aria-hidden
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground/70"
-              >
-                <Lock className="h-3.5 w-3.5" />
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  {game.name}
-                </span>
-                <span className="mt-0.5 block truncate text-[12px] text-muted-foreground/80">
-                  {game.tagline}
-                </span>
-              </span>
-              <span className="shrink-0 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">
-                Soon
-              </span>
-            </div>
-          ))}
-        </div>
+        <Link
+          to="/daily"
+          className="group mt-3 flex items-center justify-between gap-3 rounded-md border border-border bg-card px-4 py-3.5 transition-colors duration-200 hover:border-foreground/30"
+        >
+          <span className="min-w-0">
+            <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground">
+              All five dailies
+            </span>
+            <span className="mt-0.5 block truncate text-[12px] text-muted-foreground">
+              Connect, Top 10, Person, Timeline and Up &amp; Down — new every midnight UTC.
+            </span>
+          </span>
+          <ChevronRight
+            className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+            aria-hidden
+          />
+        </Link>
       </section>
     </div>
   );

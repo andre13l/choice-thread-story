@@ -145,6 +145,7 @@ export type Database = {
           created_at: string
           id: string
           last_synced_at: string | null
+          legacy_qid: string | null
           notability: number
           popularity: number | null
           poster_path: string | null
@@ -158,6 +159,7 @@ export type Database = {
           created_at?: string
           id: string
           last_synced_at?: string | null
+          legacy_qid?: string | null
           notability?: number
           popularity?: number | null
           poster_path?: string | null
@@ -171,6 +173,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_synced_at?: string | null
+          legacy_qid?: string | null
           notability?: number
           popularity?: number | null
           poster_path?: string | null
@@ -195,6 +198,7 @@ export type Database = {
           image_file: string | null
           image_source: string
           last_synced_at: string | null
+          legacy_qid: string | null
           name: string
           notability: number
           popularity: number | null
@@ -214,6 +218,7 @@ export type Database = {
           image_file?: string | null
           image_source?: string
           last_synced_at?: string | null
+          legacy_qid?: string | null
           name: string
           notability?: number
           popularity?: number | null
@@ -233,6 +238,7 @@ export type Database = {
           image_file?: string | null
           image_source?: string
           last_synced_at?: string | null
+          legacy_qid?: string | null
           name?: string
           notability?: number
           popularity?: number | null

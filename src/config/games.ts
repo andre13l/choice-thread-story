@@ -14,6 +14,11 @@ export interface GameSlot {
   flagship?: boolean;
 }
 
+/**
+ * The public catalogue is deliberately two products: the daily puzzles and
+ * Hollywood. Unlimited Connect / Higher or Lower still exist as routes for
+ * internal use, but they are no longer surfaced anywhere in the product.
+ */
 export const GAMES: GameSlot[] = [
   {
     id: "hollywood",
@@ -24,30 +29,9 @@ export const GAMES: GameSlot[] = [
     flagship: true,
   },
   {
-    id: "higher-lower",
-    name: "HIGHER / LOWER",
-    tagline: "Box office, budgets, runtimes — trust your gut.",
-    status: "playable",
-    to: "/higher-lower",
-  },
-  {
-    id: "connect",
-    name: "CONNECT",
-    tagline: "Two actors, no shared film. Link them in the fewest clicks.",
-    status: "playable",
-    to: "/connect",
-  },
-  {
-    id: "guess",
-    name: "GUESS THE FILM",
-    tagline: "One knows the movie. The others ask.",
-    status: "soon",
-  },
-
-  {
     id: "daily",
     name: "DAILY",
-    tagline: "Three film puzzles. One a day each.",
+    tagline: "Five film puzzles. One a day each.",
     status: "playable",
     to: "/daily",
   },
