@@ -224,7 +224,7 @@ function DailyConnectPage() {
           <DailyRank
             game="connect"
             date={date}
-            number={result.number}
+            number={number}
             score={result.clicks}
             timeMs={result.timeMs}
             meta={{ best: challenge.best }}
