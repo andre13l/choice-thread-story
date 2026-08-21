@@ -18,7 +18,7 @@ import { MOVIES, type Movie } from "@/games/higherlower/data/movies";
 import { dailyNumber, mulberry32, seedFromString } from "@/games/core/daily";
 import { UPDOWN_ROUNDS, type UpDownCard, type UpDownPrompt } from "./types";
 
-/** Below this a "worldwide gross" is usually a partial or unreliable figure. */
+/** Recognisability floor: every card is at least a wide theatrical hit. */
 const MIN_GROSS_M = 80;
 
 /** A round is only fair when one film out-grossed the other by this much. */
