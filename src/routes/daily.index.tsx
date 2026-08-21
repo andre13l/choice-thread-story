@@ -10,16 +10,16 @@ export const Route = createFileRoute("/daily/")({
   component: DailyHubPage,
   head: () => ({
     meta: [
-      { title: `Today's dailies — three film puzzles a day | ${SITE.name}` },
+      { title: `Today's dailies — five film puzzles a day | ${SITE.name}` },
       {
         name: "description",
         content:
-          "Three short film puzzles, refreshed every midnight UTC: link two actors, name a ranked top ten, and deduce a hidden screen actor from six clues.",
+          "Five short film puzzles, refreshed every midnight UTC: link two actors, name a ranked top ten, deduce a hidden actor, sort six films by year, and call the box office.",
       },
       { property: "og:title", content: `Today's dailies | ${SITE.name}` },
       {
         property: "og:description",
-        content: "Connect, Top 10 and Person — three film puzzles, one a day each.",
+        content: "Connect, Top 10, Person, Timeline and Up & Down — five film puzzles, one a day each.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -31,7 +31,12 @@ interface DailyCard {
   id: DailyGameId;
   name: string;
   tagline: string;
-  to: "/connect/daily" | "/daily/top-10" | "/daily/person" | "/daily/timeline";
+  to:
+    | "/connect/daily"
+    | "/daily/top-10"
+    | "/daily/person"
+    | "/daily/timeline"
+    | "/daily/up-down";
   accent: string;
   border: string;
 }
@@ -69,16 +74,25 @@ const CARDS: DailyCard[] = [
     accent: "text-foreground",
     border: "hover:border-foreground/60",
   },
+  {
+    id: "updown",
+    name: "Daily Up & Down",
+    tagline: "Box Office Rush — ten rounds of more or less, against the clock.",
+    to: "/daily/up-down",
+    accent: "text-gold",
+    border: "hover:border-gold/70",
+  },
 ];
 
 function DailyHubPage() {
   const [today] = useState(() => todayUTC());
-  const [done, setDone] = useState<Record<DailyGameId, boolean>>({
+  const [done, setDone] = useState<Record<DailyGameId, boolean>>(() => ({
     connect: false,
     top10: false,
     person: false,
     timeline: false,
-  });
+    updown: false,
+  }));
   const [streak, setStreak] = useState(0);
 
   useEffect(() => {
@@ -131,7 +145,7 @@ function DailyHubPage() {
         </div>
 
         <p className="mt-10 text-center text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">
-          All three reset at midnight UTC · same puzzles for everyone
+          All five reset at midnight UTC · same puzzles for everyone
         </p>
 
         <div className="mt-8 text-center">

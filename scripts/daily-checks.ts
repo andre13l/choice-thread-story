@@ -68,8 +68,31 @@ for (let i = 0; i < published; i++) {
 }
 check(seen.size === published, "calendar does not cover the whole bank in one cycle");
 
+// 5. Variety: no two consecutive days from the same content family, and no
+// family may own more than half of any seven-day window.
+{
+  const window: string[] = [];
+  let previous: string | null = null;
+  for (let i = 0; i < published * 2; i++) {
+    const date = shiftDate(start, i);
+    const family = scheduledChallenge(date).family;
+    check(family !== previous, `${family} runs two days running, ending ${date}`);
+    previous = family;
+
+    window.push(family);
+    if (window.length > 7) window.shift();
+    if (window.length === 7) {
+      const counts = new Map<string, number>();
+      for (const f of window) counts.set(f, (counts.get(f) ?? 0) + 1);
+      const worst = Math.max(...counts.values());
+      check(worst <= 4, `${date}: one family fills ${worst}/7 days of the week`);
+    }
+  }
+}
+
+const families = new Set(CHALLENGES.map((c) => c.family));
 console.log(
-  `${CHALLENGES.length} challenges · ${CHALLENGES.length * 10} answers · ${Object.keys(ALIASES).length} alias entries · ${published}-day cycle`,
+  `${CHALLENGES.length} challenges · ${families.size} families · ${CHALLENGES.length * 10} answers · ${Object.keys(ALIASES).length} alias entries · ${published}-day cycle`,
 );
 if (failures > 0) {
   console.error(`\n${failures} failing check(s)`);

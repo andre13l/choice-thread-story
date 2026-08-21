@@ -17,12 +17,28 @@
 
 import type { Top10AnswerType } from "./types";
 
+/**
+ * Content families drive the anti-repetition rule in the calendar: two lists
+ * from the same family never run on consecutive days, so the week never reads
+ * as "highest-grossing films of year XXXX" five times running.
+ */
+export type Top10Family =
+  | "box-office-year"
+  | "box-office-era"
+  | "franchise"
+  | "awards-picture"
+  | "awards-acting"
+  | "filmography-actor"
+  | "filmography-director";
+
 export interface Top10Challenge {
   /** Stable id — also the calendar key. Never renumber. */
   id: string;
   title: string;
   subtitle?: string;
-  category: "box-office" | "awards" | "franchise";
+  category: "box-office" | "awards" | "franchise" | "filmography";
+  /** Anti-repetition group. Required: a new list must declare its family. */
+  family: Top10Family;
   /** What the ten blanks hold. Defaults to "film". Drives autocomplete only. */
   answerType?: Top10AnswerType;
   source: string;
@@ -41,6 +57,7 @@ const OSCARS_URL = "https://www.oscars.org/oscars/ceremonies";
 function year(y: number, answers: string[]): Top10Challenge {
   return {
     id: `wwbo-${y}`,
+    family: "box-office-year",
     title: `Highest-grossing films worldwide of ${y}`,
     subtitle: "Ranked by worldwide theatrical gross for that release year.",
     category: "box-office",
@@ -306,6 +323,7 @@ export const CHALLENGES: Top10Challenge[] = [
   ]),
   {
     id: "wwbo-alltime",
+    family: "box-office-era",
     title: "Highest-grossing films of all time, worldwide",
     subtitle: "Cumulative worldwide gross including re-releases, through the 2024 box-office year.",
     category: "box-office",
@@ -327,6 +345,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "wwbo-1990s",
+    family: "box-office-era",
     title: "Highest-grossing films of the 1990s, worldwide",
     subtitle: "Ranked by worldwide gross for films released 1990–1999.",
     category: "box-office",
@@ -348,6 +367,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "wwbo-1980s",
+    family: "box-office-era",
     title: "Highest-grossing films of the 1980s, worldwide",
     subtitle: "Ranked by worldwide gross for films released 1980–1989, original releases.",
     category: "box-office",
@@ -369,6 +389,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "franchise-pixar",
+    family: "franchise",
     title: "Highest-grossing Pixar films, worldwide",
     subtitle: "Feature films produced by Pixar Animation Studios, by worldwide gross.",
     category: "franchise",
@@ -390,6 +411,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "franchise-mcu",
+    family: "franchise",
     title: "Highest-grossing Marvel Cinematic Universe films",
     subtitle: "Worldwide gross, films released under the MCU banner.",
     category: "franchise",
@@ -411,6 +433,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "franchise-potter",
+    family: "franchise",
     title: "Highest-grossing Wizarding World films",
     subtitle: "Harry Potter and Fantastic Beasts films, by worldwide gross.",
     category: "franchise",
@@ -432,6 +455,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "franchise-bond",
+    family: "franchise",
     title: "Highest-grossing James Bond films",
     subtitle: "Worldwide gross, unadjusted for inflation.",
     category: "franchise",
@@ -453,6 +477,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "oscars-bp-2015-2024",
+    family: "awards-picture",
     title: "Best Picture winners, ceremonies 2015–2024",
     subtitle: "In chronological order — position 1 is the 2015 ceremony.",
     category: "awards",
@@ -474,6 +499,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "oscars-bp-2005-2014",
+    family: "awards-picture",
     title: "Best Picture winners, ceremonies 2005–2014",
     subtitle: "In chronological order — position 1 is the 2005 ceremony.",
     category: "awards",
@@ -495,6 +521,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "oscars-bp-1995-2004",
+    family: "awards-picture",
     title: "Best Picture winners, ceremonies 1995–2004",
     subtitle: "In chronological order — position 1 is the 1995 ceremony.",
     category: "awards",
@@ -516,6 +543,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "oscars-bp-1985-1994",
+    family: "awards-picture",
     title: "Best Picture winners, ceremonies 1985–1994",
     subtitle: "In chronological order — position 1 is the 1985 ceremony.",
     category: "awards",
@@ -537,6 +565,7 @@ export const CHALLENGES: Top10Challenge[] = [
   },
   {
     id: "oscars-actor-2015-2024",
+    family: "awards-acting",
     answerType: "person",
     title: "Best Actor winners, ceremonies 2015–2024",
     subtitle: "In chronological order — position 1 is the 2015 ceremony.",
@@ -555,6 +584,139 @@ export const CHALLENGES: Top10Challenge[] = [
       "Will Smith",
       "Brendan Fraser",
       "Cillian Murphy",
+    ],
+  },
+  {
+    id: "franchise-starwars",
+    family: "franchise",
+    title: "Highest-grossing Star Wars films worldwide",
+    subtitle: "Theatrical Star Wars features, ranked by worldwide gross including re-releases.",
+    category: "franchise",
+    source: BOM,
+    sourceUrl: BOM_URL,
+    published: true,
+    answers: [
+      "Star Wars: The Force Awakens",
+      "Star Wars: The Last Jedi",
+      "Star Wars: The Rise of Skywalker",
+      "Rogue One: A Star Wars Story",
+      "Star Wars: Episode I – The Phantom Menace",
+      "Star Wars: Episode III – Revenge of the Sith",
+      "Star Wars: Episode IV – A New Hope",
+      "Star Wars: Episode II – Attack of the Clones",
+      "Star Wars: Episode VI – Return of the Jedi",
+      "Star Wars: Episode V – The Empire Strikes Back",
+    ],
+  },
+  {
+    id: "filmography-spielberg",
+    family: "filmography-director",
+    title: "Highest-grossing films directed by Steven Spielberg",
+    subtitle: "Worldwide theatrical gross including re-releases.",
+    category: "filmography",
+    source: BOM,
+    sourceUrl: BOM_URL,
+    published: true,
+    answers: [
+      "Jurassic Park",
+      "E.T. the Extra-Terrestrial",
+      "Indiana Jones and the Kingdom of the Crystal Skull",
+      "The Lost World: Jurassic Park",
+      "War of the Worlds",
+      "Ready Player One",
+      "Saving Private Ryan",
+      "Jaws",
+      "Indiana Jones and the Last Crusade",
+      "Raiders of the Lost Ark",
+    ],
+  },
+  {
+    id: "filmography-nolan",
+    family: "filmography-director",
+    title: "Highest-grossing films directed by Christopher Nolan",
+    subtitle: "Worldwide theatrical gross including re-releases.",
+    category: "filmography",
+    source: BOM,
+    sourceUrl: BOM_URL,
+    published: true,
+    answers: [
+      "The Dark Knight Rises",
+      "The Dark Knight",
+      "Oppenheimer",
+      "Inception",
+      "Interstellar",
+      "Dunkirk",
+      "Batman Begins",
+      "Tenet",
+      "Insomnia",
+      "The Prestige",
+    ],
+  },
+  {
+    id: "filmography-hanks",
+    family: "filmography-actor",
+    title: "Highest-grossing films starring Tom Hanks",
+    subtitle: "Includes voice roles. Worldwide theatrical gross including re-releases.",
+    category: "filmography",
+    source: BOM,
+    sourceUrl: BOM_URL,
+    published: true,
+    answers: [
+      "Toy Story 4",
+      "Toy Story 3",
+      "The Da Vinci Code",
+      "Forrest Gump",
+      "Toy Story 2",
+      "Angels & Demons",
+      "Saving Private Ryan",
+      "Cast Away",
+      "Toy Story",
+      "Apollo 13",
+    ],
+  },
+  {
+    id: "oscars-bp-1975-1984",
+    family: "awards-picture",
+    title: "Best Picture winners, ceremonies 1975–1984",
+    subtitle: "In chronological order — position 1 is the 1975 ceremony.",
+    category: "awards",
+    source: OSCARS,
+    sourceUrl: OSCARS_URL,
+    published: true,
+    answers: [
+      "The Godfather Part II",
+      "One Flew Over the Cuckoo's Nest",
+      "Rocky",
+      "Annie Hall",
+      "The Deer Hunter",
+      "Kramer vs. Kramer",
+      "Ordinary People",
+      "Chariots of Fire",
+      "Gandhi",
+      "Terms of Endearment",
+    ],
+  },
+  {
+    id: "oscars-actress-2005-2014",
+    family: "awards-acting",
+    answerType: "person",
+    title: "Best Actress winners, ceremonies 2005–2014",
+    subtitle: "In chronological order — position 1 is the 2005 ceremony.",
+    category: "awards",
+    source: OSCARS,
+    sourceUrl: OSCARS_URL,
+    published: true,
+    answers: [
+      "Hilary Swank",
+      "Reese Witherspoon",
+      "Helen Mirren",
+      "Marion Cotillard",
+      "Kate Winslet",
+      "Sandra Bullock",
+      "Natalie Portman",
+      "Meryl Streep",
+      "Jennifer Lawrence",
+      "Cate Blanchett",
     ],
   },
 ];

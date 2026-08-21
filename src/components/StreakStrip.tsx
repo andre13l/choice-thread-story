@@ -9,6 +9,7 @@ const GAME_LABEL: Record<DailyGameId, string> = {
   top10: "Top 10",
   person: "Person",
   timeline: "Timeline",
+  updown: "Up & Down",
 };
 
 const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

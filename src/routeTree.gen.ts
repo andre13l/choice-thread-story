@@ -24,6 +24,7 @@ import { Route as DailyIndexRouteImport } from './routes/daily.index'
 import { Route as DailyPersonRouteImport } from './routes/daily.person'
 import { Route as DailyTimelineRouteImport } from './routes/daily.timeline'
 import { Route as DailyTop10RouteImport } from './routes/daily.top-10'
+import { Route as DailyUpDownRouteImport } from './routes/daily.up-down'
 import { Route as ApiPublicConnectImportRouteImport } from './routes/api/public/connect-import'
 import { Route as ApiPublicDailyConnectPublishRouteImport } from './routes/api/public/daily-connect-publish'
 import { Route as ApiPublicDailyPublishRouteImport } from './routes/api/public/daily-publish'
@@ -103,6 +104,11 @@ const DailyTop10Route = DailyTop10RouteImport.update({
   path: '/daily/top-10',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DailyUpDownRoute = DailyUpDownRouteImport.update({
+  id: '/daily/up-down',
+  path: '/daily/up-down',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicConnectImportRoute = ApiPublicConnectImportRouteImport.update({
   id: '/api/public/connect-import',
   path: '/api/public/connect-import',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/daily/person': typeof DailyPersonRoute
   '/daily/timeline': typeof DailyTimelineRoute
   '/daily/top-10': typeof DailyTop10Route
+  '/daily/up-down': typeof DailyUpDownRoute
   '/connect/': typeof ConnectIndexRoute
   '/daily/': typeof DailyIndexRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
@@ -154,6 +161,7 @@ export interface FileRoutesByTo {
   '/daily/person': typeof DailyPersonRoute
   '/daily/timeline': typeof DailyTimelineRoute
   '/daily/top-10': typeof DailyTop10Route
+  '/daily/up-down': typeof DailyUpDownRoute
   '/connect': typeof ConnectIndexRoute
   '/daily': typeof DailyIndexRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/daily/person': typeof DailyPersonRoute
   '/daily/timeline': typeof DailyTimelineRoute
   '/daily/top-10': typeof DailyTop10Route
+  '/daily/up-down': typeof DailyUpDownRoute
   '/connect/': typeof ConnectIndexRoute
   '/daily/': typeof DailyIndexRoute
   '/api/public/connect-import': typeof ApiPublicConnectImportRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/daily/person'
     | '/daily/timeline'
     | '/daily/top-10'
+    | '/daily/up-down'
     | '/connect/'
     | '/daily/'
     | '/api/public/connect-import'
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/daily/person'
     | '/daily/timeline'
     | '/daily/top-10'
+    | '/daily/up-down'
     | '/connect'
     | '/daily'
     | '/api/public/connect-import'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/daily/person'
     | '/daily/timeline'
     | '/daily/top-10'
+    | '/daily/up-down'
     | '/connect/'
     | '/daily/'
     | '/api/public/connect-import'
@@ -258,6 +270,7 @@ export interface RootRouteChildren {
   DailyPersonRoute: typeof DailyPersonRoute
   DailyTimelineRoute: typeof DailyTimelineRoute
   DailyTop10Route: typeof DailyTop10Route
+  DailyUpDownRoute: typeof DailyUpDownRoute
   ConnectIndexRoute: typeof ConnectIndexRoute
   DailyIndexRoute: typeof DailyIndexRoute
   ApiPublicConnectImportRoute: typeof ApiPublicConnectImportRoute
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DailyTop10RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/daily/up-down': {
+      id: '/daily/up-down'
+      path: '/daily/up-down'
+      fullPath: '/daily/up-down'
+      preLoaderRoute: typeof DailyUpDownRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/connect-import': {
       id: '/api/public/connect-import'
       path: '/api/public/connect-import'
@@ -410,6 +430,7 @@ const rootRouteChildren: RootRouteChildren = {
   DailyPersonRoute: DailyPersonRoute,
   DailyTimelineRoute: DailyTimelineRoute,
   DailyTop10Route: DailyTop10Route,
+  DailyUpDownRoute: DailyUpDownRoute,
   ConnectIndexRoute: ConnectIndexRoute,
   DailyIndexRoute: DailyIndexRoute,
   ApiPublicConnectImportRoute: ApiPublicConnectImportRoute,

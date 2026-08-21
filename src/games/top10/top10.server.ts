@@ -24,38 +24,76 @@ function published(): Top10Challenge[] {
 }
 
 /**
- * Editorial pins. The shuffle is deterministic but blind to variety, so a
- * date can be pinned to a specific list to break a run of box-office-by-year
- * challenges. Pins are code, so every player gets the same thing, and they
- * outrank the stored schedule. Never edit a pin for a date in the past.
+ * Editorial pins: a date can be nailed to a specific list. A pin is applied as
+ * a swap with whatever the rotation would otherwise have run that day, so the
+ * cycle still covers the bank exactly once. Never edit a pin for a past date.
  */
 const PINNED: Record<string, string> = {
-  // Each pin is a swap with the date the list would naturally have fallen on,
-  // so the cycle still covers the bank exactly once.
   "2026-08-21": "oscars-actor-2015-2024",
-  "2026-09-07": "wwbo-2008",
-  "2026-08-23": "franchise-bond",
-  "2026-08-29": "wwbo-2017",
-  "2026-08-25": "oscars-bp-1985-1994",
-  "2026-09-04": "wwbo-2004",
-  "2026-08-27": "franchise-pixar",
-  "2026-09-08": "wwbo-2006",
 };
+
+/**
+ * The rotation, built once: a deterministic order over the published bank in
+ * which no two neighbours come from the same content family. The bank is
+ * dominated by "highest-grossing films of YEAR" lists, so a blind shuffle
+ * produces long box-office runs; this spreads the big families out and pulls
+ * awards, franchise and filmography lists between them.
+ */
+function buildOrder(): Top10Challenge[] {
+  const pool = published();
+
+  // Group, largest family first, each group internally shuffled deterministically.
+  const groups = new Map<string, Top10Challenge[]>();
+  for (const challenge of seededShuffle(pool, CALENDAR_SEED)) {
+    const list = groups.get(challenge.family) ?? [];
+    list.push(challenge);
+    groups.set(challenge.family, list);
+  }
+
+  const order: Top10Challenge[] = [];
+  let previous: string | null = null;
+  while (order.length < pool.length) {
+    const ranked = [...groups.entries()]
+      .filter(([, list]) => list.length > 0)
+      .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+    // Prefer the largest family that isn't the one we just used; fall back to
+    // it only when it is all that is left.
+    const pick = ranked.find(([family]) => family !== previous) ?? ranked[0]!;
+    order.push(pick[1].shift()!);
+    previous = pick[0];
+  }
+
+  // Apply pins as swaps so the rotation stays a permutation of the bank.
+  const length = order.length;
+  for (const [date, id] of Object.entries(PINNED)) {
+    const target = ((dayNumberFromDate(date) % length) + length) % length;
+    const from = order.findIndex((c) => c.id === id);
+    if (from < 0 || from === target) continue;
+    [order[target], order[from]] = [order[from]!, order[target]!];
+  }
+  return order;
+}
+
+let ORDER: Top10Challenge[] | null = null;
+function calendarOrder(): Top10Challenge[] {
+  if (!ORDER) ORDER = buildOrder();
+  return ORDER;
+}
 
 /** Deterministic rotation: same date, same list, for every player. */
 export function scheduledChallenge(date: string): Top10Challenge {
-  const pinned = PINNED[date] ? published().find((c) => c.id === PINNED[date]) : undefined;
-  if (pinned) return pinned;
-  const pool = published();
-  const order = seededShuffle(pool, CALENDAR_SEED);
+  const order = calendarOrder();
   const index = ((dayNumberFromDate(date) % order.length) + order.length) % order.length;
   return order[index]!;
 }
 
-/** Pins win, then a DB row pointing at a known published list. */
+/** Pins win (they are baked into the rotation), then a DB row. */
 export async function challengeFor(date: string): Promise<Top10Challenge> {
-  const pinned = PINNED[date] ? published().find((c) => c.id === PINNED[date]) : undefined;
-  if (pinned) return pinned;
+  const pinnedId = PINNED[date];
+  if (pinnedId) {
+    const pinned = published().find((c) => c.id === pinnedId);
+    if (pinned) return pinned;
+  }
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
