@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { SITE } from "@/config/site";
 import { todayUTC } from "@/games/core/dailyStats";
 import { completedToday, globalStreak } from "@/games/core/globalStreak";
+import { useSession } from "@/games/core/useSession";
 
 /**
  * Platform header: burger at the far left, wordmark, then the live daily
@@ -23,6 +24,7 @@ export function SiteHeader({
   const [played, setPlayed] = useState(0);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const session = useSession();
 
   useEffect(() => {
     const today = todayUTC();
