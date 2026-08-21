@@ -55,7 +55,7 @@ function buildOrder(): Top10Challenge[] {
   }
 
   const slots: (Top10Challenge | null)[] = Array.from({ length: size }, () => null);
-  const take = (family: string): Top10Challenge => groups.get(family)!.shift()!;
+  const pinnedSlots: number[] = [];
 
   for (const [date, id] of Object.entries(PINNED)) {
     const challenge = pool.find((c) => c.id === id);
@@ -64,60 +64,31 @@ function buildOrder(): Top10Challenge[] {
     const list = groups.get(challenge.family)!;
     list.splice(list.indexOf(challenge), 1);
     slots[slot] = challenge;
+    pinnedSlots.push(slot);
   }
 
-  for (let i = 0; i < size; i++) {
-    if (slots[i]) continue;
-    const left = slots[(i - 1 + size) % size]?.family ?? null;
-    const right = slots[(i + 1) % size]?.family ?? null;
-    const ranked = [...groups.entries()]
-      .filter(([, list]) => list.length > 0)
-      .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
-    // Largest remaining family that clashes with neither neighbour; relax the
-    // forward-looking constraint first, and only then the backward one, so the
-    // calendar always fills even for an awkward bank.
-    const pick =
-      ranked.find(([f]) => f !== left && f !== right) ??
-      ranked.find(([f]) => f !== left) ??
-      ranked[0]!;
-    slots[i] = take(pick[0]);
+  /*
+   * Classic "no two identical neighbours" placement: lay the families out
+   * largest-first across every other slot, then across the slots in between.
+   * The dominant family therefore lands on one parity and can never touch
+   * itself. The starting parity is chosen opposite the first pin, so pinning a
+   * date doesn't push the dominant family onto the pin's own parity.
+   */
+  const startParity = pinnedSlots.length ? 1 - (pinnedSlots[0]! % 2) : 0;
+  const free: number[] = [];
+  for (const parity of [startParity, 1 - startParity]) {
+    for (let i = parity; i < size; i += 2) if (!slots[i]) free.push(i);
   }
 
-  const order = slots as Top10Challenge[];
-  const pinnedSlots = new Set(
-    Object.keys(PINNED).map((date) => ((dayNumberFromDate(date) % size) + size) % size),
-  );
+  const flat = [...groups.entries()]
+    .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
+    .flatMap(([, list]) => list);
 
-  // Repair pass: greedy filling can still paint itself into a corner near the
-  // end of the cycle. Swap any clashing day with a day where the exchange is
-  // clean in both places, leaving pinned dates untouched.
-  const clashes = (i: number, c: Top10Challenge) =>
-    order[(i - 1 + size) % size]!.family === c.family ||
-    order[(i + 1) % size]!.family === c.family;
+  free.forEach((slot, i) => {
+    slots[slot] = flat[i]!;
+  });
 
-  for (let pass = 0; pass < 4; pass++) {
-    let repaired = false;
-    for (let i = 0; i < size; i++) {
-      if (pinnedSlots.has(i) || !clashes(i, order[i]!)) continue;
-      for (let j = 0; j < size; j++) {
-        if (j === i || pinnedSlots.has(j)) continue;
-        const a = order[i]!;
-        const b = order[j]!;
-        if (a.family === b.family) continue;
-        order[i] = b;
-        order[j] = a;
-        if (!clashes(i, b) && !clashes(j, a)) {
-          repaired = true;
-          break;
-        }
-        order[i] = a;
-        order[j] = b;
-      }
-    }
-    if (!repaired) break;
-  }
-
-  return order;
+  return slots as Top10Challenge[];
 }
 
 let ORDER: Top10Challenge[] | null = null;
