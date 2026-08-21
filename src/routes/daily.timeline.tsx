@@ -207,6 +207,14 @@ function DailyTimelinePage() {
       if (!recorded.current) {
         recorded.current = true;
         setStats(recordDaily(TIMELINE_GAME_ID, finished));
+        recordRankable({
+          gameId: TIMELINE_GAME_ID,
+          date,
+          number: prompt.number,
+          correct: score,
+          total: prompt.total,
+          timeMs,
+        });
       }
     } catch {
       setSubmitting(false);
