@@ -177,14 +177,17 @@ function DailyUpDownPage() {
       setRevealed(true);
       setLocked(true);
 
-      if (!correct) {
+      // Survival: the first mistake ends the run. Pre-cutover dates keep the
+      // old fixed 10-round accuracy rules so submitted scores stay valid.
+      if (!correct && survival) {
         setMissed(true);
         timer.current = window.setTimeout(() => finish(streak, startedAt), 900);
         return;
       }
 
-      const nextStreak = streak + 1;
+      const nextStreak = correct ? streak + 1 : streak;
       setStreak(nextStreak);
+
       // Deliberately snappy: the run should never feel gated by animation.
       timer.current = window.setTimeout(() => {
         setRevealed(false);
