@@ -28,7 +28,7 @@ const MAX_RATIO = 40;
 
 const POOL: Movie[] = MOVIES.filter(
   (m) => Number.isFinite(m.boxOfficeM) && m.boxOfficeM >= MIN_GROSS_M,
-).sort((a, b) => a.id.localeCompare(b.id));
+).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
 function franchiseKey(title: string): string {
   return title
@@ -59,22 +59,24 @@ export function upDownSequence(date: string): Movie[] {
 
   for (let round = 0; round < UPDOWN_ROUNDS; round++) {
     const current = picked[picked.length - 1]!;
-    let candidates = POOL.filter(
-      (m) =>
-        !usedIds.has(m.id) &&
-        !usedFranchises.has(franchiseKey(m.title)) &&
-        ratio(m.boxOfficeM, current.boxOfficeM) >= MIN_RATIO &&
-        ratio(m.boxOfficeM, current.boxOfficeM) <= MAX_RATIO,
-    );
-    if (candidates.length === 0) {
-      // Relax the upper bound before ever relaxing the fairness margin.
-      candidates = POOL.filter(
+    const fresh = POOL.filter((m) => !usedIds.has(m.id));
+    const unseenFranchise = fresh.filter((m) => !usedFranchises.has(franchiseKey(m.title)));
+
+    // Progressive relaxation: never leave the round without a candidate.
+    const tiers: Movie[][] = [
+      unseenFranchise.filter(
         (m) =>
-          !usedIds.has(m.id) &&
-          !usedFranchises.has(franchiseKey(m.title)) &&
-          ratio(m.boxOfficeM, current.boxOfficeM) >= MIN_RATIO,
-      );
-    }
+          ratio(m.boxOfficeM, current.boxOfficeM) >= MIN_RATIO &&
+          ratio(m.boxOfficeM, current.boxOfficeM) <= MAX_RATIO,
+      ),
+      unseenFranchise.filter((m) => ratio(m.boxOfficeM, current.boxOfficeM) >= MIN_RATIO),
+      fresh.filter((m) => ratio(m.boxOfficeM, current.boxOfficeM) >= MIN_RATIO),
+      unseenFranchise,
+      fresh,
+    ];
+    const candidates = tiers.find((tier) => tier.length > 0);
+    if (!candidates) break;
+
     const next = candidates[Math.floor(rand() * candidates.length)]!;
     picked.push(next);
     usedIds.add(next.id);
