@@ -19,7 +19,7 @@ import { dailyNumber, mulberry32, seedFromString } from "@/games/core/daily";
 import { UPDOWN_ROUNDS, type UpDownCard, type UpDownPrompt } from "./types";
 
 /** Below this a "worldwide gross" is usually a partial or unreliable figure. */
-const MIN_GROSS_M = 20;
+const MIN_GROSS_M = 80;
 
 /** A round is only fair when one film out-grossed the other by this much. */
 const MIN_RATIO = 1.25;
