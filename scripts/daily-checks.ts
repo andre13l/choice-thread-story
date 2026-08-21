@@ -95,16 +95,16 @@ console.log(
   `${CHALLENGES.length} challenges · ${families.size} families · ${CHALLENGES.length * 10} answers · ${Object.keys(ALIASES).length} alias entries · ${published}-day cycle`,
 );
 
-// 6. Daily Up & Down: every date must build a full, playable sequence.
+// 6. Daily Up & Down: every date must build the full shared survival path.
 {
   const { upDownSequence } = await import("../src/games/updown/updown.server");
-  const { UPDOWN_ROUNDS } = await import("../src/games/updown/types");
+  const { UPDOWN_PATH_LENGTH } = await import("../src/games/updown/types");
   for (let i = 0; i < 400; i++) {
     const date = shiftDate(start, i);
     const seq = upDownSequence(date);
     check(
-      seq.length === UPDOWN_ROUNDS + 1,
-      `up&down ${date} produced ${seq.length} films, expected ${UPDOWN_ROUNDS + 1}`,
+      seq.length === UPDOWN_PATH_LENGTH + 1,
+      `up&down ${date} produced ${seq.length} films, expected ${UPDOWN_PATH_LENGTH + 1}`,
     );
     check(new Set(seq.map((m) => m.id)).size === seq.length, `up&down ${date} repeats a film`);
     for (let r = 0; r < seq.length - 1; r++) {
@@ -119,8 +119,9 @@ console.log(
       `up&down ${date} is not deterministic`,
     );
   }
-  console.log("Daily Up & Down: 400 dates build a full sequence.");
+  console.log("Daily Up & Down: 400 dates build the full 100-comparison path.");
 }
+
 
 if (failures > 0) {
   console.error(`\n${failures} failing check(s)`);
