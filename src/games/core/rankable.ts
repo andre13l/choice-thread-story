@@ -58,3 +58,14 @@ export function compareRankable(a: RankableResult, b: RankableResult): number {
   if (a.correct !== b.correct) return b.correct - a.correct;
   return a.timeMs - b.timeMs;
 }
+
+/** Drops one recorded day (format cutovers only). */
+export function forgetRankable(gameId: string, date: string): RankableResult[] {
+  const next = loadRankable(gameId).filter((r) => r.date !== date);
+  try {
+    window.localStorage.setItem(key(gameId), JSON.stringify(next));
+  } catch {
+    // Rankings are a nicety, not state.
+  }
+  return next;
+}
