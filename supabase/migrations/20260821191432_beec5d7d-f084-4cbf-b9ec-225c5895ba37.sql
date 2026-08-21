@@ -1,0 +1,1 @@
+DELETE FROM public.daily_scores WHERE id = 'c3c9ef4a-173a-446b-adc5-c3f5ee3e9bbc';
