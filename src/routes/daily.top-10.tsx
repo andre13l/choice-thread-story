@@ -25,6 +25,7 @@ import {
 } from "@/games/core/dailyStats";
 import { TOP10_GAME_ID, type Top10Hit, type Top10Prompt } from "@/games/top10/types";
 import { getTop10Today, guessTop10, revealTop10, searchTop10 } from "@/lib/top10.functions";
+import { DailyRank } from "@/games/core/components/DailyRank";
 
 export const Route = createFileRoute("/daily/top-10")({
   component: DailyTop10Page,
@@ -269,6 +270,16 @@ function DailyTop10Page() {
           </div>
 
           <ShareButton text={shareText} accent="gold" className="mt-8 w-full sm:w-auto" />
+
+          <DailyRank
+            game="top10"
+            date={date}
+            number={result.number}
+            score={score}
+            timeMs={result.timeMs}
+            meta={{ total: result.total ?? 10 }}
+            eligible={!result.gaveUp}
+          />
 
           <ol className="mt-10 border border-border/70 text-left">
             {Array.from({ length: prompt.total }, (_, i) => {

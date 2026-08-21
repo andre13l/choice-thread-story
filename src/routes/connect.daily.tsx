@@ -25,6 +25,7 @@ import {
   type DailyResult,
   type DailyStats,
 } from "@/games/core/dailyStats";
+import { DailyRank } from "@/games/core/components/DailyRank";
 
 export const Route = createFileRoute("/connect/daily")({
   component: DailyConnectPage,
@@ -219,6 +220,16 @@ function DailyConnectPage() {
           )}
 
           <ShareButton text={shareText} accent="link" className="mt-8 w-full sm:w-auto" />
+
+          <DailyRank
+            game="connect"
+            date={date}
+            number={result.number}
+            score={result.clicks}
+            timeMs={result.timeMs}
+            meta={{ best: challenge.best }}
+            eligible={!result.gaveUp}
+          />
 
 
           {!result.gaveUp && path.length > 1 && (

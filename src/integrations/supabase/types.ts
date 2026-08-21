@@ -642,6 +642,48 @@ export type Database = {
           },
         ]
       }
+      daily_scores: {
+        Row: {
+          game: string
+          id: string
+          meta: Json
+          primary_score: number
+          puzzle_date: string
+          puzzle_number: number
+          rank_key: number
+          submitted_at: string
+          time_ms: number
+          user_id: string | null
+          visitor_key: string | null
+        }
+        Insert: {
+          game: string
+          id?: string
+          meta?: Json
+          primary_score: number
+          puzzle_date: string
+          puzzle_number?: number
+          rank_key: number
+          submitted_at?: string
+          time_ms?: number
+          user_id?: string | null
+          visitor_key?: string | null
+        }
+        Update: {
+          game?: string
+          id?: string
+          meta?: Json
+          primary_score?: number
+          puzzle_date?: string
+          puzzle_number?: number
+          rank_key?: number
+          submitted_at?: string
+          time_ms?: number
+          user_id?: string | null
+          visitor_key?: string | null
+        }
+        Relationships: []
+      }
       daily_top10: {
         Row: {
           challenge_id: string
@@ -663,6 +705,27 @@ export type Database = {
           date?: string
           number?: number
           published?: boolean
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string
         }
         Relationships: []
       }
@@ -692,7 +755,43 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      claim_daily_scores: { Args: { _visitor_key: string }; Returns: number }
+      daily_label: { Args: { _id: string; _username: string }; Returns: string }
+      daily_leaderboard: {
+        Args: {
+          _date: string
+          _game: string
+          _limit?: number
+          _offset?: number
+        }
+        Returns: {
+          entry_id: string
+          label: string
+          meta: Json
+          primary_score: number
+          rank: number
+          time_ms: number
+        }[]
+      }
+      daily_rank: {
+        Args: { _date: string; _entry_id: string; _game: string }
+        Returns: {
+          rank: number
+          total: number
+        }[]
+      }
+      my_daily_history: {
+        Args: { _limit?: number }
+        Returns: {
+          game: string
+          meta: Json
+          primary_score: number
+          puzzle_date: string
+          puzzle_number: number
+          time_ms: number
+        }[]
+      }
+      set_username: { Args: { _username: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

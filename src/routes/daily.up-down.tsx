@@ -24,6 +24,7 @@ import {
 import { recordRankable } from "@/games/core/rankable";
 import { UPDOWN_GAME_ID, UPDOWN_ROUNDS, type UpDownPrompt } from "@/games/updown/types";
 import { getDailyUpDown } from "@/lib/updown.functions";
+import { DailyRank } from "@/games/core/components/DailyRank";
 
 export const Route = createFileRoute("/daily/up-down")({
   component: DailyUpDownPage,
@@ -256,6 +257,15 @@ function DailyUpDownPage() {
             url="/daily/up-down"
             accent="gold"
             className="mt-8 w-full sm:w-auto"
+          />
+
+          <DailyRank
+            game="updown"
+            date={date}
+            number={result.number}
+            score={result.score ?? 0}
+            timeMs={result.timeMs}
+            meta={{ total: result.total ?? UPDOWN_ROUNDS }}
           />
           <NextDailyNote />
           <DailyFooterLinks />
