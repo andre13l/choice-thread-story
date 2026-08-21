@@ -10,7 +10,7 @@
  */
 import { dayNumberFromDate, loadDailyStats, resultFor, todayUTC } from "./dailyStats";
 
-export const DAILY_GAMES = ["connect", "top10", "person"] as const;
+export const DAILY_GAMES = ["connect", "top10", "person", "timeline"] as const;
 export type DailyGameId = (typeof DAILY_GAMES)[number];
 
 /** Every UTC date on which any daily was finished. */
@@ -28,6 +28,7 @@ export function completedToday(today: string = todayUTC()): Record<DailyGameId, 
     connect: resultFor("connect", today) !== null,
     top10: resultFor("top10", today) !== null,
     person: resultFor("person", today) !== null,
+    timeline: resultFor("timeline", today) !== null,
   };
 }
 

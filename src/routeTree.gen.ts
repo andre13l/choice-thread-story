@@ -22,6 +22,7 @@ import { Route as ConnectIndexRouteImport } from './routes/connect.index'
 import { Route as ConnectDailyRouteImport } from './routes/connect.daily'
 import { Route as DailyIndexRouteImport } from './routes/daily.index'
 import { Route as DailyPersonRouteImport } from './routes/daily.person'
+import { Route as DailyTimelineRouteImport } from './routes/daily.timeline'
 import { Route as DailyTop10RouteImport } from './routes/daily.top-10'
 import { Route as ApiPublicConnectImportRouteImport } from './routes/api/public/connect-import'
 import { Route as ApiPublicDailyConnectPublishRouteImport } from './routes/api/public/daily-connect-publish'
@@ -92,6 +93,11 @@ const DailyPersonRoute = DailyPersonRouteImport.update({
   path: '/daily/person',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DailyTimelineRoute = DailyTimelineRouteImport.update({
+  id: '/daily/timeline',
+  path: '/daily/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DailyTop10Route = DailyTop10RouteImport.update({
   id: '/daily/top-10',
   path: '/daily/top-10',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/walk-of-fame': typeof WalkOfFameRoute
   '/connect/daily': typeof ConnectDailyRoute
   '/daily/person': typeof DailyPersonRoute
+  '/daily/timeline': typeof DailyTimelineRoute
   '/daily/top-10': typeof DailyTop10Route
   '/connect/': typeof ConnectIndexRoute
   '/daily/': typeof DailyIndexRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/walk-of-fame': typeof WalkOfFameRoute
   '/connect/daily': typeof ConnectDailyRoute
   '/daily/person': typeof DailyPersonRoute
+  '/daily/timeline': typeof DailyTimelineRoute
   '/daily/top-10': typeof DailyTop10Route
   '/connect': typeof ConnectIndexRoute
   '/daily': typeof DailyIndexRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/walk-of-fame': typeof WalkOfFameRoute
   '/connect/daily': typeof ConnectDailyRoute
   '/daily/person': typeof DailyPersonRoute
+  '/daily/timeline': typeof DailyTimelineRoute
   '/daily/top-10': typeof DailyTop10Route
   '/connect/': typeof ConnectIndexRoute
   '/daily/': typeof DailyIndexRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/walk-of-fame'
     | '/connect/daily'
     | '/daily/person'
+    | '/daily/timeline'
     | '/daily/top-10'
     | '/connect/'
     | '/daily/'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/walk-of-fame'
     | '/connect/daily'
     | '/daily/person'
+    | '/daily/timeline'
     | '/daily/top-10'
     | '/connect'
     | '/daily'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/walk-of-fame'
     | '/connect/daily'
     | '/daily/person'
+    | '/daily/timeline'
     | '/daily/top-10'
     | '/connect/'
     | '/daily/'
@@ -244,6 +256,7 @@ export interface RootRouteChildren {
   WalkOfFameRoute: typeof WalkOfFameRoute
   ConnectDailyRoute: typeof ConnectDailyRoute
   DailyPersonRoute: typeof DailyPersonRoute
+  DailyTimelineRoute: typeof DailyTimelineRoute
   DailyTop10Route: typeof DailyTop10Route
   ConnectIndexRoute: typeof ConnectIndexRoute
   DailyIndexRoute: typeof DailyIndexRoute
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DailyPersonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/daily/timeline': {
+      id: '/daily/timeline'
+      path: '/daily/timeline'
+      fullPath: '/daily/timeline'
+      preLoaderRoute: typeof DailyTimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/daily/top-10': {
       id: '/daily/top-10'
       path: '/daily/top-10'
@@ -388,6 +408,7 @@ const rootRouteChildren: RootRouteChildren = {
   WalkOfFameRoute: WalkOfFameRoute,
   ConnectDailyRoute: ConnectDailyRoute,
   DailyPersonRoute: DailyPersonRoute,
+  DailyTimelineRoute: DailyTimelineRoute,
   DailyTop10Route: DailyTop10Route,
   ConnectIndexRoute: ConnectIndexRoute,
   DailyIndexRoute: DailyIndexRoute,
