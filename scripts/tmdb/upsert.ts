@@ -135,10 +135,14 @@ export async function upsertPeople(
     unique.map((p) => Number(p.sourceId)),
   );
 
+  const byName = await adoptPeopleByName(unique.filter((p) => !adopted.has(Number(p.sourceId))));
+
   const ids = new Map<string, string>();
   const rows = unique.map((person) => {
-    const id = adopted.get(Number(person.sourceId)) ?? personKey(person.sourceId);
+    const id =
+      adopted.get(Number(person.sourceId)) ?? byName.get(person.sourceId) ?? personKey(person.sourceId);
     ids.set(person.sourceId, id);
+
     return {
       id,
       tmdb_id: Number(person.sourceId),
