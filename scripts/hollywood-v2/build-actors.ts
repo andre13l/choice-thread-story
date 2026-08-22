@@ -31,7 +31,6 @@ with act as (
   join connect_cast c on c.person_id = p.id
   where p.tmdb_id is not null
     and p.profile_path is not null
-    and p.birth_year between 1850 and 2012
   group by p.id
 ),
 bank as (
