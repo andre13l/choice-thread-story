@@ -67,7 +67,7 @@ select jsonb_agg(jsonb_build_array(
 ) order by b.popularity desc) as payload
 from bank b
 left join top_credits t on t.person_id = b.id
-where b.popularity >= 0.35;
+where b.popularity >= 0.35
 `;
 
 const dbUrl = process.env["SUPABASE_DB_URL"];
