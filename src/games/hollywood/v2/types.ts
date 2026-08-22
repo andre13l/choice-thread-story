@@ -72,7 +72,7 @@ export interface CastSlot {
   role: string;
   kind: CastSlotKind;
   /** When true, only unknown/working actors are offered. */
-  unknownOnly?: boolean;
+  unknownOnly?: boolean | undefined;
 }
 
 /** A filled slot. Everything needed to render + simulate is snapshotted. */
@@ -92,7 +92,7 @@ export interface CastChoice {
   fit: number;
   volatility: number;
   /** Relationship text shown on the card, when one exists. */
-  relNote?: string;
+  relNote?: string | undefined;
 }
 
 /* ------------------------------------------------------------------ */
@@ -121,10 +121,10 @@ export interface ProjectSpec {
   /** Why this offer, why now — the career reacting. */
   hook: string;
   castSlots: CastSlot[];
-  franchise?: boolean;
-  selfFinanced?: boolean;
+  franchise?: boolean | undefined;
+  selfFinanced?: boolean | undefined;
   /** Personal money required up front when self-financed. */
-  stake?: number;
+  stake?: number | undefined;
 }
 
 /** Effects a decision/event choice applies to the in-flight production. */
@@ -150,7 +150,7 @@ export interface RunFx {
 export type Step =
   | { kind: "decision"; id: string }
   | { kind: "cast"; slotId: string }
-  | { kind: "event"; eventId?: string };
+  | { kind: "event"; eventId?: string | undefined };
 
 export interface ProjectRun {
   spec: ProjectSpec;
@@ -216,12 +216,12 @@ export interface FilmRecord {
   culturalImpact: number;
   nominations: number;
   oscarsWon: number;
-  cult?: boolean;
-  franchise?: boolean;
-  selfFinanced?: boolean;
+  cult?: boolean | undefined;
+  franchise?: boolean | undefined;
+  selfFinanced?: boolean | undefined;
   cast: { name: string; role: string }[];
   /** Channel-appropriate success line for non-theatrical work. */
-  outcomeLine?: string;
+  outcomeLine?: string | undefined;
 }
 
 /* ------------------------------------------------------------------ */
@@ -274,8 +274,8 @@ export interface Career {
 
   legend: boolean;
   ended: boolean;
-  endingTitle?: string;
-  fate?: string;
+  endingTitle?: string | undefined;
+  fate?: string | undefined;
 }
 
 export const START_YEAR = 2026;
