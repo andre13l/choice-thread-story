@@ -769,5 +769,5 @@ export const DECISIONS: Record<string, DecisionDef> = {
 
 /** Decision ids an archetype may reference. Kept explicit to catch typos. */
 export function decision(id: keyof typeof DECISIONS): string {
-  return DECISIONS[id].id;
+  return DECISIONS[id]!.id;
 }
