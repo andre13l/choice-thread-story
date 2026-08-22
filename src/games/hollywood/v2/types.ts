@@ -53,10 +53,13 @@ export type ArchetypeId =
 export interface ActorEntry {
   id: string;
   name: string;
-  /** Wikidata sitelinks — our notability proxy. */
-  notability: number;
-  /** Wikimedia Commons file name, "" when none. */
-  image: string;
+  /** TMDB popularity — our standing proxy. */
+  popularity: number;
+  /** TMDB profile path (hotlink) or "" — preferred portrait. */
+  profile: string;
+  /** Wikimedia Commons file name fallback. */
+  commons: string;
+  /** 0 when unknown (TMDB-hydrated rows rarely carry it). */
   birthYear: number;
   credits: { title: string; year: number }[];
 }
