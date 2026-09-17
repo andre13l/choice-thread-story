@@ -1,24 +1,4 @@
-# PATHS
 
-**Every choice changes your path.**
-
-PATHS is a replayable decision-based simulation game where players experience different life and career paths through a sequence of choices, probabilities and long-term consequences.
-
-The first playable path is **Hollywood**, where the player starts as an unknown 18-year-old actor and tries to build a career in an unpredictable industry.
-
-**Live:** https://choice-thread-story.lovable.app
-
-## The idea
-
-PATHS is built around a simple loop:
-
-**Situation → Decision → Outcome → Next situation**
-
-Each decision can affect the player's career immediately or influence events much later in the run.
-
-There is no fixed sequence of choices that produces the "best" career. Outcomes combine player decisions, character attributes, previous events and randomness, so two similar runs can develop very differently.
-
-A typical Hollywood run takes around **3–5 minutes** and contains roughly **20–30 decisions**.
 
 ## Hollywood
 
